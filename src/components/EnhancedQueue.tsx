@@ -65,7 +65,6 @@ function SortableQueueItem({
     transition,
     isDragging,
   } = useSortable({ id: sortableId });
-  const itemRef = useRef<HTMLDivElement>(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -73,15 +72,8 @@ function SortableQueueItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  // Scroll into view when active
-  useEffect(() => {
-    if (isActive && itemRef.current) {
-      itemRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [isActive]);
+  // Note: Scroll to active track is handled by parent EnhancedQueue component
+  // to avoid redundant scroll calls and ensure proper timing
 
   const coverImage = getCoverImage(track, "small");
   const altText =
@@ -96,12 +88,7 @@ function SortableQueueItem({
 
   return (
     <div
-      ref={(node) => {
-        setNodeRef(node);
-        if (node) {
-          itemRef.current = node;
-        }
-      }}
+      ref={setNodeRef}
       style={style}
       className={`group flex items-center gap-3 p-3 transition-colors ${
         isActive
@@ -226,19 +213,20 @@ export function EnhancedQueue({
   const queueListRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  // Scroll to active track when it changes
+  // Scroll to active track when it changes (single source of truth for scrolling)
   useEffect(() => {
     if (currentTrack && queueListRef.current) {
       const activeItem = queueListRef.current.querySelector(
         `[data-track-id="${currentTrack.id}"]`
       );
       if (activeItem) {
-        setTimeout(() => {
+        // Use requestAnimationFrame for better timing, ensuring DOM is ready
+        requestAnimationFrame(() => {
           activeItem.scrollIntoView({
             behavior: "smooth",
             block: "center",
           });
-        }, 100);
+        });
       }
     }
   }, [currentTrack, queue]);
