@@ -193,7 +193,7 @@ function SearchPageContent() {
     }
   };
 
-  const handleArtistClick = async (artistName: string) => {
+  const handleArtistClick = useCallback(async (artistName: string) => {
     setLoading(true);
     setQuery(artistName);
     setCurrentQuery(artistName);
@@ -218,7 +218,7 @@ function SearchPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session, addSearchQuery, router]);
 
 
   const hasMore = results.length < total;

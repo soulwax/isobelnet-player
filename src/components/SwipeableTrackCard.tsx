@@ -231,7 +231,7 @@ export default function SwipeableTrackCard({
         </div>
 
         {/* Track Info */}
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 flex-1 space-y-1" onClick={!onArtistClick && !onAlbumClick ? handlePlay : undefined}>
           <h3 
             className="line-clamp-2 text-base font-semibold leading-tight text-[var(--color-text)] cursor-pointer transition-colors hover:text-[var(--color-accent-light)] md:text-lg"
             onClick={handlePlay}
@@ -250,7 +250,7 @@ export default function SwipeableTrackCard({
               {track.artist.name}
             </button>
           ) : (
-            <p className="line-clamp-1 text-sm text-[var(--color-subtext)]">
+            <p className="line-clamp-1 text-sm text-[var(--color-subtext)] cursor-pointer">
               {track.artist.name}
             </p>
           )}
@@ -268,7 +268,7 @@ export default function SwipeableTrackCard({
                   {track.album.title}
                 </button>
               ) : (
-                <span className="line-clamp-1">{track.album.title}</span>
+                <span className="line-clamp-1 cursor-pointer">{track.album.title}</span>
               )
             ) : (
               <span className="line-clamp-1 text-[var(--color-muted)]">Unknown Album</span>

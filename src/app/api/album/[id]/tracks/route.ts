@@ -56,21 +56,28 @@ export async function GET(
     // Enrich tracks with album info if available
     const enrichedTracks = (tracksData.data || []).map((track: unknown) => {
       if (albumData && typeof track === "object" && track !== null) {
-        const trackObj = track as Record<string, unknown>;
-        // Only add album info if it's missing
-        if (!trackObj.album && albumData) {
-          trackObj.album = {
+        const trackObj = track as { album?: unknown; [key: string]: unknown };
+        // Only add album info if it's missing and we have required album data
+        if (!trackObj.album && albumData.id !== undefined && albumData.title !== undefined) {
+          // Create a properly typed album object
+          // We've already checked that id and title are defined, but TypeScript doesn't narrow the type
+          // All values are safely converted to strings with fallbacks
+          /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+          const albumInfo = {
             id: albumData.id,
-            title: albumData.title,
-            cover: albumData.cover,
-            cover_small: albumData.cover_small,
-            cover_medium: albumData.cover_medium,
-            cover_big: albumData.cover_big,
-            cover_xl: albumData.cover_xl,
-            md5_image: albumData.md5_image,
+            title: String(albumData.title),
+            cover: String(albumData.cover ?? ""),
+            cover_small: String(albumData.cover_small ?? ""),
+            cover_medium: String(albumData.cover_medium ?? ""),
+            cover_big: String(albumData.cover_big ?? ""),
+            cover_xl: String(albumData.cover_xl ?? ""),
+            md5_image: String(albumData.md5_image ?? ""),
             tracklist: `https://api.deezer.com/album/${albumId}/tracks`,
-            type: "album",
+            type: "album" as const,
           };
+          /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+          // Use spread operator to create a new object with album property
+          return { ...trackObj, album: albumInfo };
         }
       }
       return track;
