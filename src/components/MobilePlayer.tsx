@@ -188,8 +188,8 @@ export default function MobilePlayer(props: MobilePlayerProps) {
     }
   }, [contextAudioElement]);
 
-  // Audio-reactive background effects
-  useAudioReactiveBackground(audioElement, isPlaying);
+  // Audio-reactive background effects (always enabled on mobile for now)
+  useAudioReactiveBackground(audioElement, isPlaying, true);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const displayTime = isSeeking ? seekTime : currentTime;

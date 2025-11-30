@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useAudioReactiveBackground } from "@/hooks/useAudioReactiveBackground";
+import { LightweightParticleBackground } from "./LightweightParticleBackground";
 import MaturePlayer from "./Player";
 
 // Dynamic imports to prevent SSR issues with Web Audio API
@@ -74,12 +75,18 @@ export default function PersistentPlayer() {
     if (typeof window === "undefined") return;
     const stored = window.localStorage.getItem(STORAGE_KEYS.VISUALIZER_ENABLED);
     if (stored !== null) {
-      setVisualizerEnabled(stored === "true");
+      try {
+        const parsed = JSON.parse(stored);
+        setVisualizerEnabled(parsed === true);
+      } catch {
+        // Fallback for old format
+        setVisualizerEnabled(stored === "true");
+      }
     }
   }, [isAuthenticated]);
 
-  // Audio-reactive background effects
-  useAudioReactiveBackground(player.audioElement, player.isPlaying);
+  // Audio-reactive background effects (only when visualizer enabled)
+  useAudioReactiveBackground(player.audioElement, player.isPlaying, visualizerEnabled);
 
   // Extract colors from album art when track changes - DISABLED (visualizer is disabled)
   // useEffect(() => {
@@ -237,6 +244,9 @@ export default function PersistentPlayer() {
           ensureVisibleSignal={visualizerEnsureToken}
         />
       )} */}
+
+      {/* Lightweight particle background when visualizer is disabled */}
+      {!visualizerEnabled && <LightweightParticleBackground />}
     </>
   );
 }

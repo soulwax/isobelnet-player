@@ -11,7 +11,8 @@ import { useEffect, useRef } from "react";
  */
 export function useAudioReactiveBackground(
   audioElement: HTMLAudioElement | null,
-  isPlaying: boolean
+  isPlaying: boolean,
+  enabled: boolean = true
 ) {
   const visualizer = useAudioVisualizer(audioElement, {
     fftSize: 256,
@@ -30,8 +31,8 @@ export function useAudioReactiveBackground(
   const previousAnalysisRef = useRef<{ overallVolume: number; bass: number } | null>(null);
 
   useEffect(() => {
-    if (!isPlaying || !isInitialized || !audioElement) {
-      // Reset to default when not playing
+    if (!enabled || !isPlaying || !isInitialized || !audioElement) {
+      // Reset to default when not playing or disabled
       document.documentElement.style.setProperty("--audio-intensity", "0");
       document.documentElement.style.setProperty("--audio-bass", "0");
       document.documentElement.style.setProperty("--audio-energy", "0");
@@ -123,6 +124,6 @@ export function useAudioReactiveBackground(
         animationFrameRef.current = null;
       }
     };
-  }, [isPlaying, isInitialized, audioElement, getFrequencyData, audioContext, getFFTSize, initialize, resumeContext]);
+  }, [enabled, isPlaying, isInitialized, audioElement, getFrequencyData, audioContext, getFFTSize, initialize, resumeContext]);
 }
 
