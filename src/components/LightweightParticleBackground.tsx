@@ -11,7 +11,6 @@ import { useEffect, useRef } from "react";
 export function LightweightParticleBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement[]>([]);
-  const animationFrameRef = useRef<number | null>(null);
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const getParticleCount = () => {
@@ -88,10 +87,6 @@ export function LightweightParticleBackground() {
       window.removeEventListener("resize", handleResize);
       if (resizeTimeoutRef.current) {
         clearTimeout(resizeTimeoutRef.current);
-      }
-      const currentAnimationFrame = animationFrameRef.current;
-      if (currentAnimationFrame !== null) {
-        cancelAnimationFrame(currentAnimationFrame);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
