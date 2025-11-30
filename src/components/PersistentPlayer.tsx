@@ -13,13 +13,15 @@ import { getCoverImage } from "@/utils/images";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
+import { useAudioReactiveBackground } from "@/hooks/useAudioReactiveBackground";
 import MaturePlayer from "./Player";
 
 // Dynamic imports to prevent SSR issues with Web Audio API
-const AudioVisualizer = dynamic(
-  () => import("./AudioVisualizer").then((mod) => mod.AudioVisualizer),
-  { ssr: false },
-);
+// AudioVisualizer is disabled - keeping import commented for future use
+// const AudioVisualizer = dynamic(
+//   () => import("./AudioVisualizer").then((mod) => mod.AudioVisualizer),
+//   { ssr: false },
+// );
 
 const Equalizer = dynamic(
   () => import("./Equalizer").then((mod) => mod.Equalizer),
@@ -53,9 +55,10 @@ export default function PersistentPlayer() {
   // Initialize state from database preferences, with fallback to false
   const [showQueue, setShowQueue] = useState(false);
   const [showEqualizer, setShowEqualizer] = useState(false);
-  const [albumColorPalette, setAlbumColorPalette] = useState<ColorPalette | null>(null);
+  // Visualizer is disabled - keeping state for future use
+  // const [albumColorPalette, setAlbumColorPalette] = useState<ColorPalette | null>(null);
   const [visualizerEnabled, setVisualizerEnabled] = useState(true);
-  const [visualizerEnsureToken, setVisualizerEnsureToken] = useState(0);
+  // const [visualizerEnsureToken, setVisualizerEnsureToken] = useState(0);
 
   // Sync state with database preferences when they load
   useEffect(() => {
@@ -75,20 +78,23 @@ export default function PersistentPlayer() {
     }
   }, [isAuthenticated]);
 
-  // Extract colors from album art when track changes
-  useEffect(() => {
-    if (player.currentTrack) {
-      const coverUrl = getCoverImage(player.currentTrack, "medium");
-      extractColorsFromImage(coverUrl)
-        .then(setAlbumColorPalette)
-        .catch((error) => {
-          console.error("Failed to extract colors from album art:", error);
-          setAlbumColorPalette(null);
-        });
-    } else {
-      setAlbumColorPalette(null);
-    }
-  }, [player.currentTrack]);
+  // Audio-reactive background effects
+  useAudioReactiveBackground(player.audioElement, player.isPlaying);
+
+  // Extract colors from album art when track changes - DISABLED (visualizer is disabled)
+  // useEffect(() => {
+  //   if (player.currentTrack) {
+  //     const coverUrl = getCoverImage(player.currentTrack, "medium");
+  //     extractColorsFromImage(coverUrl)
+  //       .then(setAlbumColorPalette)
+  //       .catch((error) => {
+  //         console.error("Failed to extract colors from album art:", error);
+  //         setAlbumColorPalette(null);
+  //       });
+  //   } else {
+  //     setAlbumColorPalette(null);
+  //   }
+  // }, [player.currentTrack]);
 
   // Persist queue panel state to database
   useEffect(() => {
@@ -121,9 +127,10 @@ export default function PersistentPlayer() {
   const handleVisualizerToggle = useCallback(() => {
     const next = !visualizerEnabled;
     persistVisualizerPreference(next);
-    if (next) {
-      setVisualizerEnsureToken(Date.now());
-    }
+    // Visualizer is disabled - token setting removed
+    // if (next) {
+    //   setVisualizerEnsureToken(Date.now());
+    // }
   }, [persistVisualizerPreference, visualizerEnabled]);
 
   const playerProps = {
@@ -209,8 +216,8 @@ export default function PersistentPlayer() {
         />
       )}
 
-      {/* Audio Visualizer - Draggable on Desktop, small by default, with album colors */}
-      {player.audioElement && player.currentTrack && visualizerEnabled && !isMobile && (
+      {/* Audio Visualizer - DISABLED */}
+      {/* {player.audioElement && player.currentTrack && visualizerEnabled && !isMobile && (
         <AudioVisualizer
           audioElement={player.audioElement}
           isPlaying={player.isPlaying}
@@ -229,7 +236,7 @@ export default function PersistentPlayer() {
           blendWithBackground={true}
           ensureVisibleSignal={visualizerEnsureToken}
         />
-      )}
+      )} */}
     </>
   );
 }
