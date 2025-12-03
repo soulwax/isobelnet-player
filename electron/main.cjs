@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, globalShortcut } = require('electron');
 const path = require('path');
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -38,6 +38,22 @@ const createWindow = () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  registerMediaKeys();
+};
+
+const registerMediaKeys = () => {
+  globalShortcut.register('MediaPlayPause', () => {
+    mainWindow?.webContents.send('media-key', 'play-pause');
+  });
+
+  globalShortcut.register('MediaNextTrack', () => {
+    mainWindow?.webContents.send('media-key', 'next');
+  });
+
+  globalShortcut.register('MediaPreviousTrack', () => {
+    mainWindow?.webContents.send('media-key', 'previous');
+  });
 };
 
 app.whenReady().then(() => {
@@ -54,6 +70,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 if (!isDev) {

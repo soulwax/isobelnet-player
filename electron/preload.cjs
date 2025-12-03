@@ -22,4 +22,13 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.on(channel, (event, ...args) => func(...args));
     }
   },
+  /**
+   * @param {(key: string) => void} callback
+   */
+  onMediaKey: (callback) => {
+    ipcRenderer.on('media-key', (_event, key) => callback(key));
+  },
+  removeMediaKeyListener: () => {
+    ipcRenderer.removeAllListeners('media-key');
+  },
 });
