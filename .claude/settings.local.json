@@ -9,7 +9,8 @@
       "Bash(npx tsx:*)",
       "Bash(curl:*)",
       "Bash(command -v:*)",
-      "Bash(npm run db:generate:*)"
+      "Bash(npm run db:generate:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

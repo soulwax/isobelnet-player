@@ -230,7 +230,7 @@ const createWindow = async () => {
   });
 
   log(`Loading URL: ${serverUrl}`);
-  mainWindow.loadFile(path.join(__dirname, "../out/index.html"));
+  mainWindow.loadURL(serverUrl);
 
   if (isDev) {
     mainWindow.webContents.openDevTools();
