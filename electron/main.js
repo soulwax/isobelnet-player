@@ -91,22 +91,16 @@ const waitForServer = (port, maxAttempts = 30) => {
 const startServer = async () => {
   const port = await findAvailablePort(prodPort);
 
-  // Determine paths
-  const basePath = app.isPackaged
-    ? path.join(process.resourcesPath, ".next")
-    : path.join(__dirname, "..", ".next");
+  // Determine paths - standalone directory contains everything
+  const standaloneDir = app.isPackaged
+    ? path.join(process.resourcesPath, ".next", "standalone")
+    : path.join(__dirname, "..", ".next", "standalone");
 
-  const serverPath = path.join(basePath, "standalone", "server.js");
-  const staticPath = path.join(basePath, "static");
-  const publicPath = app.isPackaged
-    ? path.join(process.resourcesPath, "public")
-    : path.join(__dirname, "..", "public");
+  const serverPath = path.join(standaloneDir, "server.js");
 
   log("Paths:");
-  log("  Base:", basePath);
+  log("  Standalone dir:", standaloneDir);
   log("  Server:", serverPath);
-  log("  Static:", staticPath);
-  log("  Public:", publicPath);
   log("  isPackaged:", app.isPackaged);
 
   // Check if server.js exists
@@ -120,8 +114,7 @@ const startServer = async () => {
   log("Server file exists, starting...");
 
   return new Promise((resolve, reject) => {
-    const serverDir = path.dirname(serverPath);
-
+    // Run server from standalone directory (it contains .next/static and public)
     serverProcess = spawn("node", [serverPath], {
       env: {
         ...process.env,
@@ -129,7 +122,7 @@ const startServer = async () => {
         HOSTNAME: "localhost",
         NODE_ENV: "production",
       },
-      cwd: serverDir,
+      cwd: standaloneDir,
       stdio: ["ignore", "pipe", "pipe"],
     });
 

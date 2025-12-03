@@ -59,10 +59,12 @@
     "start": "next start --port 3222",
     "typecheck": "tsc --noEmit",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3222 && electron .\"",
-    "electron:build": "cross-env ELECTRON_BUILD=true next build && electron-builder",
-    "electron:build:win": "cross-env ELECTRON_BUILD=true next build && electron-builder --win",
-    "electron:build:mac": "cross-env ELECTRON_BUILD=true next build && electron-builder --mac",
-    "electron:build:linux": "cross-env ELECTRON_BUILD=true next build && electron-builder --linux"
+    "electron:prepare": "node electron/prepare-package.js",
+    "electron:clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
+    "electron:build": "npm run electron:clean && cross-env ELECTRON_BUILD=true next build && npm run electron:prepare && electron-builder",
+    "electron:build:win": "npm run electron:clean && cross-env ELECTRON_BUILD=true next build && npm run electron:prepare && electron-builder --win",
+    "electron:build:mac": "npm run electron:clean && cross-env ELECTRON_BUILD=true next build && npm run electron:prepare && electron-builder --mac",
+    "electron:build:linux": "npm run electron:clean && cross-env ELECTRON_BUILD=true next build && npm run electron:prepare && electron-builder --linux"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -133,16 +135,6 @@
       {
         "from": ".next/standalone",
         "to": ".next/standalone",
-        "filter": ["**/*"]
-      },
-      {
-        "from": ".next/static",
-        "to": ".next/static",
-        "filter": ["**/*"]
-      },
-      {
-        "from": "public",
-        "to": "public",
         "filter": ["**/*"]
       }
     ],

@@ -12,7 +12,8 @@
       "Bash(npm run db:generate:*)",
       "Bash(find:*)",
       "Bash(dir:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(node electron/prepare-package.js:*)"
     ],
     "deny": [],
     "ask": []
