@@ -18,6 +18,9 @@ let mainWindow = null;
 /** @type {import('child_process').ChildProcess | null} */
 let serverProcess = null;
 
+/**
+ * @param {...any} args
+ */
 const log = (...args) => {
   console.log("[Electron]", ...args);
 };
