@@ -49,26 +49,29 @@ export class CircularRenderer {
     offCtx.fillStyle = 'rgba(0, 0, 0, 0)';
     offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
 
-    const segments = 20; // Many more segments for strong kaleidoscopic effect
+    const segments = 32; // More segments for intricate kaleidoscopic effect
 
     for (let seg = 0; seg < segments; seg++) {
       offCtx.save();
       offCtx.translate(centerX, centerY);
-      offCtx.rotate((seg * Math.PI * 2) / segments + this.kaleidoscopeRotation); // Add rotation
-      // More complex mirroring pattern
-      const mirrorX = seg % 4 < 2 ? 1 : -1;
-      const mirrorY = seg % 2 === 0 ? 1 : -1;
-      offCtx.scale(mirrorX, mirrorY);
+      offCtx.rotate((seg * Math.PI * 2) / segments + this.kaleidoscopeRotation);
+
+      // Alternating mirror pattern for true kaleidoscope effect
+      if (seg % 2 === 0) {
+        offCtx.scale(1, 1);
+      } else {
+        offCtx.scale(-1, 1);
+      }
+
       offCtx.translate(-centerX, -centerY);
-      
-      // Clip to segment for cleaner edges
+
+      // Clip to wedge segment for sharp geometric divisions
       offCtx.beginPath();
       offCtx.moveTo(centerX, centerY);
-      const angle1 = (seg * Math.PI * 2) / segments;
-      const angle2 = ((seg + 1) * Math.PI * 2) / segments;
-      const radius = Math.max(canvas.width, canvas.height);
-      offCtx.lineTo(centerX + Math.cos(angle1) * radius, centerY + Math.sin(angle1) * radius);
-      offCtx.lineTo(centerX + Math.cos(angle2) * radius, centerY + Math.sin(angle2) * radius);
+      const clipAngle1 = -(Math.PI / segments);
+      const clipAngle2 = (Math.PI / segments);
+      const clipRadius = Math.max(canvas.width, canvas.height) * 1.5;
+      offCtx.arc(centerX, centerY, clipRadius, clipAngle1, clipAngle2);
       offCtx.closePath();
       offCtx.clip();
 
@@ -106,18 +109,19 @@ export class CircularRenderer {
       const x2 = centerX + Math.cos(angle) * (radius + barLength);
       const y2 = centerY + Math.sin(angle) * (radius + barLength);
 
-      const hue = (i / barCount) * 360 + 180 + seg * 30; // Full spectrum with wider segment shift
-      const lightness = 75 + normalizedValue * 20; // Much brighter
+      const hue = (i / barCount) * 360 + 180 + seg * 11.25; // Rainbow spectrum per segment
+      const saturation = 100;
+      const lightness = 60 + normalizedValue * 35; // Extreme brightness variation
 
       const gradient = offCtx.createLinearGradient(x1, y1, x2, y2);
-      gradient.addColorStop(0, `hsla(${hue}, 100%, ${lightness - 10}%, 1)`);
-      gradient.addColorStop(0.5, `hsla(${hue}, 100%, ${lightness}%, 1)`);
-      gradient.addColorStop(1, `hsla(${hue}, 100%, ${lightness + 20}%, 1)`);
+      gradient.addColorStop(0, `hsla(${hue}, ${saturation}%, ${lightness - 15}%, 0.95)`);
+      gradient.addColorStop(0.5, `hsla(${hue + 20}, ${saturation}%, ${lightness}%, 1)`);
+      gradient.addColorStop(1, `hsla(${hue + 40}, ${saturation}%, 95%, 1)`);
 
       offCtx.strokeStyle = gradient;
-      offCtx.lineWidth = Math.max(4, 12 - barCount / 20);
-      offCtx.shadowBlur = 40 * normalizedValue;
-      offCtx.shadowColor = `hsla(${hue}, 100%, 90%, 1)`;
+      offCtx.lineWidth = Math.max(5, 14 - barCount / 20);
+      offCtx.shadowBlur = 60 * normalizedValue;
+      offCtx.shadowColor = `hsla(${hue}, 100%, 95%, 1)`;
       offCtx.lineCap = 'round';
 
       offCtx.beginPath();
@@ -129,11 +133,11 @@ export class CircularRenderer {
         const peakX = centerX + Math.cos(angle) * (radius + currentPeak);
         const peakY = centerY + Math.sin(angle) * (radius + currentPeak);
 
-        offCtx.shadowBlur = 50;
+        offCtx.shadowBlur = 70;
         offCtx.shadowColor = `hsla(${hue}, 100%, 95%, 1)`;
-        offCtx.fillStyle = `hsla(${hue + 40}, 100%, 100%, 1)`;
+        offCtx.fillStyle = `hsla(${hue + 60}, 100%, 100%, 1)`;
         offCtx.beginPath();
-        offCtx.arc(peakX, peakY, 5, 0, Math.PI * 2);
+        offCtx.arc(peakX, peakY, 6, 0, Math.PI * 2);
         offCtx.fill();
       }
     }
