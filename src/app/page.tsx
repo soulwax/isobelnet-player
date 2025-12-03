@@ -479,7 +479,7 @@ function SearchPageContent() {
                 
                 {/* Quick Search Suggestions */}
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  {["Daft Punk", "Lofi Beats", "Jazz", "Electronic"].map((suggestion) => (
+                  {["Daft Punk", "Lofi Beats", "Jazz", "Electronic", "Trip-Hop"].map((suggestion) => (
                     <motion.button
                       key={suggestion}
                       onClick={() => {
