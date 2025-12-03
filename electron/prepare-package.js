@@ -25,6 +25,8 @@ const staticSource = path.join(rootDir, ".next", "static");
 const staticDest = path.join(standaloneDir, ".next", "static");
 const publicSource = path.join(rootDir, "public");
 const publicDest = path.join(standaloneDir, "public");
+const certsSource = path.join(rootDir, "certs");
+const certsDest = path.join(standaloneDir, "certs");
 
 /**
  * Helper function to copy directory recursively
@@ -65,6 +67,11 @@ try {
   console.log("[Prepare] Copying public...");
   copyDir(publicSource, publicDest);
   console.log("[Prepare] ✓ Public files copied");
+
+  // Copy certs to standalone/certs (if exists)
+  console.log("[Prepare] Copying certs...");
+  copyDir(certsSource, certsDest);
+  console.log("[Prepare] ✓ Certificate files copied");
 
   console.log("\n[Prepare] Package preparation complete!\n");
 } catch (error) {

@@ -1,16 +1,37 @@
 // File: src/server/db/index.ts
 
 import { drizzle } from "drizzle-orm/node-postgres";
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { Pool } from "pg";
 import * as schema from "./schema";
+
+// Determine certificate path based on environment
+function getCertPath(): string {
+  // Try multiple possible locations
+  const possiblePaths = [
+    path.join(process.cwd(), "certs/ca.pem"), // Development
+    path.join(__dirname, "../../certs/ca.pem"), // Relative to build output
+    path.join(__dirname, "../../../certs/ca.pem"), // Another build variant
+  ];
+
+  for (const certPath of possiblePaths) {
+    if (existsSync(certPath)) {
+      console.log(`[DB] Using certificate from: ${certPath}`);
+      return certPath;
+    }
+  }
+
+  throw new Error(
+    `[DB] Certificate not found. Searched paths: ${possiblePaths.join(", ")}`,
+  );
+}
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL!,
   ssl: {
     rejectUnauthorized: true,
-    ca: readFileSync(path.join(process.cwd(), "certs/ca.pem")).toString(),
+    ca: readFileSync(getCertPath()).toString(),
   },
   // Connection pool configuration to prevent exhaustion
   // With 2 frontend instances, total max connections = 2 × 5 = 10
@@ -21,14 +42,14 @@ const pool = new Pool({
 });
 
 // Graceful shutdown - close pool when process exits
-if (typeof process !== 'undefined') {
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM received, closing database pool...');
+if (typeof process !== "undefined") {
+  process.on("SIGTERM", () => {
+    console.log("SIGTERM received, closing database pool...");
     void pool.end();
   });
 
-  process.on('SIGINT', () => {
-    console.log('SIGINT received, closing database pool...');
+  process.on("SIGINT", () => {
+    console.log("SIGINT received, closing database pool...");
     void pool.end();
   });
 }

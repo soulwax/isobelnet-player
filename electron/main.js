@@ -10,7 +10,8 @@ const { spawn } = require("child_process");
 const http = require("http");
 const fs = require("fs");
 
-const isDev = process.env.NODE_ENV === "development";
+// Production detection: packaged apps or explicit ELECTRON_PROD flag
+const isDev = !app.isPackaged && process.env.ELECTRON_PROD !== "true";
 const prodPort = 3222;
 
 /** @type {BrowserWindow | null} */
@@ -18,11 +19,57 @@ let mainWindow = null;
 /** @type {import('child_process').ChildProcess | null} */
 let serverProcess = null;
 
+// Window state storage
+const windowStateFile = path.join(app.getPath("userData"), "window-state.json");
+
 /**
  * @param {...any} args
  */
 const log = (...args) => {
   console.log("[Electron]", ...args);
+};
+
+/**
+ * Load saved window state
+ * @returns {{width: number, height: number, x?: number, y?: number, isMaximized: boolean}}
+ */
+const loadWindowState = () => {
+  try {
+    if (fs.existsSync(windowStateFile)) {
+      const data = fs.readFileSync(windowStateFile, "utf8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    log("Failed to load window state:", err);
+  }
+
+  // Default window state
+  return {
+    width: 1200,
+    height: 800,
+    isMaximized: false,
+  };
+};
+
+/**
+ * Save current window state
+ * @param {BrowserWindow} window
+ */
+const saveWindowState = (window) => {
+  try {
+    const bounds = window.getBounds();
+    const state = {
+      width: bounds.width,
+      height: bounds.height,
+      x: bounds.x,
+      y: bounds.y,
+      isMaximized: window.isMaximized(),
+    };
+    fs.writeFileSync(windowStateFile, JSON.stringify(state, null, 2));
+    log("Window state saved");
+  } catch (err) {
+    log("Failed to save window state:", err);
+  }
 };
 
 /**
@@ -159,6 +206,9 @@ const startServer = async () => {
 
 const createWindow = async () => {
   log("Creating window...");
+  log(`Mode: ${isDev ? "Development" : "Production"}`);
+  log(`Packaged: ${app.isPackaged}`);
+  log(`ELECTRON_PROD: ${process.env.ELECTRON_PROD}`);
   let serverUrl;
 
   if (isDev) {
@@ -182,9 +232,14 @@ const createWindow = async () => {
     }
   }
 
+  // Load saved window state
+  const windowState = loadWindowState();
+
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: windowState.width,
+    height: windowState.height,
+    x: windowState.x,
+    y: windowState.y,
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
@@ -192,11 +247,41 @@ const createWindow = async () => {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      devTools: true,
+      devTools: isDev,
     },
     icon: path.join(__dirname, "../public/icon.png"),
     backgroundColor: "#000000",
     show: false,
+  });
+
+  // Restore maximized state
+  if (windowState.isMaximized) {
+    mainWindow.maximize();
+  }
+
+  // Save window state on resize and move
+  mainWindow.on("resize", () => {
+    if (mainWindow && !mainWindow.isMaximized()) {
+      saveWindowState(mainWindow);
+    }
+  });
+
+  mainWindow.on("move", () => {
+    if (mainWindow && !mainWindow.isMaximized()) {
+      saveWindowState(mainWindow);
+    }
+  });
+
+  mainWindow.on("maximize", () => {
+    if (mainWindow) {
+      saveWindowState(mainWindow);
+    }
+  });
+
+  mainWindow.on("unmaximize", () => {
+    if (mainWindow) {
+      saveWindowState(mainWindow);
+    }
   });
 
   mainWindow.webContents.on("did-start-loading", () => {
@@ -217,7 +302,7 @@ const createWindow = async () => {
   mainWindow.once("ready-to-show", () => {
     log("Window ready to show");
     mainWindow?.show();
-    if (!isDev) {
+    if (isDev) {
       mainWindow?.webContents.openDevTools();
     }
   });
@@ -225,9 +310,12 @@ const createWindow = async () => {
   log(`Loading URL: ${serverUrl}`);
   mainWindow.loadURL(serverUrl);
 
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  mainWindow.on("close", () => {
+    // Save window state before closing
+    if (mainWindow) {
+      saveWindowState(mainWindow);
+    }
+  });
 
   mainWindow.on("closed", () => {
     log("Window closed");
@@ -267,23 +355,55 @@ app.whenReady().then(() => {
   });
 });
 
-app.on("window-all-closed", () => {
+/**
+ * Gracefully shutdown the server process
+ * @returns {Promise<void>}
+ */
+const shutdownServer = () => {
+  return new Promise((resolve) => {
+    if (!serverProcess) {
+      resolve();
+      return;
+    }
+
+    log("Shutting down server gracefully...");
+
+    // Try graceful shutdown first (SIGTERM)
+    serverProcess.kill("SIGTERM");
+
+    // Force kill after 5 seconds if not stopped
+    const killTimeout = setTimeout(() => {
+      if (serverProcess) {
+        log("Force killing server process");
+        serverProcess.kill("SIGKILL");
+      }
+    }, 5000);
+
+    serverProcess.on("exit", () => {
+      clearTimeout(killTimeout);
+      log("Server process terminated");
+      serverProcess = null;
+      resolve();
+    });
+  });
+};
+
+app.on("window-all-closed", async () => {
   log("All windows closed");
-  if (serverProcess) {
-    log("Killing server process");
-    serverProcess.kill();
-  }
+  await shutdownServer();
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on("will-quit", () => {
+app.on("will-quit", async (event) => {
   log("App will quit");
+  event.preventDefault();
+
   globalShortcut.unregisterAll();
-  if (serverProcess) {
-    serverProcess.kill();
-  }
+  await shutdownServer();
+
+  app.exit(0);
 });
 
 if (!isDev) {
