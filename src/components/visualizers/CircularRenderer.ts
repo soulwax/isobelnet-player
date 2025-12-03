@@ -14,6 +14,7 @@ export class CircularRenderer {
     const avgAmplitude = data.reduce((sum, val) => sum + val, 0) / data.length / 255;
     const hueShift = avgAmplitude * 50;
     
+    // Much darker background for contrast
     const bgGradient = ctx.createRadialGradient(
       canvas.width / 2,
       canvas.height / 2,
@@ -22,9 +23,9 @@ export class CircularRenderer {
       canvas.height / 2,
       Math.max(canvas.width, canvas.height) / 2
     );
-    bgGradient.addColorStop(0, `hsla(${260 + hueShift}, 100%, 40%, 1)`);
-    bgGradient.addColorStop(0.5, `hsla(${280 + hueShift}, 100%, 35%, 1)`);
-    bgGradient.addColorStop(1, `hsla(${240 + hueShift}, 100%, 25%, 1)`);
+    bgGradient.addColorStop(0, `hsla(${260 + hueShift}, 80%, 8%, 1)`);
+    bgGradient.addColorStop(0.5, `hsla(${280 + hueShift}, 60%, 5%, 1)`);
+    bgGradient.addColorStop(1, `hsla(${240 + hueShift}, 40%, 3%, 1)`);
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -109,19 +110,20 @@ export class CircularRenderer {
       const x2 = centerX + Math.cos(angle) * (radius + barLength);
       const y2 = centerY + Math.sin(angle) * (radius + barLength);
 
-      const hue = (i / barCount) * 360 + 180 + seg * 11.25; // Rainbow spectrum per segment
+      const hue = (i / barCount) * 360 + seg * 11.25; // Full rainbow per segment
       const saturation = 100;
-      const lightness = 60 + normalizedValue * 35; // Extreme brightness variation
+      const lightness = 70 + normalizedValue * 30; // Ultra-bright rays
 
       const gradient = offCtx.createLinearGradient(x1, y1, x2, y2);
-      gradient.addColorStop(0, `hsla(${hue}, ${saturation}%, ${lightness - 15}%, 0.95)`);
-      gradient.addColorStop(0.5, `hsla(${hue + 20}, ${saturation}%, ${lightness}%, 1)`);
-      gradient.addColorStop(1, `hsla(${hue + 40}, ${saturation}%, 95%, 1)`);
+      gradient.addColorStop(0, `hsla(${hue}, ${saturation}%, ${lightness - 20}%, 0.8)`);
+      gradient.addColorStop(0.3, `hsla(${hue + 30}, ${saturation}%, ${lightness + 10}%, 1)`);
+      gradient.addColorStop(0.7, `hsla(${hue + 60}, ${saturation}%, 98%, 1)`);
+      gradient.addColorStop(1, `hsla(${hue + 90}, ${saturation}%, 100%, 1)`);
 
       offCtx.strokeStyle = gradient;
-      offCtx.lineWidth = Math.max(5, 14 - barCount / 20);
-      offCtx.shadowBlur = 60 * normalizedValue;
-      offCtx.shadowColor = `hsla(${hue}, 100%, 95%, 1)`;
+      offCtx.lineWidth = Math.max(6, 16 - barCount / 20); // Thicker rays
+      offCtx.shadowBlur = 80 + normalizedValue * 60; // Massive glow
+      offCtx.shadowColor = `hsla(${hue}, 100%, 80%, 1)`;
       offCtx.lineCap = 'round';
 
       offCtx.beginPath();
@@ -133,11 +135,11 @@ export class CircularRenderer {
         const peakX = centerX + Math.cos(angle) * (radius + currentPeak);
         const peakY = centerY + Math.sin(angle) * (radius + currentPeak);
 
-        offCtx.shadowBlur = 70;
-        offCtx.shadowColor = `hsla(${hue}, 100%, 95%, 1)`;
-        offCtx.fillStyle = `hsla(${hue + 60}, 100%, 100%, 1)`;
+        offCtx.shadowBlur = 100;
+        offCtx.shadowColor = `hsla(${hue + 30}, 100%, 95%, 1)`;
+        offCtx.fillStyle = `hsla(${hue + 120}, 100%, 100%, 1)`;
         offCtx.beginPath();
-        offCtx.arc(peakX, peakY, 6, 0, Math.PI * 2);
+        offCtx.arc(peakX, peakY, 8, 0, Math.PI * 2);
         offCtx.fill();
       }
     }
@@ -147,13 +149,14 @@ export class CircularRenderer {
 
     offCtx.shadowBlur = 0;
 
+    // Darker inner circle for better contrast
     const innerGradient = offCtx.createRadialGradient(
       centerX, centerY, 0,
       centerX, centerY, radius * 0.8
     );
-    innerGradient.addColorStop(0, `rgba(138, 43, 226, ${0.9 + avgAmplitude * 0.1})`);
-    innerGradient.addColorStop(0.7, `rgba(75, 0, 130, ${0.8 + avgAmplitude * 0.2})`);
-    innerGradient.addColorStop(1, 'rgba(75, 0, 130, 0.6)');
+    innerGradient.addColorStop(0, `rgba(80, 20, 140, ${0.5 + avgAmplitude * 0.3})`);
+    innerGradient.addColorStop(0.5, `rgba(40, 0, 80, ${0.7 + avgAmplitude * 0.2})`);
+    innerGradient.addColorStop(1, 'rgba(20, 0, 40, 0.9)');
 
     offCtx.fillStyle = innerGradient;
     offCtx.beginPath();
@@ -186,25 +189,9 @@ export class CircularRenderer {
       }
     }
 
-    // Draw kaleidoscope segments with chromatic aberration for vivid effect
+    // Draw kaleidoscope segments with INTENSE vivid rays
     for (let seg = 0; seg < segments; seg++) {
-      // Red channel (chromatic aberration)
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate((seg * Math.PI * 2) / segments + this.kaleidoscopeRotation);
-      if (seg % 2 === 0) {
-        ctx.scale(1, 1);
-      } else {
-        ctx.scale(-1, 1);
-      }
-      ctx.translate(-centerX - 1, -centerY - 1);
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.globalAlpha = 0.6;
-      ctx.filter = 'saturate(1.5) contrast(1.3) hue-rotate(-5deg)';
-      ctx.drawImage(offCanvas, 0, 0);
-      ctx.restore();
-
-      // Green channel
+      // Base layer - full brightness
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate((seg * Math.PI * 2) / segments + this.kaleidoscopeRotation);
@@ -215,12 +202,12 @@ export class CircularRenderer {
       }
       ctx.translate(-centerX, -centerY);
       ctx.globalCompositeOperation = 'lighter';
-      ctx.globalAlpha = 0.7;
-      ctx.filter = 'saturate(1.8) contrast(1.4) brightness(1.1)';
+      ctx.globalAlpha = 0.9;
+      ctx.filter = 'saturate(2.5) contrast(1.8) brightness(1.3)';
       ctx.drawImage(offCanvas, 0, 0);
       ctx.restore();
 
-      // Blue channel (chromatic aberration)
+      // Red chromatic layer
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate((seg * Math.PI * 2) / segments + this.kaleidoscopeRotation);
@@ -229,10 +216,26 @@ export class CircularRenderer {
       } else {
         ctx.scale(-1, 1);
       }
-      ctx.translate(-centerX + 1, -centerY + 1);
+      ctx.translate(-centerX - 2, -centerY - 2);
       ctx.globalCompositeOperation = 'lighter';
-      ctx.globalAlpha = 0.6;
-      ctx.filter = 'saturate(1.5) contrast(1.3) hue-rotate(5deg)';
+      ctx.globalAlpha = 0.5;
+      ctx.filter = 'saturate(2.2) contrast(1.6) hue-rotate(-10deg) brightness(1.2)';
+      ctx.drawImage(offCanvas, 0, 0);
+      ctx.restore();
+
+      // Blue chromatic layer
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate((seg * Math.PI * 2) / segments + this.kaleidoscopeRotation);
+      if (seg % 2 === 0) {
+        ctx.scale(1, 1);
+      } else {
+        ctx.scale(-1, 1);
+      }
+      ctx.translate(-centerX + 2, -centerY + 2);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.5;
+      ctx.filter = 'saturate(2.2) contrast(1.6) hue-rotate(10deg) brightness(1.2)';
       ctx.drawImage(offCanvas, 0, 0);
       ctx.restore();
     }
