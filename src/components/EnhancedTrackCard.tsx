@@ -64,7 +64,7 @@ export default function EnhancedTrackCard({
     onSuccess: async (_, variables) => {
       await utils.music.getPlaylists.invalidate();
       const playlistName =
-        playlists?.find((p: PlaylistWithTracks) => p.id === variables.playlistId)?.name ??
+        playlists?.find((p) => p.id === variables.playlistId)?.name ??
         "playlist";
       showToast(`Added "${track.title}" to ${playlistName}`, "success");
       setShowMenu(false);
@@ -288,7 +288,7 @@ export default function EnhancedTrackCard({
                     Add to Playlist
                   </div>
                   {playlists && playlists.length > 0 ? (
-                    playlists.map((playlist: PlaylistWithTracks) => (
+                    playlists.map((playlist) => (
                       <button
                         key={playlist.id}
                         onClick={() => handleAddToPlaylist(playlist.id)}

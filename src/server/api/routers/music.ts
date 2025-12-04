@@ -105,16 +105,16 @@ async function syncAutoFavorites(
   });
 
   const currentFavoriteTrackIds = new Set(
-    currentFavorites.map((f: { trackId: string }) => f.trackId),
+    currentFavorites.map((f: { trackId: number }) => f.trackId),
   );
-  const topTrackIds = new Set(topTracks.map((t: { trackId: string }) => t.trackId));
+  const topTrackIds = new Set(topTracks.map((t: { trackId: number }) => t.trackId));
 
   // Remove favorites that are no longer in top tracks
   const toRemove = currentFavorites.filter(
-    (f: { trackId: string }) => !topTrackIds.has(f.trackId),
+    (f: { trackId: number }) => !topTrackIds.has(f.trackId),
   );
   if (toRemove.length > 0) {
-    const trackIdsToRemove = toRemove.map((f: { trackId: string }) => f.trackId);
+    const trackIdsToRemove = toRemove.map((f: { trackId: number }) => f.trackId);
     await database
       .delete(favorites)
       .where(
@@ -126,10 +126,10 @@ async function syncAutoFavorites(
   }
 
   // Add new favorites that are in top tracks but not yet favorited
-  const toAdd = topTracks.filter((t: { trackId: string }) => !currentFavoriteTrackIds.has(t.trackId));
+  const toAdd = topTracks.filter((t: { trackId: number }) => !currentFavoriteTrackIds.has(t.trackId));
   if (toAdd.length > 0) {
     await database.insert(favorites).values(
-      toAdd.map((t: { trackId: string; trackData: unknown }) => ({
+      toAdd.map((t: { trackId: number; trackData: unknown }) => ({
         userId,
         trackId: t.trackId,
         trackData: t.trackData,

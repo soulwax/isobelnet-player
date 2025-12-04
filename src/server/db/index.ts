@@ -1,23 +1,27 @@
 // File: src/server/db/index.ts
 
-import { drizzle } from "drizzle-orm/node-postgres";
+import { neonConfig, Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import { readFileSync } from "fs";
 import path from "path";
-import { Pool } from "pg";
 import * as schema from "./schema";
 
+// Configure Neon to use standard PostgreSQL compatible mode
+neonConfig.fetchConnectionCache = true;
+
+const connectionString = process.env.DATABASE_URL!;
+
+// Create Neon pool with SSL configuration
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
   ssl: {
     rejectUnauthorized: true,
     ca: readFileSync(path.join(process.cwd(), "certs/ca.pem")).toString(),
   },
   // Connection pool configuration to prevent exhaustion
-  // With 2 frontend instances, total max connections = 2 × 5 = 10
-  max: 5, // Maximum number of clients per instance
-  min: 1, // Minimum number of clients in the pool
+  max: 5, // Maximum number of connections
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 10000, // Return an error after 10 seconds if connection could not be established
+  connectionTimeoutMillis: 10000, // Connection timeout
 });
 
 // Graceful shutdown - close pool when process exits

@@ -226,7 +226,7 @@ export default function PublicProfilePage({
             if (typeof item !== 'object' || item === null || !('id' in item) || !('name' in item)) {
               return null;
             }
-            const playlist = item as {
+            const playlist = item as unknown as {
               id: number;
               name: string;
               description: string | null;

@@ -15,8 +15,8 @@ export function useAudioReactiveBackground(
   enabled = true
 ) {
   const visualizer = useAudioVisualizer(audioElement, {
-    fftSize: 256,
-    smoothingTimeConstant: 0.8,
+    fftSize: 128, // Reduced from 256 for better performance
+    smoothingTimeConstant: 0.9, // Increased smoothing for more subtle changes
   });
 
   // Memoize stable values to avoid recreating the effect on every render
@@ -74,25 +74,25 @@ export function useAudioReactiveBackground(
       const fftSize = getFFTSize();
       const analysis = analyzeAudio(frequencyData, sampleRate, fftSize);
 
-      // Smooth the values to prevent jitter
+      // Smooth the values to prevent jitter - increased smoothing for subtlety
       const previous = previousAnalysisRef.current;
-      const smoothing = 0.7;
-      
+      const smoothing = 0.85; // Increased from 0.7 for smoother transitions
+
       const overallVolume = previous
         ? previous.overallVolume * smoothing + analysis.overallVolume * (1 - smoothing)
         : analysis.overallVolume;
-      
+
       const bass = previous
         ? previous.bass * smoothing + analysis.frequencyBands.bass * (1 - smoothing)
         : analysis.frequencyBands.bass;
 
       previousAnalysisRef.current = { overallVolume, bass };
 
-      // Calculate intensity (0-1) - disco lightshow effects
-      const intensity = Math.min(1, overallVolume * 1.2);
-      const bassBoost = Math.min(1, bass * 1.3);
-      const energy = Math.min(1, (overallVolume + bass) * 1.1);
-      const trebleBoost = Math.min(1, analysis.frequencyBands.treble * 1.2);
+      // Calculate intensity (0-1) - reduced multipliers for subtlety
+      const intensity = Math.min(1, overallVolume * 0.6); // Reduced from 1.2
+      const bassBoost = Math.min(1, bass * 0.7); // Reduced from 1.3
+      const energy = Math.min(1, (overallVolume + bass) * 0.5); // Reduced from 1.1
+      const trebleBoost = Math.min(1, analysis.frequencyBands.treble * 0.6); // Reduced from 1.2
 
       // Calculate hue shift based on frequency bands - disco color cycling
       // Bass = red/orange, Mid = yellow/green, Treble = blue/purple/pink
@@ -112,14 +112,14 @@ export function useAudioReactiveBackground(
       
       // Add time-based color cycling for kaleidoscope effect (use performance.now() for better accuracy)
       // Only update when tab is visible to save resources
-      // Increased multiplier for faster, more dramatic color shifts
+      // Slowed down for more subtle color shifts
       const timeHue = typeof window !== "undefined" && !document.hidden
-        ? (performance.now() / 40) % 360
+        ? (performance.now() / 100) % 360 // Slowed from 40 to 100
         : 0;
-      const discoHue = (hue + timeHue * 0.5) % 360;
+      const discoHue = (hue + timeHue * 0.25) % 360; // Reduced influence from 0.5 to 0.25
 
-      // Strobe effect based on bass hits (reduced intensity for safety)
-      const strobe = bass > 0.7 ? 0.7 : 0;
+      // Strobe effect based on bass hits - disabled for subtlety and resource saving
+      const strobe = 0; // Disabled strobe effect
 
       // Update CSS variables with disco lightshow values
       document.documentElement.style.setProperty("--audio-intensity", intensity.toString());

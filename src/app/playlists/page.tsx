@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { LoadingState } from "@/components/LoadingSpinner";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/trpc/react";
-import type { PlaylistWithTracks } from "@/types";
+import type { Track } from "@/types";
 import { Music, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -96,7 +96,7 @@ export default function PlaylistsPage() {
         <LoadingState message="Loading your playlists..." />
       ) : playlists && playlists.length > 0 ? (
         <div className="fade-in grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-          {playlists.map((playlist: PlaylistWithTracks) => (
+          {playlists.map((playlist) => (
             <Link
               key={playlist.id}
               href={`/playlists/${playlist.id}`}
@@ -112,7 +112,7 @@ export default function PlaylistsPage() {
                       >
                         <Image
                           src={
-                            playlistTrack.track?.album?.cover_medium ?? "/placeholder.png"
+                            ((playlistTrack as { trackData: Track }).trackData?.album?.cover_medium) ?? "/placeholder.png"
                           }
                           alt=""
                           fill
