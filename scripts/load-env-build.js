@@ -42,7 +42,7 @@ function loadEnvFile(filePath) {
 
     // Parse KEY=VALUE
     const match = line.match(/^([^=]+)=(.*)$/);
-    if (match) {
+    if (match && match[1] && match[2]) {
       const key = match[1].trim();
       let value = match[2].trim();
 
