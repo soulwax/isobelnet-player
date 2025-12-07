@@ -294,7 +294,7 @@ export function Equalizer({ equalizer, onClose }: EqualizerProps) {
 
                             {/* Frequency label */}
                             <span
-                              className={`text-xs font-medium transition-all duration-200 ${
+                              className={`text-[10px] font-medium transition-all duration-200 sm:text-xs ${
                                 isHovered
                                   ? "scale-110 text-[var(--color-text)]"
                                   : "text-[var(--color-subtext)]"
