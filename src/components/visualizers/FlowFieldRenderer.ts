@@ -47,7 +47,30 @@ type Pattern =
   | "fluid"
   | "hexgrid"
   | "spirograph"
-  | "constellation";
+  | "constellation"
+  | "pentagram"
+  | "runes"
+  | "sigils"
+  | "ouroboros"
+  | "chakras"
+  | "alchemy"
+  | "celestial"
+  | "portal"
+  | "dreamcatcher"
+  | "phoenix"
+  | "serpent"
+  | "crystalGrid"
+  | "moonPhases"
+  | "astrolabe"
+  | "tarot"
+  | "kabbalah"
+  | "merkaba"
+  | "flowerOfLife"
+  | "sriYantra"
+  | "metatron"
+  | "vesicaPiscis"
+  | "torusField"
+  | "cosmicEgg";
 
 export class FlowFieldRenderer {
   private canvas: HTMLCanvasElement;
@@ -91,6 +114,29 @@ export class FlowFieldRenderer {
     "hexgrid",
     "spirograph",
     "constellation",
+    "pentagram",
+    "runes",
+    "sigils",
+    "ouroboros",
+    "chakras",
+    "alchemy",
+    "celestial",
+    "portal",
+    "dreamcatcher",
+    "phoenix",
+    "serpent",
+    "crystalGrid",
+    "moonPhases",
+    "astrolabe",
+    "tarot",
+    "kabbalah",
+    "merkaba",
+    "flowerOfLife",
+    "sriYantra",
+    "metatron",
+    "vesicaPiscis",
+    "torusField",
+    "cosmicEgg",
   ];
   private patternSequence: Pattern[] = [];
   private patternIndex = 0;
@@ -2188,6 +2234,75 @@ export class FlowFieldRenderer {
       case "constellation":
         this.renderConstellation(audioIntensity, bassIntensity, midIntensity);
         break;
+      case "pentagram":
+        this.renderPentagram(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "runes":
+        this.renderRunes(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "sigils":
+        this.renderSigils(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "ouroboros":
+        this.renderOuroboros(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "chakras":
+        this.renderChakras(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "alchemy":
+        this.renderAlchemy(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "celestial":
+        this.renderCelestial(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "portal":
+        this.renderPortal(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "dreamcatcher":
+        this.renderDreamcatcher(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "phoenix":
+        this.renderPhoenix(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "serpent":
+        this.renderSerpent(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "crystalGrid":
+        this.renderCrystalGrid(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "moonPhases":
+        this.renderMoonPhases(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "astrolabe":
+        this.renderAstrolabe(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "tarot":
+        this.renderTarot(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "kabbalah":
+        this.renderKabbalah(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "merkaba":
+        this.renderMerkaba(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "flowerOfLife":
+        this.renderFlowerOfLife(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "sriYantra":
+        this.renderSriYantra(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "metatron":
+        this.renderMetatron(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "vesicaPiscis":
+        this.renderVesicaPiscis(audioIntensity, bassIntensity, trebleIntensity);
+        break;
+      case "torusField":
+        this.renderTorusField(audioIntensity, bassIntensity, midIntensity);
+        break;
+      case "cosmicEgg":
+        this.renderCosmicEgg(audioIntensity, bassIntensity, midIntensity);
+        break;
     }
   }
 
@@ -2465,5 +2580,2181 @@ export class FlowFieldRenderer {
     this.initializeStars();
     this.initializeMatrixColumns();
     this.initializeConstellationStars();
+  }
+
+  // ============================================
+  // MYSTICAL PATTERN RENDERERS
+  // ============================================
+
+  private renderPentagram(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const points = 5;
+    const outerRadius = 200 + bassIntensity * 150;
+    const innerRadius = outerRadius * 0.382; // Golden ratio
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(this.time * 0.002 + midIntensity * 0.1);
+
+    for (let layer = 0; layer < 3; layer++) {
+      const scale = 1 - layer * 0.3;
+      const hue = (this.hueBase + layer * 40 + this.time * 0.3) % 360;
+
+      ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${0.8 - layer * 0.2})`;
+      ctx.fillStyle = `hsla(${hue}, 70%, 50%, ${0.1 + audioIntensity * 0.2})`;
+      ctx.lineWidth = 3 - layer;
+
+      ctx.beginPath();
+      for (let i = 0; i <= points * 2; i++) {
+        const angle = (Math.PI * 2 * i) / points - Math.PI / 2;
+        const radius = i % 2 === 0 ? outerRadius * scale : innerRadius * scale;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fill();
+    }
+
+    // Add pulsing center circle
+    const centerSize = 20 + audioIntensity * 30;
+    ctx.fillStyle = `hsla(${this.hueBase}, 90%, 70%, 0.8)`;
+    ctx.beginPath();
+    ctx.arc(0, 0, centerSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  private renderRunes(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+    const runeCount = 8;
+    const radius = 250 + bassIntensity * 100;
+
+    for (let i = 0; i < runeCount; i++) {
+      const angle = (Math.PI * 2 * i) / runeCount + this.time * 0.001;
+      const x = this.centerX + Math.cos(angle) * radius;
+      const y = this.centerY + Math.sin(angle) * radius;
+      const size = 40 + trebleIntensity * 30;
+      const hue = (this.hueBase + i * 45) % 360;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle + Math.PI / 2 + Math.sin(this.time * 0.003 + i) * 0.3);
+
+      ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${0.7 + audioIntensity * 0.3})`;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+
+      // Draw abstract rune shapes
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(0, size);
+      ctx.moveTo(-size * 0.6, -size * 0.5);
+      ctx.lineTo(size * 0.6, -size * 0.5);
+      ctx.moveTo(-size * 0.4, size * 0.3);
+      ctx.lineTo(size * 0.4, 0);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Add rotating circle of smaller runes
+    for (let i = 0; i < runeCount * 2; i++) {
+      const angle = (Math.PI * 2 * i) / (runeCount * 2) - this.time * 0.002;
+      const x = this.centerX + Math.cos(angle) * (radius * 0.5);
+      const y = this.centerY + Math.sin(angle) * (radius * 0.5);
+      const size = 15 + audioIntensity * 10;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.globalAlpha = 0.5 + audioIntensity * 0.3;
+      ctx.fillStyle = `hsl(${(this.hueBase + i * 20) % 360}, 70%, 60%)`;
+      ctx.fillRect(-size / 2, -size / 2, size, size);
+      ctx.restore();
+    }
+  }
+
+  private renderSigils(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const sigilCount = 12;
+
+    for (let i = 0; i < sigilCount; i++) {
+      const angle = (Math.PI * 2 * i) / sigilCount + this.time * 0.001;
+      const radius = 200 + Math.sin(this.time * 0.002 + i) * 50 + bassIntensity * 80;
+      const x = this.centerX + Math.cos(angle) * radius;
+      const y = this.centerY + Math.sin(angle) * radius;
+      const size = 30 + midIntensity * 25;
+      const hue = (this.hueBase + i * 30 + this.time * 0.2) % 360;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(this.time * 0.003 + i);
+
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${0.6 + audioIntensity * 0.4})`;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+
+      // Complex sigil pattern
+      ctx.beginPath();
+      ctx.arc(0, 0, size, 0, Math.PI * 2);
+      ctx.moveTo(-size, 0);
+      ctx.lineTo(size, 0);
+      ctx.moveTo(0, -size);
+      ctx.lineTo(0, size);
+      ctx.moveTo(-size * 0.7, -size * 0.7);
+      ctx.lineTo(size * 0.7, size * 0.7);
+      ctx.moveTo(size * 0.7, -size * 0.7);
+      ctx.lineTo(-size * 0.7, size * 0.7);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  private renderOuroboros(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const radius = 250 + bassIntensity * 100;
+    const segments = 100;
+    const thickness = 15 + audioIntensity * 10;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+
+    // Draw serpent body
+    for (let i = 0; i < segments; i++) {
+      const progress = i / segments;
+      const angle = progress * Math.PI * 2 + this.time * 0.002;
+      const wave = Math.sin(progress * Math.PI * 8 + this.time * 0.005) * 20;
+      const r = radius + wave + Math.sin(progress * Math.PI * 4) * 30;
+
+      const x = Math.cos(angle) * r;
+      const y = Math.sin(angle) * r;
+
+      const hue = (this.hueBase + progress * 120 + this.time * 0.3) % 360;
+      const alpha = 0.7 + Math.sin(progress * Math.PI * 2) * 0.3;
+
+      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, thickness * (1 + midIntensity * 0.5), 0, Math.PI * 2);
+      ctx.fill();
+
+      // Add scales
+      if (i % 5 === 0) {
+        const scaleSize = thickness * 0.5;
+        ctx.fillStyle = `hsla(${hue + 30}, 85%, 70%, 0.5)`;
+        ctx.fillRect(x - scaleSize / 2, y - scaleSize / 2, scaleSize, scaleSize);
+      }
+    }
+
+    // Draw head
+    const headAngle = this.time * 0.002;
+    const headX = Math.cos(headAngle) * radius;
+    const headY = Math.sin(headAngle) * radius;
+
+    ctx.save();
+    ctx.translate(headX, headY);
+    ctx.rotate(headAngle + Math.PI / 2);
+
+    ctx.fillStyle = `hsla(${this.hueBase}, 85%, 65%, 0.9)`;
+    ctx.beginPath();
+    ctx.arc(0, 0, thickness * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eyes
+    ctx.fillStyle = `hsla(${this.hueBase + 180}, 90%, 70%, 0.9)`;
+    ctx.fillRect(-thickness * 0.5, -thickness * 0.3, thickness * 0.3, thickness * 0.3);
+    ctx.fillRect(thickness * 0.2, -thickness * 0.3, thickness * 0.3, thickness * 0.3);
+
+    ctx.restore();
+    ctx.restore();
+  }
+
+  private renderChakras(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+    const chakraColors = [
+      { h: 0, name: "Root" },        // Red
+      { h: 30, name: "Sacral" },     // Orange
+      { h: 60, name: "Solar" },      // Yellow
+      { h: 120, name: "Heart" },     // Green
+      { h: 200, name: "Throat" },    // Blue
+      { h: 270, name: "Third Eye" }, // Indigo
+      { h: 300, name: "Crown" }      // Violet
+    ];
+
+    const spacing = this.height / (chakraColors.length + 1);
+
+    chakraColors.forEach((chakra, i) => {
+      const y = spacing * (i + 1);
+      const size = 40 + audioIntensity * 30 + (i === 3 ? bassIntensity * 20 : 0);
+      const pulse = Math.sin(this.time * 0.005 + i * 0.5) * 10;
+
+      // Outer glow
+      const gradient = ctx.createRadialGradient(
+        this.centerX, y, size * 0.5,
+        this.centerX, y, size + pulse + 40
+      );
+      gradient.addColorStop(0, `hsla(${chakra.h}, 90%, 70%, ${0.6 + trebleIntensity * 0.4})`);
+      gradient.addColorStop(1, `hsla(${chakra.h}, 90%, 60%, 0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(this.centerX - size - 50, y - size - 50, (size + 50) * 2, (size + 50) * 2);
+
+      // Main chakra circle
+      ctx.fillStyle = `hsla(${chakra.h}, 85%, 65%, 0.8)`;
+      ctx.strokeStyle = `hsla(${chakra.h + 30}, 90%, 70%, 0.9)`;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.arc(this.centerX, y, size + pulse, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Petals
+      const petalCount = i + 4;
+      for (let j = 0; j < petalCount; j++) {
+        const angle = (Math.PI * 2 * j) / petalCount + this.time * 0.002;
+        const petalX = this.centerX + Math.cos(angle) * (size + 15);
+        const petalY = y + Math.sin(angle) * (size + 15);
+
+        ctx.save();
+        ctx.translate(petalX, petalY);
+        ctx.rotate(angle);
+
+        ctx.fillStyle = `hsla(${chakra.h + 20}, 80%, 60%, 0.6)`;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 12, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+
+    // Connection line
+    ctx.strokeStyle = `hsla(${this.hueBase}, 70%, 60%, ${0.3 + audioIntensity * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.moveTo(this.centerX, spacing);
+    ctx.lineTo(this.centerX, this.height - spacing);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  private renderAlchemy(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const symbols = [
+      { name: "Fire", rotation: 0 },
+      { name: "Water", rotation: Math.PI },
+      { name: "Air", rotation: Math.PI * 0.5 },
+      { name: "Earth", rotation: Math.PI * 1.5 }
+    ];
+
+    const radius = 180 + bassIntensity * 80;
+
+    symbols.forEach((symbol, i) => {
+      const angle = symbol.rotation + this.time * 0.001;
+      const x = this.centerX + Math.cos(angle) * radius;
+      const y = this.centerY + Math.sin(angle) * radius;
+      const size = 50 + midIntensity * 30;
+      const hue = (this.hueBase + i * 90) % 360;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(this.time * 0.003 + i);
+
+      // Triangle for elements
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${0.7 + audioIntensity * 0.3})`;
+      ctx.fillStyle = `hsla(${hue}, 75%, 55%, ${0.2 + audioIntensity * 0.2})`;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(-size * 0.866, size * 0.5);
+      ctx.lineTo(size * 0.866, size * 0.5);
+      ctx.closePath();
+
+      if (i === 1 || i === 3) {
+        // Inverted triangle for Water and Earth
+        ctx.save();
+        ctx.rotate(Math.PI);
+        ctx.stroke();
+        ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.stroke();
+        ctx.fill();
+      }
+
+      // Add horizontal line for Air and Earth
+      if (i === 2 || i === 3) {
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.6, 0);
+        ctx.lineTo(size * 0.6, 0);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    });
+
+    // Central transmutation circle
+    ctx.strokeStyle = `hsla(${this.hueBase}, 80%, 60%, 0.6)`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, 60 + audioIntensity * 40, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Philosophical Mercury symbol
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.strokeStyle = `hsla(${this.hueBase + 60}, 85%, 65%, 0.8)`;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.arc(0, 0, 30, 0, Math.PI * 2);
+    ctx.moveTo(0, 30);
+    ctx.lineTo(0, 50);
+    ctx.moveTo(-20, 50);
+    ctx.lineTo(20, 50);
+    ctx.moveTo(-15, -30);
+    ctx.lineTo(15, -30);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  private renderCelestial(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const orbits = 6;
+
+    for (let orbit = 0; orbit < orbits; orbit++) {
+      const radius = 80 + orbit * 60;
+      const planetCount = orbit + 3;
+      const speed = 0.001 / (orbit + 1);
+
+      // Draw orbit
+      ctx.strokeStyle = `hsla(${this.hueBase + orbit * 20}, 60%, 50%, ${0.2 + audioIntensity * 0.1})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(this.centerX, this.centerY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw planets
+      for (let i = 0; i < planetCount; i++) {
+        const angle = (Math.PI * 2 * i) / planetCount + this.time * speed;
+        const x = this.centerX + Math.cos(angle) * radius;
+        const y = this.centerY + Math.sin(angle) * radius;
+        const size = 8 + bassIntensity * 8 + orbit * 2;
+        const hue = (this.hueBase + orbit * 40 + i * 20) % 360;
+
+        // Planet glow
+        const gradient = ctx.createRadialGradient(x, y, size * 0.3, x, y, size * 3);
+        gradient.addColorStop(0, `hsla(${hue}, 90%, 70%, ${0.6 + midIntensity * 0.4})`);
+        gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0)`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x - size * 3, y - size * 3, size * 6, size * 6);
+
+        // Planet body
+        ctx.fillStyle = `hsla(${hue}, 85%, 65%, 0.9)`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Rings for some planets
+        if (orbit % 2 === 0) {
+          ctx.strokeStyle = `hsla(${hue + 30}, 70%, 60%, 0.5)`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.ellipse(x, y, size * 1.5, size * 0.5, angle, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Central sun
+    const sunSize = 40 + audioIntensity * 30;
+    const gradient = ctx.createRadialGradient(
+      this.centerX, this.centerY, sunSize * 0.5,
+      this.centerX, this.centerY, sunSize * 2
+    );
+    gradient.addColorStop(0, `hsla(${this.hueBase + 60}, 100%, 80%, 1)`);
+    gradient.addColorStop(0.5, `hsla(${this.hueBase + 40}, 90%, 70%, 0.6)`);
+    gradient.addColorStop(1, `hsla(${this.hueBase + 20}, 80%, 60%, 0)`);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(
+      this.centerX - sunSize * 2,
+      this.centerY - sunSize * 2,
+      sunSize * 4,
+      sunSize * 4
+    );
+
+    // Sun rays
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 * i) / 12 + this.time * 0.002;
+      ctx.save();
+      ctx.translate(this.centerX, this.centerY);
+      ctx.rotate(angle);
+
+      ctx.strokeStyle = `hsla(${this.hueBase + 50}, 95%, 75%, ${0.5 + bassIntensity * 0.4})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(sunSize, 0);
+      ctx.lineTo(sunSize + 30 + bassIntensity * 20, 0);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  private renderPortal(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+    const rings = 20;
+
+    for (let i = 0; i < rings; i++) {
+      const progress = i / rings;
+      const radius = 50 + i * (15 + bassIntensity * 10);
+      const rotation = this.time * 0.002 * (i % 2 === 0 ? 1 : -1) + progress * Math.PI;
+      const hue = (this.hueBase + progress * 240 + this.time * 0.5) % 360;
+      const alpha = 0.3 + (1 - progress) * 0.5 + audioIntensity * 0.2;
+
+      ctx.save();
+      ctx.translate(this.centerX, this.centerY);
+      ctx.rotate(rotation);
+
+      // Create spiral effect
+      const segments = 60;
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${alpha})`;
+      ctx.lineWidth = 4 + trebleIntensity * 3;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      for (let j = 0; j <= segments; j++) {
+        const segmentProgress = j / segments;
+        const angle = segmentProgress * Math.PI * 2;
+        const r = radius * (1 + Math.sin(segmentProgress * Math.PI * 6 + this.time * 0.01) * 0.1);
+        const x = Math.cos(angle) * r;
+        const y = Math.sin(angle) * r;
+
+        if (j === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Add energy particles
+      if (i % 3 === 0) {
+        for (let j = 0; j < 8; j++) {
+          const angle = (Math.PI * 2 * j) / 8 + this.time * 0.005;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          const particleSize = 3 + audioIntensity * 5;
+
+          ctx.fillStyle = `hsla(${hue + 60}, 90%, 70%, 0.8)`;
+          ctx.beginPath();
+          ctx.arc(x, y, particleSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    // Central void
+    const voidSize = 30 + bassIntensity * 20;
+    const voidGradient = ctx.createRadialGradient(
+      this.centerX, this.centerY, 0,
+      this.centerX, this.centerY, voidSize
+    );
+    voidGradient.addColorStop(0, `rgba(0, 0, 0, 1)`);
+    voidGradient.addColorStop(0.7, `rgba(0, 0, 10, 0.9)`);
+    voidGradient.addColorStop(1, `hsla(${this.hueBase}, 50%, 30%, 0.5)`);
+
+    ctx.fillStyle = voidGradient;
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, voidSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private renderDreamcatcher(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const outerRadius = 200 + bassIntensity * 80;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+
+    // Outer ring
+    ctx.strokeStyle = `hsla(${this.hueBase}, 70%, 60%, 0.8)`;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Web structure
+    const webLayers = 7;
+    for (let layer = 1; layer <= webLayers; layer++) {
+      const layerRadius = outerRadius * (layer / webLayers);
+      const points = 8 + layer * 2;
+
+      ctx.strokeStyle = `hsla(${this.hueBase + layer * 15}, 75%, 60%, ${0.4 + audioIntensity * 0.3})`;
+      ctx.lineWidth = 2;
+
+      for (let i = 0; i < points; i++) {
+        const angle1 = (Math.PI * 2 * i) / points + this.time * 0.001;
+        const angle2 = (Math.PI * 2 * (i + 1)) / points + this.time * 0.001;
+
+        const x1 = Math.cos(angle1) * layerRadius;
+        const y1 = Math.sin(angle1) * layerRadius;
+        const x2 = Math.cos(angle2) * layerRadius;
+        const y2 = Math.sin(angle2) * layerRadius;
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        // Draw radial lines
+        if (layer === 1) {
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(x1, y1);
+          ctx.stroke();
+        }
+
+        // Add beads
+        const beadSize = 3 + midIntensity * 4;
+        ctx.fillStyle = `hsla(${(this.hueBase + i * 20) % 360}, 80%, 65%, 0.8)`;
+        ctx.beginPath();
+        ctx.arc(x1, y1, beadSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Hanging feathers
+    for (let i = 0; i < 3; i++) {
+      const angle = Math.PI + (i - 1) * 0.4;
+      const startX = Math.cos(angle) * outerRadius;
+      const startY = Math.sin(angle) * outerRadius;
+      const featherLength = 80 + bassIntensity * 40;
+      const sway = Math.sin(this.time * 0.003 + i) * 15;
+
+      const endX = startX + sway;
+      const endY = startY + featherLength;
+
+      // Feather string
+      ctx.strokeStyle = `hsla(${this.hueBase}, 60%, 50%, 0.6)`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+
+      // Feather
+      ctx.save();
+      ctx.translate(endX, endY);
+      ctx.rotate(sway * 0.02);
+
+      const hue = (this.hueBase + i * 60) % 360;
+      ctx.fillStyle = `hsla(${hue}, 75%, 60%, 0.6)`;
+      ctx.strokeStyle = `hsla(${hue}, 80%, 65%, 0.8)`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-15, 10);
+      ctx.lineTo(0, 40);
+      ctx.lineTo(15, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  private renderPhoenix(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+    const wingSpan = 300 + bassIntensity * 100;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+
+    // Wings
+    for (let side = -1; side <= 1; side += 2) {
+      const wingAngle = Math.sin(this.time * 0.005) * 0.3 * side;
+
+      ctx.save();
+      ctx.scale(side, 1);
+      ctx.rotate(wingAngle);
+
+      // Wing feathers
+      const featherCount = 8;
+      for (let i = 0; i < featherCount; i++) {
+        const featherProgress = i / featherCount;
+        const featherAngle = -Math.PI * 0.4 + featherProgress * Math.PI * 0.8;
+        const featherLength = wingSpan * (0.5 + featherProgress * 0.5);
+        const hue = (this.hueBase + i * 15 + this.time * 0.5) % 60 + 0; // Red-orange-yellow
+
+        ctx.save();
+        ctx.rotate(featherAngle);
+
+        const gradient = ctx.createLinearGradient(0, 0, featherLength, 0);
+        gradient.addColorStop(0, `hsla(${hue}, 90%, 60%, ${0.8 + audioIntensity * 0.2})`);
+        gradient.addColorStop(0.5, `hsla(${hue + 20}, 95%, 65%, 0.6)`);
+        gradient.addColorStop(1, `hsla(${hue + 40}, 100%, 70%, 0.2)`);
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 15 - i * 1.5 + trebleIntensity * 5;
+        ctx.lineCap = "round";
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(featherLength, 0);
+        ctx.stroke();
+
+        // Flame particles
+        if (i % 2 === 0) {
+          for (let j = 0; j < 5; j++) {
+            const particleX = featherLength * (0.5 + j * 0.1);
+            const particleY = (Math.random() - 0.5) * 20;
+            const particleSize = 2 + Math.random() * 4 + audioIntensity * 3;
+
+            ctx.fillStyle = `hsla(${hue + 30}, 100%, 70%, ${0.6 + Math.random() * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(particleX, particleY, particleSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    // Body
+    const bodyGradient = ctx.createRadialGradient(0, 0, 20, 0, 0, 60);
+    bodyGradient.addColorStop(0, `hsla(${this.hueBase + 30}, 95%, 70%, 1)`);
+    bodyGradient.addColorStop(0.6, `hsla(${this.hueBase + 10}, 90%, 60%, 0.8)`);
+    bodyGradient.addColorStop(1, `hsla(${this.hueBase}, 85%, 50%, 0.4)`);
+
+    ctx.fillStyle = bodyGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, 40 + bassIntensity * 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tail flames
+    const tailCount = 12;
+    for (let i = 0; i < tailCount; i++) {
+      const tailAngle = Math.PI / 2 + (i - tailCount / 2) * 0.1 + Math.sin(this.time * 0.01 + i) * 0.2;
+      const tailLength = 100 + i * 15 + bassIntensity * 50;
+      const hue = (this.hueBase + i * 5) % 60;
+
+      ctx.save();
+      ctx.rotate(tailAngle);
+
+      const tailGradient = ctx.createLinearGradient(0, 0, 0, tailLength);
+      tailGradient.addColorStop(0, `hsla(${hue + 20}, 95%, 65%, 0.8)`);
+      tailGradient.addColorStop(1, `hsla(${hue + 40}, 100%, 70%, 0)`);
+
+      ctx.strokeStyle = tailGradient;
+      ctx.lineWidth = 10 - i * 0.5;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, tailLength);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  private renderSerpent(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const segments = 40;
+    const amplitude = 100 + bassIntensity * 60;
+
+    for (let i = 0; i < segments; i++) {
+      const progress = i / segments;
+      const phase = this.time * 0.01 - progress * Math.PI * 2;
+
+      const x = this.centerX + Math.cos(phase) * (200 + progress * 100);
+      const y = this.centerY + Math.sin(phase * 1.5) * amplitude;
+
+      const nextProgress = (i + 1) / segments;
+      const nextPhase = this.time * 0.01 - nextProgress * Math.PI * 2;
+      const nextX = this.centerX + Math.cos(nextPhase) * (200 + nextProgress * 100);
+      const nextY = this.centerY + Math.sin(nextPhase * 1.5) * amplitude;
+
+      const size = 20 - progress * 15 + midIntensity * 10;
+      const hue = (this.hueBase + progress * 120 + this.time * 0.3) % 360;
+
+      // Segment body
+      ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${0.7 + audioIntensity * 0.3})`;
+      ctx.lineWidth = size;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(nextX, nextY);
+      ctx.stroke();
+
+      // Scales
+      if (i % 3 === 0) {
+        ctx.fillStyle = `hsla(${hue + 30}, 85%, 65%, 0.6)`;
+        ctx.beginPath();
+        ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Head
+      if (i === segments - 1) {
+        const headSize = size * 1.5;
+
+        ctx.fillStyle = `hsla(${hue}, 85%, 65%, 0.9)`;
+        ctx.beginPath();
+        ctx.arc(x, y, headSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        const eyeOffset = headSize * 0.4;
+        ctx.fillStyle = `hsla(${(hue + 180) % 360}, 90%, 70%, 0.9)`;
+        ctx.beginPath();
+        ctx.arc(x - eyeOffset, y - eyeOffset * 0.5, headSize * 0.2, 0, Math.PI * 2);
+        ctx.arc(x + eyeOffset, y - eyeOffset * 0.5, headSize * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Forked tongue
+        const tongueLength = headSize * 2;
+        const tongueAngle = Math.sin(this.time * 0.02) * 0.2;
+
+        ctx.strokeStyle = `hsla(0, 90%, 60%, 0.8)`;
+        ctx.lineWidth = 2;
+
+        ctx.save();
+        ctx.translate(x, y + headSize);
+        ctx.rotate(tongueAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-5, tongueLength);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(5, tongueLength);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    }
+  }
+
+  private renderCrystalGrid(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const gridSize = 6;
+    const spacing = Math.min(this.width, this.height) / gridSize;
+
+    // Draw crystal lattice
+    for (let row = 0; row < gridSize; row++) {
+      for (let col = 0; col < gridSize; col++) {
+        const x = (col + 0.5) * spacing;
+        const y = (row + 0.5) * spacing;
+        const pulse = Math.sin(this.time * 0.005 + row * 0.3 + col * 0.3) * 0.5 + 0.5;
+        const size = 20 + pulse * 20 + audioIntensity * 15;
+        const hue = (this.hueBase + row * 30 + col * 30 + this.time * 0.2) % 360;
+
+        // Crystal glow
+        const gradient = ctx.createRadialGradient(x, y, size * 0.3, x, y, size * 2);
+        gradient.addColorStop(0, `hsla(${hue}, 90%, 70%, ${0.6 + bassIntensity * 0.4})`);
+        gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0)`);
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x - size * 2, y - size * 2, size * 4, size * 4);
+
+        // Crystal shape (hexagon)
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(this.time * 0.001 + row + col);
+
+        ctx.strokeStyle = `hsla(${hue}, 85%, 65%, 0.8)`;
+        ctx.fillStyle = `hsla(${hue}, 75%, 60%, ${0.3 + midIntensity * 0.3})`;
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI * 2 * i) / 6;
+          const cx = Math.cos(angle) * size;
+          const cy = Math.sin(angle) * size;
+          if (i === 0) ctx.moveTo(cx, cy);
+          else ctx.lineTo(cx, cy);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner facets
+        ctx.strokeStyle = `hsla(${hue + 30}, 90%, 70%, 0.5)`;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 6; i++) {
+          const angle = (Math.PI * 2 * i) / 6;
+          const cx = Math.cos(angle) * size;
+          const cy = Math.sin(angle) * size;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(cx, cy);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+
+        // Connect to neighbors
+        if (col < gridSize - 1) {
+          const nextX = (col + 1.5) * spacing;
+          ctx.strokeStyle = `hsla(${hue}, 70%, 60%, ${0.2 + audioIntensity * 0.2})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(nextX, y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        if (row < gridSize - 1) {
+          const nextY = (row + 1.5) * spacing;
+          ctx.strokeStyle = `hsla(${hue}, 70%, 60%, ${0.2 + audioIntensity * 0.2})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, nextY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+    }
+  }
+
+  private renderMoonPhases(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+    const phases = 8;
+    const radius = 200 + bassIntensity * 80;
+    const moonSize = 40 + trebleIntensity * 20;
+
+    // Orbital ring
+    ctx.strokeStyle = `hsla(${this.hueBase}, 60%, 50%, 0.3)`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw phases
+    for (let i = 0; i < phases; i++) {
+      const angle = (Math.PI * 2 * i) / phases + this.time * 0.001;
+      const x = this.centerX + Math.cos(angle) * radius;
+      const y = this.centerY + Math.sin(angle) * radius;
+      const phase = i / phases;
+
+      // Moon glow
+      const gradient = ctx.createRadialGradient(x, y, moonSize * 0.5, x, y, moonSize * 2);
+      gradient.addColorStop(0, `hsla(${this.hueBase + 180}, 80%, 80%, ${0.6 + audioIntensity * 0.4})`);
+      gradient.addColorStop(1, `hsla(${this.hueBase + 180}, 70%, 70%, 0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x - moonSize * 2, y - moonSize * 2, moonSize * 4, moonSize * 4);
+
+      // Full moon circle
+      ctx.fillStyle = `hsla(${this.hueBase + 180}, 70%, 80%, 0.9)`;
+      ctx.beginPath();
+      ctx.arc(x, y, moonSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shadow for phase
+      if (phase < 0.5) {
+        // Waxing
+        const shadowWidth = moonSize * 2 * (1 - phase * 2);
+        ctx.fillStyle = `rgba(0, 0, 20, 0.8)`;
+        ctx.beginPath();
+        ctx.arc(x - moonSize + shadowWidth, y, moonSize, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Waning
+        const shadowWidth = moonSize * 2 * ((phase - 0.5) * 2);
+        ctx.fillStyle = `rgba(0, 0, 20, 0.8)`;
+        ctx.beginPath();
+        ctx.arc(x + moonSize - shadowWidth, y, moonSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Phase label stars
+      for (let j = 0; j < 3; j++) {
+        const starAngle = (Math.PI * 2 * j) / 3 + this.time * 0.003;
+        const starDist = moonSize + 20 + Math.sin(this.time * 0.01 + j) * 5;
+        const starX = x + Math.cos(starAngle) * starDist;
+        const starY = y + Math.sin(starAngle) * starDist;
+        const starSize = 2 + audioIntensity * 3;
+
+        ctx.fillStyle = `hsla(${this.hueBase + 60}, 90%, 70%, 0.7)`;
+        ctx.beginPath();
+        ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Central celestial point
+    ctx.fillStyle = `hsla(${this.hueBase}, 80%, 60%, ${0.6 + audioIntensity * 0.4})`;
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, 15 + bassIntensity * 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private renderAstrolabe(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const outerRadius = 280 + bassIntensity * 60;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(this.time * 0.0005);
+
+    // Outer rim
+    ctx.strokeStyle = `hsla(${this.hueBase}, 75%, 60%, 0.8)`;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Degree markings
+    for (let i = 0; i < 360; i += 10) {
+      const angle = (i * Math.PI) / 180;
+      const innerR = i % 30 === 0 ? outerRadius - 20 : outerRadius - 10;
+      const lineWidth = i % 30 === 0 ? 3 : 1;
+
+      ctx.strokeStyle = `hsla(${this.hueBase + i}, 70%, 60%, 0.6)`;
+      ctx.lineWidth = lineWidth;
+
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
+      ctx.lineTo(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius);
+      ctx.stroke();
+    }
+
+    // Zodiac ring
+    const zodiacRadius = outerRadius * 0.8;
+    const signs = 12;
+    for (let i = 0; i < signs; i++) {
+      const angle = (Math.PI * 2 * i) / signs;
+      const x = Math.cos(angle) * zodiacRadius;
+      const y = Math.sin(angle) * zodiacRadius;
+      const symbolSize = 25 + midIntensity * 15;
+      const hue = (this.hueBase + i * 30) % 360;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle + Math.PI / 2);
+
+      // Zodiac symbol (simplified as geometric shape)
+      ctx.fillStyle = `hsla(${hue}, 80%, 65%, ${0.6 + audioIntensity * 0.3})`;
+      ctx.strokeStyle = `hsla(${hue}, 85%, 70%, 0.8)`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, symbolSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Inner symbol
+      ctx.fillStyle = `hsla(${hue + 30}, 90%, 75%, 0.8)`;
+      ctx.beginPath();
+      for (let j = 0; j < 3; j++) {
+        const sAngle = (Math.PI * 2 * j) / 3;
+        const sx = Math.cos(sAngle) * symbolSize * 0.5;
+        const sy = Math.sin(sAngle) * symbolSize * 0.5;
+        if (j === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Planetary rings
+    for (let ring = 1; ring <= 4; ring++) {
+      const ringRadius = outerRadius * (ring / 5);
+      const planetCount = ring + 2;
+
+      ctx.strokeStyle = `hsla(${this.hueBase + ring * 20}, 65%, 55%, 0.3)`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Planets on ring
+      for (let p = 0; p < planetCount; p++) {
+        const pAngle = (Math.PI * 2 * p) / planetCount - this.time * 0.001 * ring;
+        const px = Math.cos(pAngle) * ringRadius;
+        const py = Math.sin(pAngle) * ringRadius;
+        const pSize = 6 + audioIntensity * 5;
+        const pHue = (this.hueBase + ring * 40 + p * 20) % 360;
+
+        ctx.fillStyle = `hsla(${pHue}, 85%, 65%, 0.8)`;
+        ctx.beginPath();
+        ctx.arc(px, py, pSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Rotating pointer
+    ctx.save();
+    ctx.rotate(this.time * 0.002);
+    ctx.strokeStyle = `hsla(${this.hueBase + 60}, 90%, 70%, ${0.7 + audioIntensity * 0.3})`;
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -outerRadius * 0.7);
+    ctx.stroke();
+
+    // Pointer tip
+    ctx.fillStyle = `hsla(${this.hueBase + 60}, 95%, 75%, 0.9)`;
+    ctx.beginPath();
+    ctx.moveTo(0, -outerRadius * 0.7);
+    ctx.lineTo(-10, -outerRadius * 0.7 + 20);
+    ctx.lineTo(10, -outerRadius * 0.7 + 20);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
+
+    // Central hub
+    ctx.fillStyle = `hsla(${this.hueBase}, 80%, 60%, 0.9)`;
+    ctx.beginPath();
+    ctx.arc(0, 0, 20 + bassIntensity * 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  private renderTarot(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const cardCount = 7;
+    const cardWidth = 80 + bassIntensity * 30;
+    const cardHeight = cardWidth * 1.5;
+    const spacing = (this.width - cardWidth * cardCount) / (cardCount + 1);
+
+    for (let i = 0; i < cardCount; i++) {
+      const x = spacing + i * (cardWidth + spacing);
+      const y = this.centerY - cardHeight / 2;
+      const hover = Math.sin(this.time * 0.005 + i * 0.8) * 20;
+      const rotation = Math.sin(this.time * 0.003 + i) * 0.1;
+      const hue = (this.hueBase + i * 51) % 360; // Use prime number for varied colors
+
+      ctx.save();
+      ctx.translate(x + cardWidth / 2, y + cardHeight / 2 + hover);
+      ctx.rotate(rotation);
+
+      // Card glow
+      const glowSize = cardWidth * 0.6;
+      const gradient = ctx.createRadialGradient(0, 0, glowSize * 0.5, 0, 0, glowSize);
+      gradient.addColorStop(0, `hsla(${hue}, 90%, 70%, ${0.4 + audioIntensity * 0.3})`);
+      gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(-glowSize, -glowSize, glowSize * 2, glowSize * 2);
+
+      // Card body
+      ctx.fillStyle = `hsla(${hue}, 30%, 20%, 0.9)`;
+      ctx.strokeStyle = `hsla(${hue}, 80%, 65%, 0.8)`;
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = `hsla(${hue}, 80%, 50%, 0.5)`;
+
+      ctx.fillRect(-cardWidth / 2, -cardHeight / 2, cardWidth, cardHeight);
+      ctx.strokeRect(-cardWidth / 2, -cardHeight / 2, cardWidth, cardHeight);
+      ctx.shadowBlur = 0;
+
+      // Card border decoration
+      ctx.strokeStyle = `hsla(${hue + 30}, 85%, 70%, 0.6)`;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        -cardWidth / 2 + 5,
+        -cardHeight / 2 + 5,
+        cardWidth - 10,
+        cardHeight - 10
+      );
+
+      // Central symbol
+      const symbolSize = cardWidth * 0.3 + midIntensity * 10;
+      ctx.fillStyle = `hsla(${hue}, 90%, 70%, ${0.7 + audioIntensity * 0.3})`;
+      ctx.strokeStyle = `hsla(${hue + 60}, 95%, 75%, 0.9)`;
+      ctx.lineWidth = 2;
+
+      // Different symbols for each card
+      const symbolType = i % 4;
+      ctx.beginPath();
+
+      switch (symbolType) {
+        case 0: // Sun
+          ctx.arc(0, 0, symbolSize, 0, Math.PI * 2);
+          for (let r = 0; r < 8; r++) {
+            const rAngle = (Math.PI * 2 * r) / 8;
+            ctx.moveTo(Math.cos(rAngle) * symbolSize, Math.sin(rAngle) * symbolSize);
+            ctx.lineTo(Math.cos(rAngle) * symbolSize * 1.4, Math.sin(rAngle) * symbolSize * 1.4);
+          }
+          break;
+        case 1: // Moon
+          ctx.arc(symbolSize * 0.3, 0, symbolSize, 0, Math.PI * 2);
+          ctx.arc(-symbolSize * 0.3, 0, symbolSize, 0, Math.PI * 2);
+          break;
+        case 2: // Star
+          for (let p = 0; p < 5; p++) {
+            const pAngle = (Math.PI * 2 * p) / 5 - Math.PI / 2;
+            const nextAngle = (Math.PI * 2 * (p + 2)) / 5 - Math.PI / 2;
+            const px = Math.cos(pAngle) * symbolSize;
+            const py = Math.sin(pAngle) * symbolSize;
+            const npx = Math.cos(nextAngle) * symbolSize;
+            const npy = Math.sin(nextAngle) * symbolSize;
+            if (p === 0) ctx.moveTo(px, py);
+            ctx.lineTo(npx, npy);
+          }
+          ctx.closePath();
+          break;
+        case 3: // Eye
+          ctx.ellipse(0, 0, symbolSize, symbolSize * 0.6, 0, 0, Math.PI * 2);
+          ctx.moveTo(symbolSize * 0.3, 0);
+          ctx.arc(0, 0, symbolSize * 0.3, 0, Math.PI * 2);
+          break;
+      }
+
+      ctx.fill();
+      ctx.stroke();
+
+      // Mystical particles around card
+      for (let p = 0; p < 4; p++) {
+        const pAngle = (Math.PI * 2 * p) / 4 + this.time * 0.01;
+        const pDist = cardWidth * 0.6 + Math.sin(this.time * 0.02 + p) * 10;
+        const px = Math.cos(pAngle) * pDist;
+        const py = Math.sin(pAngle) * pDist;
+        const pSize = 3 + audioIntensity * 4;
+
+        ctx.fillStyle = `hsla(${hue + 120}, 90%, 70%, 0.7)`;
+        ctx.beginPath();
+        ctx.arc(px, py, pSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+  }
+
+  private renderKabbalah(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+
+    // Tree of Life sephirot positions (traditional layout)
+    const sephirot = [
+      { x: 0, y: -200, name: "Kether", hueOffset: 0 },
+      { x: -80, y: -120, name: "Chokmah", hueOffset: 36 },
+      { x: 80, y: -120, name: "Binah", hueOffset: 72 },
+      { x: -80, y: -40, name: "Chesed", hueOffset: 108 },
+      { x: 80, y: -40, name: "Geburah", hueOffset: 144 },
+      { x: 0, y: 0, name: "Tiphareth", hueOffset: 180 },
+      { x: -80, y: 80, name: "Netzach", hueOffset: 216 },
+      { x: 80, y: 80, name: "Hod", hueOffset: 252 },
+      { x: 0, y: 140, name: "Yesod", hueOffset: 288 },
+      { x: 0, y: 220, name: "Malkuth", hueOffset: 324 }
+    ];
+
+    // Paths connecting sephirot
+    const paths = [
+      [0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4],
+      [3, 5], [4, 5], [3, 6], [4, 7], [5, 6], [5, 7],
+      [6, 7], [6, 8], [7, 8], [8, 9], [5, 8]
+    ];
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY + 50);
+
+    // Draw paths
+    ctx.lineWidth = 2;
+    paths.forEach((path, pathIndex) => {
+      const fromIndex = path[0];
+      const toIndex = path[1];
+      if (fromIndex === undefined || toIndex === undefined) return;
+
+      const from = sephirot[fromIndex];
+      const to = sephirot[toIndex];
+      if (!from || !to) return;
+
+      const hue = (this.hueBase + pathIndex * 15) % 360;
+      const pulse = Math.sin(this.time * 0.003 + pathIndex * 0.5) * 0.3 + 0.7;
+
+      ctx.strokeStyle = `hsla(${hue}, 70%, 60%, ${0.3 * pulse + audioIntensity * 0.2})`;
+      ctx.setLineDash([10, 10]);
+
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Draw sephirot
+    sephirot.forEach((sephira, index) => {
+      const size = 30 + (index === 5 ? bassIntensity * 20 : trebleIntensity * 10);
+      const hue = (this.hueBase + sephira.hueOffset) % 360;
+      const pulse = Math.sin(this.time * 0.004 + index * 0.7) * 0.2 + 0.8;
+
+      // Glow
+      const gradient = ctx.createRadialGradient(
+        sephira.x, sephira.y, size * 0.3,
+        sephira.x, sephira.y, size * 2
+      );
+      gradient.addColorStop(0, `hsla(${hue}, 90%, 70%, ${0.6 * pulse + audioIntensity * 0.3})`);
+      gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(
+        sephira.x - size * 2,
+        sephira.y - size * 2,
+        size * 4,
+        size * 4
+      );
+
+      // Sephira circle
+      ctx.fillStyle = `hsla(${hue}, 85%, 65%, 0.9)`;
+      ctx.strokeStyle = `hsla(${hue + 30}, 90%, 70%, 0.9)`;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.arc(sephira.x, sephira.y, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Inner ring
+      ctx.strokeStyle = `hsla(${hue + 60}, 95%, 75%, 0.7)`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(sephira.x, sephira.y, size * 0.6, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Rotating symbols
+      const symbolCount = 6;
+      for (let s = 0; s < symbolCount; s++) {
+        const sAngle = (Math.PI * 2 * s) / symbolCount + this.time * 0.002;
+        const sDist = size * 0.4;
+        const sx = sephira.x + Math.cos(sAngle) * sDist;
+        const sy = sephira.y + Math.sin(sAngle) * sDist;
+
+        ctx.fillStyle = `hsla(${hue + 90}, 90%, 70%, 0.8)`;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    ctx.restore();
+  }
+
+  private renderMerkaba(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const size = 150 + bassIntensity * 80;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(this.time * 0.001);
+
+    // Upward tetrahedron
+    ctx.save();
+    ctx.rotate(this.time * 0.002);
+
+    const upHue = this.hueBase;
+    ctx.strokeStyle = `hsla(${upHue}, 85%, 65%, ${0.7 + audioIntensity * 0.3})`;
+    ctx.fillStyle = `hsla(${upHue}, 75%, 60%, ${0.2 + midIntensity * 0.2})`;
+    ctx.lineWidth = 3;
+
+    // Front face
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(-size * 0.866, size * 0.5);
+    ctx.lineTo(size * 0.866, size * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Back edges
+    const backY = size * 0.2;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(0, backY);
+    ctx.moveTo(-size * 0.866, size * 0.5);
+    ctx.lineTo(0, backY);
+    ctx.moveTo(size * 0.866, size * 0.5);
+    ctx.lineTo(0, backY);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+
+    // Downward tetrahedron
+    ctx.save();
+    ctx.rotate(-this.time * 0.002);
+
+    const downHue = (this.hueBase + 180) % 360;
+    ctx.strokeStyle = `hsla(${downHue}, 85%, 65%, ${0.7 + audioIntensity * 0.3})`;
+    ctx.fillStyle = `hsla(${downHue}, 75%, 60%, ${0.2 + midIntensity * 0.2})`;
+    ctx.lineWidth = 3;
+
+    // Front face (inverted)
+    ctx.beginPath();
+    ctx.moveTo(0, size);
+    ctx.lineTo(-size * 0.866, -size * 0.5);
+    ctx.lineTo(size * 0.866, -size * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Back edges
+    const backY2 = -size * 0.2;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, size);
+    ctx.lineTo(0, backY2);
+    ctx.moveTo(-size * 0.866, -size * 0.5);
+    ctx.lineTo(0, backY2);
+    ctx.moveTo(size * 0.866, -size * 0.5);
+    ctx.lineTo(0, backY2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.restore();
+
+    // Energy sphere
+    const sphereGradient = ctx.createRadialGradient(0, 0, size * 0.3, 0, 0, size * 0.7);
+    sphereGradient.addColorStop(0, `hsla(${this.hueBase + 120}, 90%, 70%, ${0.4 + audioIntensity * 0.3})`);
+    sphereGradient.addColorStop(1, `hsla(${this.hueBase + 120}, 80%, 60%, 0)`);
+
+    ctx.fillStyle = sphereGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rotating energy particles
+    const particleCount = 12;
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + this.time * 0.005;
+      const orbitRadius = size * 0.6;
+      const px = Math.cos(angle) * orbitRadius;
+      const py = Math.sin(angle) * orbitRadius;
+      const pSize = 4 + audioIntensity * 5;
+      const pHue = (this.hueBase + i * 30) % 360;
+
+      ctx.fillStyle = `hsla(${pHue}, 90%, 70%, 0.8)`;
+      ctx.beginPath();
+      ctx.arc(px, py, pSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  private renderFlowerOfLife(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const radius = 50 + midIntensity * 20;
+    const rings = 3;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(this.time * 0.0005);
+
+    // Center circle
+    const centerHue = this.hueBase;
+    ctx.strokeStyle = `hsla(${centerHue}, 85%, 65%, ${0.7 + audioIntensity * 0.3})`;
+    ctx.fillStyle = `hsla(${centerHue}, 75%, 60%, 0.1)`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Rings of circles
+    for (let ring = 1; ring <= rings; ring++) {
+      const circlesInRing = ring * 6;
+      const hue = (this.hueBase + ring * 40) % 360;
+
+      for (let i = 0; i < circlesInRing; i++) {
+        const angle = (Math.PI * 2 * i) / circlesInRing;
+        const distance = ring === 1 ? radius : radius * Math.sqrt(3) * ring;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+
+        ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${0.6 + audioIntensity * 0.2})`;
+        ctx.fillStyle = `hsla(${hue}, 75%, 60%, 0.1)`;
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Add pulsing center dots
+        const pulse = Math.sin(this.time * 0.005 + i * 0.3) * 3 + 5;
+        ctx.fillStyle = `hsla(${hue + 60}, 90%, 70%, ${0.6 + bassIntensity * 0.4})`;
+        ctx.beginPath();
+        ctx.arc(x, y, pulse, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Outer vesica piscis pattern
+    const outerRadius = radius * 2 * (rings + 1);
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI * 2 * i) / 6;
+      const x = Math.cos(angle) * outerRadius;
+      const y = Math.sin(angle) * outerRadius;
+      const hue = (this.hueBase + i * 60) % 360;
+
+      ctx.strokeStyle = `hsla(${hue}, 80%, 60%, ${0.4 + audioIntensity * 0.2})`;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Sacred geometry lines
+    ctx.strokeStyle = `hsla(${this.hueBase + 180}, 70%, 60%, ${0.3 + audioIntensity * 0.2})`;
+    ctx.lineWidth = 1;
+
+    const hexPoints = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI * 2 * i) / 6;
+      hexPoints.push({
+        x: Math.cos(angle) * radius * 2,
+        y: Math.sin(angle) * radius * 2
+      });
+    }
+
+    ctx.beginPath();
+    hexPoints.forEach((point, i) => {
+      if (i === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  private renderSriYantra(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const baseSize = 200 + bassIntensity * 60;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+
+    // Outer square (Bhupura)
+    const squareSize = baseSize * 1.4;
+    ctx.strokeStyle = `hsla(${this.hueBase}, 75%, 60%, 0.7)`;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(-squareSize / 2, -squareSize / 2, squareSize, squareSize);
+
+    // Four gates
+    const gateSize = 30;
+    const gateOffset = squareSize / 2 - gateSize / 2;
+
+    ctx.fillStyle = `hsla(${this.hueBase + 30}, 80%, 65%, 0.6)`;
+    const gates: [number, number][] = [
+      [0, -gateOffset],
+      [0, gateOffset],
+      [-gateOffset, 0],
+      [gateOffset, 0]
+    ];
+    gates.forEach(([x, y]) => {
+      ctx.fillRect(x - gateSize / 2, y - gateSize / 2, gateSize, gateSize);
+    });
+
+    // Lotus petals outer
+    const petalCount = 16;
+    const petalRadius = baseSize * 1.2;
+
+    for (let i = 0; i < petalCount; i++) {
+      const angle = (Math.PI * 2 * i) / petalCount + this.time * 0.001;
+      const hue = (this.hueBase + i * (360 / petalCount)) % 360;
+
+      ctx.save();
+      ctx.rotate(angle);
+      ctx.translate(0, -petalRadius);
+
+      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${0.5 + audioIntensity * 0.3})`;
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, 0.7)`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 25, 40, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Lotus petals inner
+    const innerPetalCount = 8;
+    const innerPetalRadius = baseSize * 0.9;
+
+    for (let i = 0; i < innerPetalCount; i++) {
+      const angle = (Math.PI * 2 * i) / innerPetalCount - this.time * 0.001;
+      const hue = (this.hueBase + 180 + i * (360 / innerPetalCount)) % 360;
+
+      ctx.save();
+      ctx.rotate(angle);
+      ctx.translate(0, -innerPetalRadius);
+
+      ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${0.5 + audioIntensity * 0.3})`;
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, 0.7)`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 20, 35, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Nine interlocking triangles
+    const triangles = [
+      // Downward triangles (Shakti - feminine)
+      { rotation: 0, inverted: true, scale: 1.0, hue: 0 },
+      { rotation: Math.PI * 0.4, inverted: true, scale: 0.85, hue: 40 },
+      { rotation: Math.PI * 0.8, inverted: true, scale: 0.7, hue: 80 },
+      { rotation: Math.PI * 1.2, inverted: true, scale: 0.55, hue: 120 },
+      { rotation: Math.PI * 1.6, inverted: true, scale: 0.4, hue: 160 },
+      // Upward triangles (Shiva - masculine)
+      { rotation: Math.PI * 0.2, inverted: false, scale: 0.95, hue: 200 },
+      { rotation: Math.PI * 0.6, inverted: false, scale: 0.8, hue: 240 },
+      { rotation: Math.PI, inverted: false, scale: 0.65, hue: 280 },
+      { rotation: Math.PI * 1.4, inverted: false, scale: 0.5, hue: 320 }
+    ];
+
+    triangles.forEach((tri) => {
+      ctx.save();
+      ctx.rotate(tri.rotation + this.time * 0.0003 * (tri.inverted ? -1 : 1));
+
+      const triSize = baseSize * tri.scale;
+      const hue = (this.hueBase + tri.hue) % 360;
+
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${0.6 + midIntensity * 0.3})`;
+      ctx.fillStyle = `hsla(${hue}, 75%, 60%, ${0.15 + audioIntensity * 0.15})`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      if (tri.inverted) {
+        ctx.moveTo(0, triSize);
+        ctx.lineTo(-triSize * 0.866, -triSize * 0.5);
+        ctx.lineTo(triSize * 0.866, -triSize * 0.5);
+      } else {
+        ctx.moveTo(0, -triSize);
+        ctx.lineTo(-triSize * 0.866, triSize * 0.5);
+        ctx.lineTo(triSize * 0.866, triSize * 0.5);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    });
+
+    // Central bindu (point)
+    const binduSize = 12 + bassIntensity * 10;
+    const binduGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, binduSize * 2);
+    binduGradient.addColorStop(0, `hsla(${this.hueBase + 60}, 100%, 80%, 1)`);
+    binduGradient.addColorStop(0.5, `hsla(${this.hueBase + 40}, 90%, 70%, 0.7)`);
+    binduGradient.addColorStop(1, `hsla(${this.hueBase + 20}, 80%, 60%, 0)`);
+
+    ctx.fillStyle = binduGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, binduSize * 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = `hsla(${this.hueBase + 60}, 100%, 90%, 1)`;
+    ctx.beginPath();
+    ctx.arc(0, 0, binduSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  private renderMetatron(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const radius = 180 + bassIntensity * 60;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(this.time * 0.0005);
+
+    // 13 circles of Metatron's Cube
+    const circlePositions = [
+      { x: 0, y: 0 }, // Center
+      { x: 0, y: -radius },
+      { x: radius * 0.866, y: -radius * 0.5 },
+      { x: radius * 0.866, y: radius * 0.5 },
+      { x: 0, y: radius },
+      { x: -radius * 0.866, y: radius * 0.5 },
+      { x: -radius * 0.866, y: -radius * 0.5 },
+      { x: 0, y: -radius * 0.5 },
+      { x: radius * 0.433, y: -radius * 0.25 },
+      { x: radius * 0.433, y: radius * 0.25 },
+      { x: 0, y: radius * 0.5 },
+      { x: -radius * 0.433, y: radius * 0.25 },
+      { x: -radius * 0.433, y: -radius * 0.25 }
+    ];
+
+    const circleRadius = radius * 0.2;
+
+    // Draw connections (edges of platonic solids)
+    ctx.strokeStyle = `hsla(${this.hueBase}, 70%, 60%, ${0.3 + audioIntensity * 0.2})`;
+    ctx.lineWidth = 2;
+
+    for (let i = 0; i < circlePositions.length; i++) {
+      for (let j = i + 1; j < circlePositions.length; j++) {
+        const from = circlePositions[i];
+        const to = circlePositions[j];
+        if (!from || !to) continue;
+
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Only connect circles within certain distance
+        if (dist < radius * 1.2) {
+          const lineHue = (this.hueBase + (i + j) * 15) % 360;
+          ctx.strokeStyle = `hsla(${lineHue}, 70%, 60%, ${0.2 + audioIntensity * 0.15})`;
+
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw circles
+    circlePositions.forEach((pos, index) => {
+      const hue = (this.hueBase + index * 28) % 360;
+      const pulse = Math.sin(this.time * 0.004 + index * 0.5) * 0.2 + 0.8;
+      const size = circleRadius * pulse + (index === 0 ? midIntensity * 15 : 0);
+
+      // Glow
+      const gradient = ctx.createRadialGradient(
+        pos.x, pos.y, size * 0.3,
+        pos.x, pos.y, size * 2
+      );
+      gradient.addColorStop(0, `hsla(${hue}, 90%, 70%, ${0.5 + audioIntensity * 0.3})`);
+      gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(pos.x - size * 2, pos.y - size * 2, size * 4, size * 4);
+
+      // Circle
+      ctx.fillStyle = `hsla(${hue}, 85%, 65%, 0.8)`;
+      ctx.strokeStyle = `hsla(${hue + 30}, 90%, 70%, 0.9)`;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Inner detail
+      ctx.strokeStyle = `hsla(${hue + 60}, 95%, 75%, 0.7)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, size * 0.5, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    // Outer sacred geometry
+    const hexPoints = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI * 2 * i) / 6;
+      hexPoints.push({
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius
+      });
+    }
+
+    ctx.strokeStyle = `hsla(${this.hueBase + 180}, 75%, 65%, ${0.5 + bassIntensity * 0.3})`;
+    ctx.lineWidth = 3;
+
+    // Hexagon
+    ctx.beginPath();
+    hexPoints.forEach((point, i) => {
+      if (i === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.stroke();
+
+    // Star hexagram
+    ctx.beginPath();
+    for (let i = 0; i < 6; i += 2) {
+      const point = hexPoints[i];
+      if (!point) continue;
+      if (i === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (let i = 1; i < 6; i += 2) {
+      const point = hexPoints[i];
+      if (!point) continue;
+      if (i === 1) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  private renderVesicaPiscis(audioIntensity: number, bassIntensity: number, trebleIntensity: number): void {
+    const ctx = this.ctx;
+    const radius = 150 + bassIntensity * 60;
+    const separation = radius * 1.0; // Separation for classic vesica piscis
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+
+    // Left circle
+    const leftX = -separation / 2;
+    const leftHue = this.hueBase;
+
+    const leftGradient = ctx.createRadialGradient(leftX, 0, radius * 0.3, leftX, 0, radius);
+    leftGradient.addColorStop(0, `hsla(${leftHue}, 90%, 70%, ${0.4 + audioIntensity * 0.3})`);
+    leftGradient.addColorStop(1, `hsla(${leftHue}, 80%, 60%, 0.1)`);
+
+    ctx.fillStyle = leftGradient;
+    ctx.strokeStyle = `hsla(${leftHue}, 85%, 65%, 0.8)`;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.arc(leftX, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Right circle
+    const rightX = separation / 2;
+    const rightHue = (this.hueBase + 120) % 360;
+
+    const rightGradient = ctx.createRadialGradient(rightX, 0, radius * 0.3, rightX, 0, radius);
+    rightGradient.addColorStop(0, `hsla(${rightHue}, 90%, 70%, ${0.4 + audioIntensity * 0.3})`);
+    rightGradient.addColorStop(1, `hsla(${rightHue}, 80%, 60%, 0.1)`);
+
+    ctx.fillStyle = rightGradient;
+    ctx.strokeStyle = `hsla(${rightHue}, 85%, 65%, 0.8)`;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.arc(rightX, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Highlight the vesica piscis (intersection)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(leftX, 0, radius, 0, Math.PI * 2);
+    ctx.clip();
+
+    const vesicaHue = (this.hueBase + 240) % 360;
+    const vesicaGradient = ctx.createRadialGradient(0, 0, 10, 0, 0, radius * 0.7);
+    vesicaGradient.addColorStop(0, `hsla(${vesicaHue}, 95%, 75%, ${0.6 + trebleIntensity * 0.4})`);
+    vesicaGradient.addColorStop(1, `hsla(${vesicaHue}, 85%, 65%, 0.2)`);
+
+    ctx.fillStyle = vesicaGradient;
+    ctx.beginPath();
+    ctx.arc(rightX, 0, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // Outline the vesica piscis
+    const intersectionHeight = Math.sqrt(radius * radius - (separation / 2) * (separation / 2));
+
+    ctx.strokeStyle = `hsla(${vesicaHue}, 90%, 70%, ${0.9 + audioIntensity * 0.1})`;
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.moveTo(0, -intersectionHeight);
+    ctx.arcTo(rightX, 0, 0, intersectionHeight, radius);
+    ctx.arcTo(leftX, 0, 0, -intersectionHeight, radius);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Sacred geometry additions
+    const verticalLineY = intersectionHeight * (0.8 + audioIntensity * 0.2);
+
+    ctx.strokeStyle = `hsla(${this.hueBase + 60}, 80%, 65%, 0.6)`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+
+    // Vertical line through vesica
+    ctx.beginPath();
+    ctx.moveTo(0, -verticalLineY);
+    ctx.lineTo(0, verticalLineY);
+    ctx.stroke();
+
+    // Horizontal line
+    ctx.beginPath();
+    ctx.moveTo(-separation, 0);
+    ctx.lineTo(separation, 0);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // Energy points at intersections
+    const points = [
+      { x: 0, y: -intersectionHeight },
+      { x: 0, y: intersectionHeight },
+      { x: 0, y: 0 }
+    ];
+
+    points.forEach((point, i) => {
+      const pointSize = 8 + bassIntensity * 8 + (i === 2 ? 5 : 0);
+      const pointHue = (vesicaHue + i * 60) % 360;
+
+      ctx.fillStyle = `hsla(${pointHue}, 95%, 75%, 0.9)`;
+      ctx.strokeStyle = `hsla(${pointHue + 30}, 100%, 80%, 1)`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Rotating sacred symbols
+    const symbolCount = 6;
+    ctx.save();
+    ctx.rotate(this.time * 0.002);
+
+    for (let i = 0; i < symbolCount; i++) {
+      const angle = (Math.PI * 2 * i) / symbolCount;
+      const dist = radius * 1.5;
+      const x = Math.cos(angle) * dist;
+      const y = Math.sin(angle) * dist;
+      const symbolSize = 4 + trebleIntensity * 5;
+      const symbolHue = (this.hueBase + i * 60) % 360;
+
+      ctx.fillStyle = `hsla(${symbolHue}, 90%, 70%, 0.7)`;
+      ctx.beginPath();
+      ctx.arc(x, y, symbolSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+    ctx.restore();
+  }
+
+  private renderTorusField(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const majorRadius = 180 + bassIntensity * 70;
+    const minorRadius = 60 + midIntensity * 30;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(this.time * 0.001);
+
+    // Draw torus using concentric rings
+    const rings = 30;
+
+    for (let i = 0; i < rings; i++) {
+      const progress = i / rings;
+      const angle = progress * Math.PI * 2 + this.time * 0.005;
+
+      // Calculate torus position
+      const ringCenterX = Math.cos(angle) * majorRadius;
+      const ringCenterY = Math.sin(angle) * majorRadius;
+      const ringRadius = minorRadius * Math.abs(Math.sin(angle));
+
+      const hue = (this.hueBase + progress * 240) % 360;
+      const alpha = 0.3 + (1 - Math.abs(Math.cos(angle))) * 0.5 + audioIntensity * 0.2;
+
+      // Ring glow
+      const gradient = ctx.createRadialGradient(
+        ringCenterX, ringCenterY, ringRadius * 0.3,
+        ringCenterX, ringCenterY, ringRadius * 1.5
+      );
+      gradient.addColorStop(0, `hsla(${hue}, 90%, 70%, ${alpha})`);
+      gradient.addColorStop(1, `hsla(${hue}, 80%, 60%, 0)`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(
+        ringCenterX - ringRadius * 1.5,
+        ringCenterY - ringRadius * 1.5,
+        ringRadius * 3,
+        ringRadius * 3
+      );
+
+      // Ring outline
+      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${alpha})`;
+      ctx.lineWidth = 2 + Math.abs(Math.sin(angle)) * 3;
+
+      ctx.beginPath();
+      ctx.ellipse(ringCenterX, ringCenterY, ringRadius, ringRadius * 0.5, angle, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Energy particles flowing along torus
+      if (i % 3 === 0) {
+        const particleCount = 8;
+        for (let p = 0; p < particleCount; p++) {
+          const pAngle = (Math.PI * 2 * p) / particleCount + this.time * 0.01;
+          const pX = ringCenterX + Math.cos(pAngle) * ringRadius;
+          const pY = ringCenterY + Math.sin(pAngle) * ringRadius * 0.5;
+          const pSize = 3 + audioIntensity * 4;
+
+          ctx.fillStyle = `hsla(${hue + 60}, 95%, 75%, 0.8)`;
+          ctx.beginPath();
+          ctx.arc(pX, pY, pSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // Central axis
+    ctx.strokeStyle = `hsla(${this.hueBase}, 70%, 60%, ${0.4 + audioIntensity * 0.3})`;
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10, 10]);
+
+    ctx.beginPath();
+    ctx.moveTo(-majorRadius * 1.2, 0);
+    ctx.lineTo(majorRadius * 1.2, 0);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // Energy flow lines
+    const flowLines = 12;
+    for (let i = 0; i < flowLines; i++) {
+      const flowAngle = (Math.PI * 2 * i) / flowLines + this.time * 0.003;
+      const hue = (this.hueBase + i * 30) % 360;
+
+      ctx.save();
+      ctx.rotate(flowAngle);
+
+      ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${0.3 + audioIntensity * 0.2})`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      for (let t = 0; t <= 100; t++) {
+        const tProgress = t / 100;
+        const tAngle = tProgress * Math.PI * 2;
+        const radius = majorRadius + Math.cos(tAngle) * minorRadius;
+        const x = Math.cos(tAngle) * radius;
+        const y = Math.sin(tAngle) * minorRadius * 0.5;
+
+        if (t === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Central vortex
+    const vortexSize = 30 + bassIntensity * 20;
+    const vortexGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, vortexSize);
+    vortexGradient.addColorStop(0, `hsla(${this.hueBase + 120}, 95%, 75%, 1)`);
+    vortexGradient.addColorStop(0.6, `hsla(${this.hueBase + 90}, 85%, 65%, 0.6)`);
+    vortexGradient.addColorStop(1, `hsla(${this.hueBase + 60}, 75%, 55%, 0)`);
+
+    ctx.fillStyle = vortexGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, vortexSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  private renderCosmicEgg(audioIntensity: number, bassIntensity: number, midIntensity: number): void {
+    const ctx = this.ctx;
+    const eggWidth = 220 + bassIntensity * 80;
+    const eggHeight = eggWidth * 1.4;
+
+    ctx.save();
+    ctx.translate(this.centerX, this.centerY);
+    ctx.rotate(Math.sin(this.time * 0.002) * 0.1);
+
+    // Outer cosmic field
+    const fieldLayers = 8;
+    for (let i = 0; i < fieldLayers; i++) {
+      const scale = 1 + (i / fieldLayers) * 0.5;
+      const hue = (this.hueBase + i * 30 + this.time * 0.3) % 360;
+      const alpha = 0.1 + (fieldLayers - i) / fieldLayers * 0.3 + audioIntensity * 0.1;
+
+      ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${alpha})`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, eggWidth * scale, eggHeight * scale, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Main egg body with gradient
+    const eggGradient = ctx.createRadialGradient(0, -eggHeight * 0.2, 0, 0, 0, eggHeight * 0.6);
+    eggGradient.addColorStop(0, `hsla(${this.hueBase}, 70%, 50%, 0.8)`);
+    eggGradient.addColorStop(0.5, `hsla(${this.hueBase + 40}, 75%, 55%, 0.6)`);
+    eggGradient.addColorStop(1, `hsla(${this.hueBase + 80}, 80%, 60%, 0.4)`);
+
+    ctx.fillStyle = eggGradient;
+    ctx.strokeStyle = `hsla(${this.hueBase}, 85%, 65%, 0.9)`;
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.ellipse(0, 0, eggWidth, eggHeight, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Inner universe swirl
+    const spiralTurns = 5;
+    const maxRadius = eggWidth * 0.8;
+
+    ctx.strokeStyle = `hsla(${this.hueBase + 120}, 90%, 70%, ${0.6 + audioIntensity * 0.3})`;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    for (let t = 0; t <= 360; t++) {
+      const progress = t / 360;
+      const angle = progress * Math.PI * 2 * spiralTurns + this.time * 0.005;
+      const radius = progress * maxRadius;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius * (eggHeight / eggWidth);
+
+      if (t === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Counter-rotating spiral
+    ctx.strokeStyle = `hsla(${this.hueBase + 240}, 90%, 70%, ${0.5 + audioIntensity * 0.3})`;
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    for (let t = 0; t <= 360; t++) {
+      const progress = t / 360;
+      const angle = -progress * Math.PI * 2 * spiralTurns - this.time * 0.005;
+      const radius = progress * maxRadius;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius * (eggHeight / eggWidth);
+
+      if (t === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Stars/galaxies within
+    const starCount = 50;
+    for (let i = 0; i < starCount; i++) {
+      const angle = (Math.PI * 2 * i) / starCount + this.time * 0.001 * (i % 2 === 0 ? 1 : -1);
+      const radiusProgress = (i % 10) / 10;
+      const radius = radiusProgress * maxRadius;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius * (eggHeight / eggWidth);
+
+      // Only draw stars inside the egg
+      if ((x * x) / (eggWidth * eggWidth) + (y * y) / (eggHeight * eggHeight) < 0.64) {
+        const starSize = 2 + Math.random() * 3 + midIntensity * 3;
+        const starHue = (this.hueBase + i * 7) % 360;
+        const twinkle = Math.sin(this.time * 0.01 + i) * 0.3 + 0.7;
+
+        ctx.fillStyle = `hsla(${starHue}, 90%, 70%, ${twinkle})`;
+        ctx.beginPath();
+        ctx.arc(x, y, starSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Central light (primordial essence)
+    const coreSize = 40 + bassIntensity * 30;
+    const coreGradient = ctx.createRadialGradient(0, 0, coreSize * 0.2, 0, 0, coreSize);
+    coreGradient.addColorStop(0, `hsla(${this.hueBase + 60}, 100%, 90%, 1)`);
+    coreGradient.addColorStop(0.4, `hsla(${this.hueBase + 40}, 95%, 80%, 0.8)`);
+    coreGradient.addColorStop(0.7, `hsla(${this.hueBase + 20}, 90%, 70%, 0.5)`);
+    coreGradient.addColorStop(1, `hsla(${this.hueBase}, 85%, 60%, 0)`);
+
+    ctx.fillStyle = coreGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Emanating rays
+    const rayCount = 12;
+    for (let i = 0; i < rayCount; i++) {
+      const rayAngle = (Math.PI * 2 * i) / rayCount + this.time * 0.003;
+      const rayLength = coreSize + 30 + bassIntensity * 20;
+
+      ctx.save();
+      ctx.rotate(rayAngle);
+
+      const rayGradient = ctx.createLinearGradient(coreSize * 0.5, 0, rayLength, 0);
+      rayGradient.addColorStop(0, `hsla(${this.hueBase + 45}, 95%, 75%, 0.8)`);
+      rayGradient.addColorStop(1, `hsla(${this.hueBase + 60}, 90%, 70%, 0)`);
+
+      ctx.strokeStyle = rayGradient;
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(coreSize * 0.5, 0);
+      ctx.lineTo(rayLength, 0);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Cracking effect (emergence)
+    if (audioIntensity > 0.7) {
+      const cracks = 8;
+      for (let i = 0; i < cracks; i++) {
+        const crackAngle = (Math.PI * 2 * i) / cracks + Math.sin(this.time * 0.01) * 0.1;
+        const crackLength = eggHeight * 0.6;
+
+        ctx.save();
+        ctx.rotate(crackAngle);
+
+        ctx.strokeStyle = `hsla(${this.hueBase + 180}, 80%, 70%, ${audioIntensity - 0.7})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 10]);
+
+        ctx.beginPath();
+        ctx.moveTo(0, eggHeight * 0.2);
+        const segmentCount = 10;
+        for (let s = 0; s <= segmentCount; s++) {
+          const sProgress = s / segmentCount;
+          const y = eggHeight * 0.2 + sProgress * crackLength;
+          const x = Math.sin(sProgress * Math.PI * 2 + this.time * 0.02) * 10;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.restore();
+      }
+    }
+
+    ctx.restore();
   }
 }
