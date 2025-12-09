@@ -266,6 +266,261 @@ npm run type-check
 npm run lint
 ```
 
+## 🚀 Production Deployment & Server Management
+
+### PM2 Process Manager
+
+This project uses **PM2** for production process management, providing automatic restarts, logging, and monitoring capabilities.
+
+### Server Startup & Shutdown
+
+#### Starting the Server
+
+**Production Mode:**
+```bash
+# Build and start production server
+npm run pm2:start
+
+# Or manually:
+npm run build
+pm2 start ecosystem.config.cjs --env production
+```
+
+**Development Mode:**
+```bash
+# Start development server with PM2
+npm run pm2:dev
+
+# Or manually:
+pm2 start ecosystem.config.cjs --only starchild-music-frontend-dev --env development
+```
+
+#### Stopping the Server
+
+```bash
+# Stop all processes
+npm run pm2:stop
+
+# Stop specific process
+pm2 stop starchild-music-frontend-prod
+pm2 stop starchild-music-frontend-dev
+
+# Delete processes from PM2
+npm run pm2:delete
+```
+
+#### Restarting the Server
+
+```bash
+# Reload with zero-downtime (graceful restart)
+npm run pm2:reload
+
+# Hard restart (kills and starts)
+npm run pm2:restart
+
+# Or manually:
+pm2 reload ecosystem.config.cjs --env production --update-env
+pm2 restart starchild-music-frontend-prod --update-env
+```
+
+### Server Startup Mechanism
+
+The production server uses a **multi-layer startup process** to ensure reliability:
+
+#### 1. **PM2 Pre-Start Hook**
+Before starting the server, PM2 runs:
+```bash
+node scripts/ensure-build.js
+```
+
+This script:
+- Checks if `.next/BUILD_ID` file exists
+- Automatically runs `npm run build` if build is missing
+- Prevents crash loops by ensuring build exists before startup
+- Logs build process for debugging
+
+#### 2. **Server Script Validation**
+The `scripts/server.js` wrapper performs additional validation:
+- Verifies `.next` directory exists
+- Checks for `BUILD_ID` file (required by Next.js)
+- Validates `.next/server` directory
+- Exits immediately with clear error if build is invalid
+- Prevents infinite restart loops
+
+#### 3. **Next.js Production Server**
+Once validation passes:
+- Next.js starts in production mode (`next start`)
+- Binds to configured port (default: 3222 for production, 3412 for dev)
+- Health check endpoint becomes available at `/api/health`
+- PM2 monitors the process and performs health checks
+
+### Server Shutdown Mechanism
+
+#### Graceful Shutdown
+PM2 handles graceful shutdown through:
+- **SIGTERM/SIGINT signals**: PM2 sends these to the process
+- **Kill timeout**: 5 seconds grace period before force kill
+- **Next.js cleanup**: Next.js handles cleanup automatically
+- **Database pool closure**: Database connections are closed gracefully
+
+#### Force Shutdown
+If graceful shutdown fails:
+```bash
+pm2 delete starchild-music-frontend-prod  # Force remove
+pm2 kill  # Kill PM2 daemon (use with caution)
+```
+
+### Monitoring & Logs
+
+#### View Logs
+```bash
+# Production logs
+npm run pm2:logs
+
+# Development logs
+npm run pm2:logs:dev
+
+# Error logs only
+npm run pm2:logs:error
+
+# Real-time monitoring
+npm run pm2:monit
+
+# View last N lines
+pm2 logs starchild-music-frontend-prod --lines 100
+```
+
+#### Check Status
+```bash
+# List all processes
+npm run pm2:status
+
+# Detailed process info
+pm2 describe starchild-music-frontend-prod
+
+# Process metrics
+pm2 show starchild-music-frontend-prod
+```
+
+#### Log Files
+Logs are stored in `logs/pm2/`:
+- `error.log` - Error output only
+- `out.log` - Standard output only
+- `combined.log` - All logs combined
+- `dev-*.log` - Development-specific logs
+
+### Health Checks
+
+The server includes a health check endpoint for monitoring:
+
+```bash
+# Check server health
+curl http://localhost:3222/api/health
+
+# Expected response:
+{
+  "status": "ok",
+  "timestamp": "2025-12-09T...",
+  "uptime": 3600,
+  "memory": {
+    "heapUsed": 150,
+    "heapTotal": 200,
+    "rss": 300
+  },
+  "checks": {
+    "database": "ok"
+  },
+  "responseTime": 5
+}
+```
+
+PM2 is configured to:
+- Check health endpoint every few seconds
+- Restart process if health check fails
+- Grace period of 5 seconds after startup before health checks begin
+
+### Automatic Restart Behavior
+
+PM2 automatically restarts the process when:
+- Process crashes (exit code != 0)
+- Memory exceeds 2GB (`max_memory_restart: "2G"`)
+- Health check fails (if configured)
+- Manual restart command issued
+
+**Restart Limits:**
+- Maximum 10 restarts within restart delay window
+- Exponential backoff prevents crash loops
+- Minimum uptime of 30 seconds before considered stable
+- Restart delay of 5 seconds between attempts
+
+### Build Management
+
+#### Automatic Build Recovery
+If the production build is missing:
+1. PM2 pre-start hook detects missing BUILD_ID
+2. Automatically runs `npm run build`
+3. Server starts only if build succeeds
+4. Process exits cleanly if build fails (no crash loop)
+
+#### Manual Build
+```bash
+# Build for production
+npm run build
+
+# Verify build exists
+test -f .next/BUILD_ID && echo "Build OK" || echo "Build missing"
+
+# Build and deploy
+npm run deploy
+```
+
+### Environment Configuration
+
+The server loads environment variables in this order:
+1. `.env` - Base configuration
+2. `.env.production` or `.env.development` - Environment-specific
+3. `.env.local` - Local overrides (never committed)
+
+**Production Environment Variables:**
+```bash
+NODE_ENV=production
+PORT=3222
+HOSTNAME=localhost
+```
+
+**Development Environment Variables:**
+```bash
+NODE_ENV=development
+PORT=3412
+HOSTNAME=0.0.0.0
+```
+
+### Troubleshooting Server Issues
+
+#### Process Won't Start
+1. Check if build exists: `test -f .next/BUILD_ID`
+2. Build manually: `npm run build`
+3. Check logs: `pm2 logs starchild-music-frontend-prod --err`
+4. Verify port is available: `netstat -tlnp | grep 3222`
+
+#### Process Keeps Restarting
+1. Check error logs: `pm2 logs --err`
+2. Verify build is complete: Check `.next/BUILD_ID` exists
+3. Check memory usage: `pm2 monit`
+4. Review restart count: `pm2 describe starchild-music-frontend-prod`
+
+#### Health Check Failing
+1. Test endpoint manually: `curl http://localhost:3222/api/health`
+2. Check database connection in health endpoint
+3. Verify server is actually running: `pm2 status`
+4. Check for port conflicts
+
+#### Build Issues
+1. Clear build cache: `rm -rf .next`
+2. Rebuild: `npm run build`
+3. Check for TypeScript errors: `npm run typecheck`
+4. Verify all dependencies: `npm install`
+
 ### TypeScript Configuration
 
 The project enforces strict TypeScript settings:
@@ -319,6 +574,41 @@ This project uses **TailwindCSS v4** with pure CSS Variables (no `@apply` direct
 1. Verify DATABASE_URL format includes `?sslmode=require`
 2. Check PostgreSQL is running and accessible
 3. Confirm database exists and credentials are correct
+
+### Issue: 502 Bad Gateway / Process crash loop
+
+**Solution**:
+
+1. **Check if build exists**: `test -f .next/BUILD_ID && echo "OK" || echo "Missing"`
+2. **Build the application**: `npm run build`
+3. **Check PM2 status**: `pm2 list` - look for processes with high restart count
+4. **View error logs**: `pm2 logs starchild-music-frontend-prod --err`
+5. **Restart with new config**: `pm2 reload ecosystem.config.cjs --env production --update-env`
+
+**Root Cause**: Missing production build causes Next.js to crash immediately on startup, creating an infinite restart loop.
+
+**Prevention**: The server now automatically builds if BUILD_ID is missing via PM2 pre-start hook.
+
+### Issue: Process shows as "online" but not responding
+
+**Solution**:
+
+1. **Test health endpoint**: `curl http://localhost:3222/api/health`
+2. **Check if port is listening**: `netstat -tlnp | grep 3222`
+3. **Verify process is actually running**: `ps aux | grep "next start"`
+4. **Check PM2 logs for startup errors**: `pm2 logs --lines 50`
+5. **Restart the process**: `pm2 restart starchild-music-frontend-prod`
+
+### Issue: Build fails during deployment
+
+**Solution**:
+
+1. **Check TypeScript errors**: `npm run typecheck`
+2. **Clear build cache**: `rm -rf .next`
+3. **Reinstall dependencies**: `rm -rf node_modules && npm install`
+4. **Check disk space**: `df -h`
+5. **Review build logs**: Check for specific error messages
+6. **Build manually to see errors**: `npm run build`
 
 ## 📈 Future Roadmap
 

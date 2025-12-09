@@ -42,19 +42,24 @@ module.exports = {
       // MEMORY MANAGEMENT
       // ============================================
       max_memory_restart: "2G", // Restart if memory exceeds 2GB per instance
-      min_uptime: "10s", // Minimum uptime before considered stable
+      min_uptime: "30s", // Minimum uptime before considered stable (increased from 10s for Next.js)
 
       // ============================================
       // AUTO-RESTART & ERROR HANDLING
       // ============================================
       autorestart: true, // Auto-restart on crash
       max_restarts: 10, // Max restarts within restart_delay window
-      restart_delay: 4000, // Wait 4s before restart
+      restart_delay: 5000, // Wait 5s before restart (increased from 4s for graceful shutdown)
       kill_timeout: 5000, // Grace period before force kill (5s)
-      listen_timeout: 3000, // Wait 3s for app to be ready
+      listen_timeout: 10000, // Wait 10s for app to be ready (increased from 3s for Next.js startup)
+      wait_ready: true, // Wait for Next.js ready signal
 
       // Exponential backoff for restarts (prevents crash loops)
       exp_backoff_restart_delay: 100,
+
+      // Pre-start hook: Ensure build exists before starting
+      // This automatically builds if BUILD_ID is missing, preventing crash loops
+      pre_start: "node scripts/ensure-build.js",
 
       // ============================================
       // ENVIRONMENT & VARIABLES
@@ -108,6 +113,11 @@ module.exports = {
       // ============================================
       // PM2 will send SIGINT for graceful shutdown
       // Next.js handles this automatically
+      
+      // Health check configuration - PM2 will check if the app is actually responding
+      health_check_grace_period: 5000, // Grace period after startup before health checks start
+      health_check_fatal_exceptions: true, // Treat health check failures as fatal (restart the app)
+      health_check_url: `http://localhost:${process.env.PORT || 3222}/api/health`, // Health check endpoint
     },
     {
       // ============================================

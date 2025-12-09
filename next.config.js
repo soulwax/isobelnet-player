@@ -86,9 +86,10 @@ const config = {
     return config;
   },
   // Suppress build errors for expected missing pages in App Router
+  // Improved memory management: less aggressive settings to prevent request timeouts
   onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
+    maxInactiveAge: 60 * 1000, // Increased from 25s to 60s - pages stay in memory longer
+    pagesBufferLength: 5, // Increased from 2 to 5 - more pages buffered to reduce re-renders
   },
 };
 

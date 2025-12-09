@@ -6,12 +6,13 @@
  * Provides centralized logging and startup configuration with chalk
  */
 
+import chalk from 'chalk';
 import { spawn } from 'child_process';
+import dotenv from 'dotenv';
+import { existsSync } from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-import chalk from 'chalk';
-import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -160,9 +161,58 @@ function printStartupBanner() {
 }
 
 // ============================================
+// BUILD VALIDATION
+// ============================================
+/**
+ * Validates that a production build exists before starting the server
+ * @returns {boolean} True if build is valid, false otherwise
+ */
+function validateProductionBuild() {
+  if (isDev) {
+    return true; // No validation needed in development
+  }
+
+  const buildIdPath = path.resolve(__dirname, '../.next/BUILD_ID');
+  const nextDirPath = path.resolve(__dirname, '../.next');
+  const serverDirPath = path.resolve(__dirname, '../.next/server');
+
+  // Check if .next directory exists
+  if (!existsSync(nextDirPath)) {
+    logger.error('Production build not found: .next directory does not exist');
+    logger.error('Please run "npm run build" before starting the production server');
+    return false;
+  }
+
+  // Check if BUILD_ID file exists (required by Next.js)
+  if (!existsSync(buildIdPath)) {
+    logger.error('Production build is incomplete: BUILD_ID file is missing');
+    logger.error('The .next directory exists but the build is not complete');
+    logger.error('Please run "npm run build" to create a complete production build');
+    return false;
+  }
+
+  // Check if server directory exists
+  if (!existsSync(serverDirPath)) {
+    logger.error('Production build is incomplete: .next/server directory does not exist');
+    logger.error('Please run "npm run build" to create a complete production build');
+    return false;
+  }
+
+  logger.success('Production build validated successfully');
+  return true;
+}
+
+// ============================================
 // START SERVER
 // ============================================
 function startServer() {
+  // Validate production build before starting
+  if (!validateProductionBuild()) {
+    logger.error('Cannot start production server without a valid build');
+    logger.error('Exiting to prevent crash loop. Please build the application first.');
+    process.exit(1);
+  }
+
   printStartupBanner();
 
   const nextBin = path.resolve(__dirname, '../node_modules/next/dist/bin/next');
@@ -262,21 +312,49 @@ function startServer() {
 }
 
 // ============================================
+// ERROR HANDLING
+// ============================================
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error(`Unhandled Rejection at: ${promise}`);
+  if (reason instanceof Error) {
+    logger.error(`Reason: ${reason.message}`);
+    if (reason.stack) {
+      logger.error(reason.stack);
+    }
+  } else {
+    logger.error(`Reason: ${String(reason)}`);
+  }
+  // Don't exit - let PM2 handle restarts based on error patterns
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error(`Uncaught Exception: ${error.message}`);
+  if (error.stack) {
+    logger.error(error.stack);
+  }
+  // Exit gracefully - PM2 will restart
+  process.exit(1);
+});
+
+// ============================================
 // PERFORMANCE MONITORING
 // ============================================
-if (isDev) {
-  // Monitor memory usage in development
-  setInterval(() => {
-    const memUsage = process.memoryUsage();
-    const heapUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
-    const heapTotal = (memUsage.heapTotal / 1024 / 1024).toFixed(2);
+// Monitor memory usage in both dev and production
+// More frequent in dev, less frequent in production
+const memoryCheckInterval = isDev ? 60000 : 300000; // 1 min dev, 5 min prod
+setInterval(() => {
+  const memUsage = process.memoryUsage();
+  const heapUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
+  const heapTotal = (memUsage.heapTotal / 1024 / 1024).toFixed(2);
+  const rss = (memUsage.rss / 1024 / 1024).toFixed(2);
 
-    // Only log if memory usage is high (>1GB)
-    if (memUsage.heapUsed > 1024 * 1024 * 1024) {
-      logger.warn(`Memory usage: ${heapUsed} MB / ${heapTotal} MB`);
-    }
-  }, 60000); // Check every minute
-}
+  // Log in dev always, or in prod if memory is high (>1GB heap or >1.5GB RSS)
+  if (isDev || memUsage.heapUsed > 1024 * 1024 * 1024 || memUsage.rss > 1536 * 1024 * 1024) {
+    logger.warn(`Memory: ${heapUsed}MB heap / ${heapTotal}MB total / ${rss}MB RSS`);
+  }
+}, memoryCheckInterval);
 
 // ============================================
 // RUN

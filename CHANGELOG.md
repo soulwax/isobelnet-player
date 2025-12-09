@@ -5,6 +5,63 @@ All notable changes to Starchild Music will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-12-09
+
+### Fixed
+
+#### Critical Production Stability Issues
+
+- **502 Error Crash Loop Resolution**: Fixed infinite crash loop causing 502 Bad Gateway errors in production
+  - Root cause: Missing production build (BUILD_ID file) causing Next.js to crash on startup
+  - Added build validation check before server startup to prevent crash loops
+  - Implemented automatic build recovery via PM2 pre-start hook
+  - Created `scripts/ensure-build.js` for automatic build verification and creation
+  - Process now fails gracefully with clear error messages instead of infinite restarts
+  - Prevents PM2 from restarting when build is missing (stops crash loop)
+
+#### Production Build Management
+
+- **Build Validation System**: Comprehensive build validation before production startup
+  - Validates `.next` directory existence
+  - Verifies `BUILD_ID` file presence (required by Next.js)
+  - Checks `.next/server` directory for complete build
+  - Provides clear error messages guiding manual intervention if needed
+  - Exits immediately if build is invalid (prevents crash loops)
+
+- **Automatic Build Recovery**: PM2 pre-start hook ensures build exists before starting
+  - Automatically runs `npm run build` if BUILD_ID is missing
+  - Prevents manual intervention in most cases
+  - Logs build process for debugging
+  - Fails gracefully if build process fails
+
+### Changed
+
+- **PM2 Configuration**: Enhanced production process management
+  - Added `pre_start` hook for automatic build verification
+  - Improved restart timing (min_uptime: 30s, restart_delay: 5s, listen_timeout: 10s)
+  - Added `wait_ready` flag for Next.js readiness detection
+  - Configured health check URL for application-level monitoring
+  - Health check grace period set to 5 seconds
+
+- **Error Handling**: Improved error handling in server script
+  - Added null checks for error stack traces (TypeScript compliance)
+  - Enhanced build validation error messages
+  - Better logging for build-related failures
+
+### Technical Improvements
+
+- **Server Startup Flow**: Multi-layer defense against missing builds
+  1. PM2 pre-start hook checks and builds if needed
+  2. Server script validates build before starting Next.js
+  3. Clear error messages if build is still missing
+  4. Process exits cleanly (no infinite restart loops)
+
+- **Documentation**: Added comprehensive 502 error analysis documentation
+  - Root cause analysis of crash loop issue
+  - Step-by-step fix implementation
+  - Testing and verification procedures
+  - Prevention measures and monitoring recommendations
+
 ## [0.6.0] - 2025-12-09
 
 ### Added

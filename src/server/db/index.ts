@@ -1,10 +1,10 @@
 // File: src/server/db/index.ts
 
+import { env } from "@/env";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { Pool } from "pg";
-import { env } from "@/env";
 import * as schema from "./schema";
 
 // Determine certificate path based on environment
@@ -59,20 +59,39 @@ const pool = new Pool({
   connectionString: env.DATABASE_URL,
   ...(sslConfig && { ssl: sslConfig }),
   // Connection pool configuration to prevent exhaustion
-  max: 5, // Maximum number of connections
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  max: 10, // Increased from 5 to handle more concurrent requests
+  idleTimeoutMillis: 60000, // Increased from 30s to 60s to reduce connection churn
   connectionTimeoutMillis: 10000, // Connection timeout
+  // Statement timeout to prevent long-running queries from holding connections
+  statement_timeout: 30000, // 30 seconds
 });
+
+// Add error handler for pool errors
+pool.on("error", (err) => {
+  console.error("[DB] Unexpected error on idle client:", err);
+  // Don't exit - log and continue, let PM2 handle restarts if needed
+});
+
+// Add connection monitoring (optional, can be disabled in production)
+if (process.env.NODE_ENV === "development") {
+  pool.on("connect", () => {
+    console.log("[DB] New client connected to pool");
+  });
+
+  pool.on("remove", () => {
+    console.log("[DB] Client removed from pool");
+  });
+}
 
 // Graceful shutdown - close pool when process exits
 if (typeof process !== "undefined") {
   process.on("SIGTERM", () => {
-    console.log("SIGTERM received, closing database pool...");
+    console.log("[DB] SIGTERM received, closing database pool...");
     void pool.end();
   });
 
   process.on("SIGINT", () => {
-    console.log("SIGINT received, closing database pool...");
+    console.log("[DB] SIGINT received, closing database pool...");
     void pool.end();
   });
 }
