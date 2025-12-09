@@ -37,8 +37,8 @@ module.exports = {
       // ============================================
       // CLUSTER & PERFORMANCE
       // ============================================
-      instances: 2, // 2 instances (leaving 2 cores for system/DB)
-      exec_mode: 'cluster', // Enable load balancing
+      instances: 1, // Single instance (Next.js is already optimized, doesn't work well with PM2 cluster mode)
+      exec_mode: 'fork', // Fork mode (Next.js binds to port directly, incompatible with PM2 cluster mode)
 
       // ============================================
       // MEMORY MANAGEMENT
@@ -61,6 +61,10 @@ module.exports = {
       // ============================================
       // ENVIRONMENT & VARIABLES
       // ============================================
+      env: {
+        NODE_ENV: 'production',
+        PORT: process.env.PORT || 3222,
+      },
       env_production: {
         NODE_ENV: 'production',
         PORT: process.env.PORT || 3222,
@@ -112,9 +116,9 @@ module.exports = {
       // DEVELOPMENT CONFIGURATION
       // ============================================
       name: 'starchild-music-frontend-dev',
-      script: 'npm',
-      args: 'run dev',
-      interpreter: 'none',
+      script: 'scripts/server.js',
+      args: '',
+      interpreter: 'node',
 
       // ============================================
       // CLUSTER & PERFORMANCE
@@ -143,6 +147,10 @@ module.exports = {
       // ============================================
       // ENVIRONMENT & VARIABLES
       // ============================================
+      env: {
+        NODE_ENV: 'development',
+        PORT: 3412, // Use fixed port 3412 for dev
+      },
       env_development: {
         NODE_ENV: 'development',
         PORT: 3412, // Use fixed port 3412 for dev
