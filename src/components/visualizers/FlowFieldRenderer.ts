@@ -379,6 +379,11 @@ export class FlowFieldRenderer {
   }
 
   private updatePatternTransition(audioIntensity: number): void {
+    const dynamicDuration = Math.max(
+      150, // Halved from 300 to 150
+      this.patternDuration - audioIntensity * 200,
+    );
+
     this.patternTimer++;
 
     if (this.isTransitioning) {
@@ -2158,12 +2163,10 @@ export class FlowFieldRenderer {
     );
 
     this.time += 1;
-    this.hueBase = (this.hueBase + 0.5 + bassIntensity * 2.5) % 360; // Faster color changes
+    this.hueBase = (this.hueBase + 0.3 + bassIntensity * 1.5) % 360;
 
     this.updatePatternTransition(audioIntensity);
 
-    // Clear with fade - more reactive to audio
-    ctx.fillStyle = `rgba(0, 0, 0, ${fadeAmount + audioIntensity * 0.1})`; // More responsive fade
     const trailPatterns = ["swarm", "fireworks", "starfield", "constellation"];
     const fadeAmount = trailPatterns.includes(this.currentPattern)
       ? 0.12
