@@ -5,6 +5,68 @@ All notable changes to Starchild Music will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-12-09
+
+### Added
+
+#### Visual Enhancements
+
+- **Arcane-themed CSS Effects**: Enhanced mystical atmosphere with advanced visual effects
+  - Radial gradient background for mystical depth
+  - Ethereal glow effects at page edges using pseudo-elements
+  - Pulsating and glowing animations for enhanced arcane theme
+  - Floating energy particles effect for added mystique
+  - Shimmer overlay creating depth and movement sense
+
+### Changed
+
+#### Performance Optimizations
+
+- **Visual Pattern Performance**: Optimized pattern transition duration and rendering speed
+  - Enhanced Flower of Life rendering (pixel-by-pixel optimization)
+  - Optimized Chakras pattern performance
+  - Improved Ouroboros animation efficiency
+  - Enhanced fractal rendering performance
+  - Optimized Metatron's Cube drawing algorithm
+
+#### Configuration Updates
+
+- **PM2 Development Configuration**: Updated development script execution method
+  - Changed from `script: 'npm'` to `script: 'scripts/server.js'`
+  - Updated interpreter from `'none'` to `'node'` for proper environment variable propagation
+  - Added default `env` properties for both production and development configurations
+
+### Fixed
+
+#### Critical Production Issues
+
+- **PM2 Process Management**: Resolved critical PM2 startup and deployment issues
+  - Fixed EADDRINUSE errors on port 3222 by switching from cluster to fork mode
+  - Changed production from `instances: 2` + `exec_mode: 'cluster'` to `instances: 1` + `exec_mode: 'fork'`
+  - Fixed Next.js incompatibility with PM2 cluster mode
+  - Resolved development process "waiting restart" loop
+  - Added proper environment variable propagation in development mode
+  - Fixed 502 Bad Gateway errors in production
+
+#### Code Quality
+
+- **TypeScript Compliance**: Removed unused imports to fix ESLint warnings
+  - Removed unused `useEffect` import from Player component
+- **Dependency Conflicts**: Resolved version conflicts in dependencies
+  - Fixed @types/node dependency version conflicts
+- **Merge Conflicts**: Resolved merge conflicts in settings and package-lock files
+- **Environment Configuration**: Standardized dotenv configuration across the application
+
+### Technical Improvements
+
+- **PM2 Configuration**: Comprehensive PM2 ecosystem configuration with detailed comments
+  - Memory management settings (2GB max per instance)
+  - Auto-restart with exponential backoff
+  - Graceful shutdown configuration
+  - Separate development and production configurations
+  - File watching enabled for development with proper ignore patterns
+  - Enhanced logging configuration with timestamp formatting
+
 ## [0.4.1] - 2025-12-08
 
 ### Added
