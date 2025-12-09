@@ -1,6 +1,8 @@
 // File: electron/main.cjs
 // Load environment variables from .env.local first
 
+const path = require("path");
+
 require("dotenv").config({ path: path.resolve(__dirname, "../.env.local") });
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
@@ -12,7 +14,6 @@ const {
   dialog,
   session,
 } = require("electron");
-const path = require("path");
 const { spawn } = require("child_process");
 const http = require("http");
 const fs = require("fs");
@@ -253,7 +254,7 @@ const createWindow = async () => {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "preload.cjs"),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
