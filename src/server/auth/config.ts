@@ -22,6 +22,8 @@ declare module "next-auth" {
 }
 export const authConfig = {
   trustHost: true, // Allow NextAuth to trust the host from request headers
+  // Explicitly set the base URL from environment, with fallback for backward compatibility
+  basePath: "/api/auth",
   providers: [
     DiscordProvider({
       clientId: env.AUTH_DISCORD_ID,
@@ -61,6 +63,8 @@ export const authConfig = {
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
+        // Don't set domain explicitly - let it use the request domain
+        // This ensures CSRF tokens work across different domains when trustHost is true
       },
     },
     callbackUrl: {
@@ -86,6 +90,19 @@ export const authConfig = {
           image: user.image ?? null,
         },
       };
+    },
+    // Ensure the redirect URL uses the correct domain from the request
+    redirect: ({ url, baseUrl }) => {
+      // If the URL is relative, make it absolute using the baseUrl from the request
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // If the URL is on the same origin, return it as-is
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // Otherwise, return the baseUrl to prevent redirects to external domains
+      return baseUrl;
     },
   },
 } satisfies NextAuthConfig;
