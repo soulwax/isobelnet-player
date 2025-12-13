@@ -23,13 +23,15 @@ export function getBaseUrl(): string {
   // This is safe because this function is only called from server components
   // and the value is used for metadata generation, not exposed to the client
   if (typeof window === "undefined") {
-    // Use process.env directly to avoid t3-oss validation errors if this function
-    // is unexpectedly called from a client context (even though the check above
-    // should prevent that). Since we've already verified we're on the server,
-    // it's safe to access process.env.NEXTAUTH_URL directly.
-    const serverUrl = process.env.NEXTAUTH_URL;
-    if (serverUrl) {
-      return serverUrl;
+    try {
+      // Access validated server-only env var (will throw on client if accessed)
+      // Using env.NEXTAUTH_URL ensures Zod validation is applied
+      if (env.NEXTAUTH_URL) {
+        return env.NEXTAUTH_URL;
+      }
+    } catch {
+      // Ignore - we're on the client or variable is not accessible
+      // This can happen if the env library throws when accessing server vars on client
     }
   }
 

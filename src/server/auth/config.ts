@@ -28,6 +28,8 @@ export const authConfig = {
     DiscordProvider({
       clientId: env.AUTH_DISCORD_ID,
       clientSecret: env.AUTH_DISCORD_SECRET,
+      // The callback URL will be automatically determined from the request
+      // when trustHost is true, so we don't need to set it explicitly
     }),
   ],
   adapter: DrizzleAdapter(db, {
