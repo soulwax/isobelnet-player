@@ -26,6 +26,8 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
+const baseUrl = env.NEXT_PUBLIC_NEXTAUTH_URL || "https://play.isobelnet.de";
+
 export const metadata: Metadata = {
   title: "Starchild Music Stream",
   description:
@@ -37,11 +39,11 @@ export const metadata: Metadata = {
     description:
       "Modern music streaming and discovery platform with smart recommendations",
     type: "website",
-    url: env.NEXT_PUBLIC_NEXTAUTH_URL,
+    url: baseUrl,
     siteName: "Starchild Music",
     images: [
       {
-        url: `${env.NEXT_PUBLIC_NEXTAUTH_URL}/emily-the-strange.png`,
+        url: `${baseUrl}/emily-the-strange.png`,
         width: 1200,
         height: 630,
         alt: "Starchild Music - Modern music streaming platform",

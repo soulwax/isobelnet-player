@@ -26,7 +26,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_API_URL: z.string().url(),
     NEXT_PUBLIC_SONGBIRD_API_URL: z.string().url().optional().or(z.undefined()),
-    NEXT_PUBLIC_NEXTAUTH_URL: z.string().url(),
+    NEXT_PUBLIC_NEXTAUTH_URL: z.string().url().optional(),
   },
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
@@ -41,7 +41,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_SONGBIRD_API_URL: process.env.NEXT_PUBLIC_SONGBIRD_API_URL,
-    NEXT_PUBLIC_NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXT_PUBLIC_NEXTAUTH_URL: process.env.NEXT_PUBLIC_NEXTAUTH_URL || process.env.NEXTAUTH_URL,
     STREAMING_KEY: process.env.STREAMING_KEY,
     SONGBIRD_API_KEY: process.env.SONGBIRD_API_KEY,
   },

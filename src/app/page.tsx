@@ -6,6 +6,8 @@ import { type Metadata } from "next";
 import { env } from "@/env";
 import type { SearchResponse, Track } from "@/types";
 
+const baseUrl = env.NEXT_PUBLIC_NEXTAUTH_URL || "https://play.isobelnet.de";
+
 async function getFirstTrackFromSearch(query: string): Promise<Track | null> {
   try {
     const url = new URL(`${env.NEXT_PUBLIC_API_URL}music/search`);
@@ -24,7 +26,7 @@ async function getFirstTrackFromSearch(query: string): Promise<Track | null> {
 
 function getAlbumCoverImage(track: Track | null): string {
   if (!track?.album) {
-    return `${env.NEXT_PUBLIC_NEXTAUTH_URL}/emily-the-strange.png`;
+    return `${baseUrl}/emily-the-strange.png`;
   }
 
   // Prefer larger images for Open Graph (cover_big or cover_xl)
@@ -39,7 +41,7 @@ function getAlbumCoverImage(track: Track | null): string {
     return coverImage;
   }
 
-  return `${env.NEXT_PUBLIC_NEXTAUTH_URL}/emily-the-strange.png`;
+  return `${baseUrl}/emily-the-strange.png`;
 }
 
 export async function generateMetadata({
@@ -60,11 +62,11 @@ export async function generateMetadata({
       description:
         "Modern music streaming and discovery platform with smart recommendations",
       type: "website",
-      url: env.NEXT_PUBLIC_NEXTAUTH_URL,
+      url: baseUrl,
       siteName: "Starchild Music",
       images: [
         {
-          url: `${env.NEXT_PUBLIC_NEXTAUTH_URL}/emily-the-strange.png`,
+          url: `${baseUrl}/emily-the-strange.png`,
           width: 1200,
           height: 630,
           alt: "Starchild Music - Modern music streaming platform",
@@ -103,7 +105,7 @@ export async function generateMetadata({
       title: trackTitle,
       description,
       type: "website",
-      url: `${env.NEXT_PUBLIC_NEXTAUTH_URL}/?q=${encodeURIComponent(query)}`,
+      url: `${baseUrl}/?q=${encodeURIComponent(query)}`,
       siteName: "Starchild Music",
       images: [
         {
