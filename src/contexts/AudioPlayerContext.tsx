@@ -23,7 +23,7 @@ interface AudioPlayerContextType {
   repeatMode: "none" | "one" | "all";
   playbackRate: number;
   isLoading: boolean;
-  isAutoQueueing: boolean;
+  lastAutoQueueCount: number;
 
   // Audio element reference for visualizer and equalizer
   audioElement: HTMLAudioElement | null;
@@ -667,7 +667,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     repeatMode: player.repeatMode,
     playbackRate: player.playbackRate,
     isLoading: player.isLoading,
-    isAutoQueueing: player.isAutoQueueing,
+    lastAutoQueueCount: player.lastAutoQueueCount,
 
     // Audio element reference
     audioElement: player.audioRef.current,

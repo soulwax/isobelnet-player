@@ -184,7 +184,6 @@ interface EnhancedQueueProps {
     seedTrackIds: number[],
     count?: number,
   ) => Promise<void>;
-  isAutoQueueing?: boolean;
 }
 
 export function EnhancedQueue({
@@ -198,7 +197,6 @@ export function EnhancedQueue({
   onSaveAsPlaylist,
   onAddSimilarTracks,
   onGenerateSmartMix,
-  isAutoQueueing,
 }: EnhancedQueueProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSettings, setShowSettings] = useState(false);
@@ -492,12 +490,6 @@ export function EnhancedQueue({
             <h2 className="text-xl font-bold text-[var(--color-text)]">
               Queue ({queue.length})
             </h2>
-            {isAutoQueueing && (
-              <div className="flex items-center gap-2 text-xs text-[var(--color-accent-strong)]">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Adding tracks...</span>
-              </div>
-            )}
           </div>
           <div className="flex items-center gap-2">
             {currentTrack && onAddSimilarTracks && (
@@ -608,64 +600,8 @@ export function EnhancedQueue({
           </div>
         )}
 
-        {/* Auto-Queue Status Indicator */}
-        {isAutoQueueing && (
-          <div className="rounded-lg border border-[rgba(244,178,102,0.2)] bg-[rgba(244,178,102,0.12)] p-3 shadow-inner shadow-[rgba(244,178,102,0.15)]">
-            <div className="flex items-center gap-3">
-              <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-[var(--color-accent)]" />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-[var(--color-text)]">
-                  Auto-queue is working
-                </p>
-                <p className="text-xs text-[var(--color-subtext)]">
-                  Adding similar tracks to your queue...
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAutoQueueInfo(!showAutoQueueInfo)}
-                className="text-[var(--color-accent)] transition-colors hover:text-[var(--color-text)]"
-                title={showAutoQueueInfo ? "Hide details" : "Show details"}
-              >
-                {showAutoQueueInfo ? (
-                  <X className="h-4 w-4" />
-                ) : (
-                  <Settings className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            {showAutoQueueInfo && effectiveSettings && (
-              <div className="mt-3 space-y-2 border-t border-[rgba(244,178,102,0.25)] pt-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--color-subtext)]">
-                    Trigger threshold:
-                  </span>
-                  <span className="font-medium text-[var(--color-text)]">
-                    ≤ {effectiveSettings.autoQueueThreshold} tracks
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--color-subtext)]">
-                    Tracks to add:
-                  </span>
-                  <span className="font-medium text-[var(--color-text)]">
-                    {effectiveSettings.autoQueueCount}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--color-subtext)]">
-                    Similarity:
-                  </span>
-                  <span className="font-medium text-[var(--color-text)] capitalize">
-                    {effectiveSettings.similarityPreference}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Auto-Queue Info Panel (when idle) */}
-        {!isAutoQueueing && effectiveSettings?.autoQueueEnabled && (
+        {/* Auto-Queue Info Panel */}
+        {effectiveSettings?.autoQueueEnabled && (
           <div className="rounded-lg border border-[rgba(88,198,177,0.25)] bg-[rgba(88,198,177,0.12)] p-3 shadow-inner shadow-[rgba(88,198,177,0.18)]">
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">

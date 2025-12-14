@@ -47,8 +47,8 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [originalQueueOrder, setOriginalQueueOrder] = useState<Track[]>([]);
-  const [isAutoQueueing, setIsAutoQueueing] = useState(false);
   const autoQueueTriggeredRef = useRef(false);
+  const [lastAutoQueueCount, setLastAutoQueueCount] = useState(0);
   const loadIdRef = useRef(0);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
@@ -806,11 +806,11 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     [currentTime, seek],
   );
 
-  // Smart Queue: Auto-add tracks when queue is low
+  // Smart Queue: Auto-add tracks when queue is low (runs silently in background)
   useEffect(() => {
     const checkAutoQueue = async () => {
       // Don't trigger if already queuing or no settings provided
-      if (isAutoQueueing || !smartQueueSettings || !currentTrack) {
+      if (autoQueueTriggeredRef.current || !smartQueueSettings || !currentTrack) {
         return;
       }
 
@@ -822,10 +822,7 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
         queue.length <= settings.autoQueueThreshold
       ) {
         // Prevent multiple simultaneous triggers
-        if (autoQueueTriggeredRef.current) return;
-
         autoQueueTriggeredRef.current = true;
-        setIsAutoQueueing(true);
 
         try {
           // Call the callback to fetch recommendations
@@ -848,14 +845,21 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
 
             // Add recommendations to queue
             if (recommendations.length > 0) {
-              addToQueue(recommendations.slice(0, targetCount), false);
+              const tracksToAdd = recommendations.slice(0, targetCount);
+              addToQueue(tracksToAdd, false);
+
+              // Update count for badge display (ephemeral notification)
+              setLastAutoQueueCount(tracksToAdd.length);
+
+              // Reset badge count after 3 seconds
+              setTimeout(() => {
+                setLastAutoQueueCount(0);
+              }, 3000);
             }
           }
         } catch (error) {
           console.error("Auto-queue failed:", error);
         } finally {
-          setIsAutoQueueing(false);
-
           // Reset trigger flag after a delay to allow re-triggering
           setTimeout(() => {
             autoQueueTriggeredRef.current = false;
@@ -868,7 +872,6 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
   }, [
     queue.length,
     currentTrack,
-    isAutoQueueing,
     smartQueueSettings,
     onAutoQueueTrigger,
     addToQueue,
@@ -912,7 +915,7 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     repeatMode,
     playbackRate,
     isLoading,
-    isAutoQueueing,
+    lastAutoQueueCount,
 
     // Actions
     loadTrack,

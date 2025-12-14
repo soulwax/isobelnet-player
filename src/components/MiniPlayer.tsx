@@ -7,6 +7,7 @@ import { hapticLight } from "@/utils/haptics";
 import { springPresets } from "@/utils/spring-animations";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { AutoQueueBadge } from "./AutoQueueBadge";
 
 interface MiniPlayerProps {
   currentTrack: Track;
@@ -14,6 +15,7 @@ interface MiniPlayerProps {
   currentTime: number;
   duration: number;
   queue: Track[];
+  lastAutoQueueCount?: number;
   onPlayPause: () => void;
   onNext: () => void;
   onSeek: (time: number) => void;
@@ -26,6 +28,7 @@ export default function MiniPlayer({
   currentTime,
   duration,
   queue,
+  lastAutoQueueCount = 0,
   onPlayPause,
   onNext,
   onSeek,
@@ -59,6 +62,9 @@ export default function MiniPlayer({
       transition={springPresets.gentle}
       className="safe-bottom fixed right-0 bottom-0 left-0 z-50 border-t border-[rgba(244,178,102,0.14)] bg-[rgba(10,16,24,0.94)] shadow-[0_-12px_32px_rgba(5,10,18,0.6)] backdrop-blur-xl"
     >
+      {/* Auto-Queue Badge */}
+      <AutoQueueBadge count={lastAutoQueueCount} />
+
       {/* Progress Bar */}
       <div
         className="h-1 w-full cursor-pointer bg-[rgba(255,255,255,0.12)]"

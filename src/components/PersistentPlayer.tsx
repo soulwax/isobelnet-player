@@ -226,7 +226,6 @@ export default function PersistentPlayer() {
                   /* Smart mix not available */
                 })
               }
-              isAutoQueueing={player.isAutoQueueing ?? false}
             />
           )}
         </>

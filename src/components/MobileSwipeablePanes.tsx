@@ -235,7 +235,6 @@ export default function MobileSwipeablePanes({
                 /* Smart mix not available */
               })
             }
-            isAutoQueueing={player.isAutoQueueing ?? false}
           />
         </div>
 
