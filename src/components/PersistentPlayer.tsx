@@ -29,9 +29,13 @@ const EnhancedQueue = dynamic(
   { ssr: false },
 );
 
+const MobilePlayer = dynamic(() => import("./MobilePlayer"), { ssr: false });
+const MiniPlayer = dynamic(() => import("./MiniPlayer"), { ssr: false });
+
 export default function PersistentPlayer() {
   const player = useGlobalPlayer();
   const isMobile = useIsMobile();
+  const [showFullMobilePlayer, setShowFullMobilePlayer] = useState(false);
 
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
@@ -226,7 +230,81 @@ export default function PersistentPlayer() {
         </>
       )}
 
-      {/* Mobile Player - Handled by MobileSwipeablePanes, nothing to render here */}
+      {/* Mobile Player */}
+      {isMobile && player.currentTrack && (
+        <>
+          {/* Mini Player - Always visible at bottom */}
+          <MiniPlayer
+            currentTrack={player.currentTrack}
+            isPlaying={player.isPlaying}
+            currentTime={player.currentTime}
+            duration={player.duration}
+            queue={player.queue}
+            lastAutoQueueCount={player.lastAutoQueueCount}
+            onPlayPause={player.togglePlay}
+            onNext={player.playNext}
+            onSeek={player.seek}
+            onTap={() => setShowFullMobilePlayer(true)}
+          />
+
+          {/* Full Mobile Player Modal */}
+          {showFullMobilePlayer && (
+            <MobilePlayer
+              currentTrack={player.currentTrack}
+              queue={player.queue}
+              isPlaying={player.isPlaying}
+              currentTime={player.currentTime}
+              duration={player.duration}
+              volume={player.volume}
+              isMuted={player.isMuted}
+              isShuffled={player.isShuffled}
+              repeatMode={player.repeatMode}
+              playbackRate={player.playbackRate}
+              isLoading={player.isLoading}
+              onPlayPause={player.togglePlay}
+              onNext={player.playNext}
+              onPrevious={player.playPrevious}
+              onSeek={player.seek}
+              onVolumeChange={player.setVolume}
+              onToggleMute={() => player.setIsMuted(!player.isMuted)}
+              onToggleShuffle={player.toggleShuffle}
+              onCycleRepeat={player.cycleRepeatMode}
+              onPlaybackRateChange={player.setPlaybackRate}
+              onSkipForward={player.skipForward}
+              onSkipBackward={player.skipBackward}
+              onToggleQueue={() => setShowQueue(!showQueue)}
+              onToggleEqualizer={() => setShowEqualizer(!showEqualizer)}
+              onClose={() => setShowFullMobilePlayer(false)}
+            />
+          )}
+
+          {/* Queue Panel on Mobile */}
+          {showQueue && (
+            <EnhancedQueue
+              queue={player.queue}
+              currentTrack={player.currentTrack}
+              onClose={() => setShowQueue(false)}
+              onRemove={player.removeFromQueue}
+              onClear={player.clearQueue}
+              onReorder={player.reorderQueue}
+              onPlayFrom={player.playFromQueue}
+              onSaveAsPlaylist={player.saveQueueAsPlaylist}
+              onAddSimilarTracks={
+                player.addSimilarTracks ??
+                (() => {
+                  /* No similar tracks available */
+                })
+              }
+              onGenerateSmartMix={
+                player.generateSmartMix ??
+                (() => {
+                  /* Smart mix not available */
+                })
+              }
+            />
+          )}
+        </>
+      )}
 
       {/* Equalizer Panel */}
       {showEqualizer && (

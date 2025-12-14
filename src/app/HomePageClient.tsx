@@ -14,14 +14,14 @@ import {
   searchTracks,
   searchTracksByArtist,
 } from "@/utils/api";
-import { hapticLight } from "@/utils/haptics";
+import { hapticLight, hapticSuccess } from "@/utils/haptics";
 import {
   springPresets,
   staggerContainer,
   staggerItem,
 } from "@/utils/spring-animations";
 import { AnimatePresence, motion } from "framer-motion";
-import { Music2, Search, Sparkles } from "lucide-react";
+import { Music2, Search, Shuffle, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -300,6 +300,43 @@ export default function HomePageClient() {
 
   const hasMore = results.length < total;
 
+  // Shuffle & Play - quick start music playback
+  const handleShufflePlay = useCallback(async () => {
+    hapticSuccess();
+    setLoading(true);
+
+    try {
+      // Search for a popular artist to get good results
+      const popularQueries = ["pop", "rock", "electronic", "jazz", "indie"];
+      const randomQuery =
+        popularQueries[Math.floor(Math.random() * popularQueries.length)];
+
+      const response = await searchTracks(randomQuery!, 0);
+
+      if (response.data.length > 0) {
+        // Shuffle the results
+        const shuffled = [...response.data].sort(() => Math.random() - 0.5);
+
+        // Play first track
+        player.play(shuffled[0]!);
+
+        // Add next 10 tracks to queue
+        if (shuffled.length > 1) {
+          player.addToQueue(shuffled.slice(1, 11), false);
+        }
+
+        // Update UI
+        setResults(response.data);
+        setTotal(response.total);
+        setCurrentQuery(randomQuery ?? "");
+      }
+    } catch (error) {
+      console.error("Shuffle play failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [player]);
+
   if (!mounted) {
     return null;
   }
@@ -478,21 +515,45 @@ export default function HomePageClient() {
                   <Music2 className="h-10 w-10 text-[var(--color-accent)] md:h-12 md:w-12" />
                 </motion.div>
                 <h3 className="mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">
-                  Explore the isobelnet.de audio library
+                  {isMobile
+                    ? "Start Your Musical Journey"
+                    : "Explore our library. Best enjoyed on a desktop device or horizontally on mobile."}
                 </h3>
                 <p className="max-w-md px-4 text-sm text-[var(--color-subtext)] md:text-base">
-                  Search for songs, artists, albums - anything you want to
-                  listen to.
+                  {isMobile
+                    ? "Tap to start playing music instantly, or search for something specific."
+                    : "Search for songs, artists, albums - anything you want to listen to."}
                 </p>
+
+                {/* Shuffle & Play Button - Mobile Only */}
+                {isMobile && (
+                  <motion.button
+                    onClick={handleShufflePlay}
+                    disabled={loading}
+                    whileTap={{ scale: 0.95 }}
+                    className="mt-6 flex w-full max-w-xs items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-strong)] px-8 py-4 text-lg font-bold text-white shadow-lg shadow-[var(--color-accent)]/25 transition-all hover:shadow-xl hover:shadow-[var(--color-accent)]/40 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="spinner spinner-sm border-white" />
+                        <span>Loading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shuffle className="h-6 w-6" />
+                        <span>Shuffle & Play</span>
+                      </>
+                    )}
+                  </motion.button>
+                )}
 
                 {/* Quick Search Suggestions */}
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
                   {[
-                    "Daft Punk",
-                    "Lofi Beats",
-                    "Jazz",
-                    "Electronic",
-                    "Trip-Hop",
+                    "Molina",
+                    "GusGus",
+                    "Soulwax",
+                    "Massive Attack",
                   ].map((suggestion) => (
                     <motion.button
                       key={suggestion}
