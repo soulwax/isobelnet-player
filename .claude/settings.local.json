@@ -1,9 +1,4 @@
 {
-  "hints": {
-    "shell": [
-      "zsh"
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
@@ -32,9 +27,15 @@
       "Bash(xargs:*)",
       "Bash(git restore:*)",
       "Bash(1)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
+  },
+  "hints": {
+    "shell": [
+      "zsh"
+    ]
   }
 }
