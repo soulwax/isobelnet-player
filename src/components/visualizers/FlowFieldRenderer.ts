@@ -187,6 +187,26 @@ export class FlowFieldRenderer {
   private fractalOffsetY = 0;
   private juliaC = { re: -0.7, im: 0.27 };
 
+  // Pattern-specific configurable parameters
+  private particleCount = 800;
+  private particleSize = 2.0;
+  private particleSpeed = 1.0;
+  private bubbleCount = 40;
+  private bubbleSize = 1.0;
+  private bubbleSpeed = 1.0;
+  private starCount = 200;
+  private starSpeed = 1.0;
+  private rayCount = 24;
+  private waveCount = 5;
+  private waveAmplitude = 1.0;
+  private ringCount = 15;
+  private lightningCount = 1;
+  private matrixSpeed = 1.0;
+  private tunnelSpeed = 1.0;
+  private galaxyArmCount = 4;
+  private auroraIntensity = 1.0;
+  private mandalaLayers = 5;
+
   private lightningBolts: {
     segments: { x: number; y: number }[];
     life: number;
@@ -273,7 +293,7 @@ export class FlowFieldRenderer {
   }
 
   private initializeParticles(): void {
-    const count = Math.min(1200, ((this.width * this.height) * 0.00125) | 0); // / 800 optimized
+    const count = Math.min(this.particleCount, ((this.width * this.height) * 0.00125) | 0);
     this.particles = [];
 
     for (let i = 0; i < count; i++) {
@@ -289,9 +309,9 @@ export class FlowFieldRenderer {
     return {
       x: this.centerX + Math.cos(angle) * radius,
       y: this.centerY + Math.sin(angle) * radius,
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
-      size: 0.8 + Math.random() * 2.5,
+      vx: (Math.random() - 0.5) * 2 * this.particleSpeed,
+      vy: (Math.random() - 0.5) * 2 * this.particleSpeed,
+      size: (0.8 + Math.random() * 2.5) * this.particleSize,
       hue: Math.random() * 60,
       life: maxLife,
       maxLife,
@@ -303,7 +323,7 @@ export class FlowFieldRenderer {
 
   private initializeBubbles(): void {
     this.bubbles = [];
-    const count = 30 + ((Math.random() * 20) | 0);
+    const count = this.bubbleCount;
 
     for (let i = 0; i < count; i++) {
       this.bubbles.push(this.createBubble());
@@ -320,9 +340,9 @@ export class FlowFieldRenderer {
     return {
       x: Math.random() * this.width,
       y: this.height + Math.random() * 100,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: -(0.3 + Math.random() * 1.0),
-      radius: 15 + Math.random() * 35,
+      vx: (Math.random() - 0.5) * 0.3 * this.bubbleSpeed,
+      vy: -(0.3 + Math.random() * 1.0) * this.bubbleSpeed,
+      radius: (15 + Math.random() * 35) * this.bubbleSize,
       hue: hue % 360,
       age: 0,
       maxAge: 400 + Math.random() * 400,
@@ -335,7 +355,7 @@ export class FlowFieldRenderer {
 
   private initializeStars(): void {
     this.stars = [];
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < this.starCount; i++) {
       this.stars.push({
         x: (Math.random() - 0.5) * this.width * 2,
         y: (Math.random() - 0.5) * this.height * 2,
@@ -515,7 +535,7 @@ export class FlowFieldRenderer {
     trebleIntensity: number,
   ): void {
     const ctx = this.ctx;
-    const rayCount = 24 + ((bassIntensity * 24) | 0);
+    const rayCount = this.rayCount + ((bassIntensity * this.rayCount) | 0);
     const angleStep = (Math.PI * 2) / rayCount;
 
     ctx.save();
@@ -593,7 +613,7 @@ export class FlowFieldRenderer {
 
     for (let r = 0; r < rings; r++) {
       const depth = r / rings;
-      const z = depth + this.time * 0.003 + bassIntensity * 0.1;
+      const z = depth + this.time * 0.003 * this.tunnelSpeed + bassIntensity * 0.1;
       const zMod = z % 1;
       const scale = 1 / (zMod + 0.1);
       const radius = scale * 50;
@@ -973,8 +993,8 @@ export class FlowFieldRenderer {
     trebleIntensity: number,
   ): void {
     const ctx = this.ctx;
-    const waveCount = 5;
-    const amplitude = 50 + audioIntensity * 100;
+    const waveCount = this.waveCount;
+    const amplitude = (50 + audioIntensity * 100) * this.waveAmplitude;
     const frequency = 0.02 + trebleIntensity * 0.03;
 
     ctx.save();
@@ -1851,7 +1871,7 @@ export class FlowFieldRenderer {
     midIntensity: number,
   ): void {
     const ctx = this.ctx;
-    const ringCount = 15;
+    const ringCount = this.ringCount;
 
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
@@ -1949,7 +1969,7 @@ export class FlowFieldRenderer {
     ctx.globalCompositeOperation = "lighter";
 
     for (const star of this.stars) {
-      star.z -= 2 + bassIntensity * 15 + trebleIntensity * 10;
+      star.z -= (2 + bassIntensity * 15 + trebleIntensity * 10) * this.starSpeed;
 
       if (star.z <= 0) {
         star.z = 1000;
@@ -7009,5 +7029,153 @@ export class FlowFieldRenderer {
 
     // Log the pattern change
     this.logPatternChange(this.currentPattern, "manual-selection");
+  }
+
+  // Pattern-specific parameter getters and setters
+  public getParticleCount(): number {
+    return this.particleCount;
+  }
+
+  public setParticleCount(value: number): void {
+    this.particleCount = Math.max(50, Math.min(2000, value));
+    this.initializeParticles();
+  }
+
+  public getParticleSize(): number {
+    return this.particleSize;
+  }
+
+  public setParticleSize(value: number): void {
+    this.particleSize = Math.max(0.5, Math.min(5.0, value));
+  }
+
+  public getParticleSpeed(): number {
+    return this.particleSpeed;
+  }
+
+  public setParticleSpeed(value: number): void {
+    this.particleSpeed = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getBubbleCount(): number {
+    return this.bubbleCount;
+  }
+
+  public setBubbleCount(value: number): void {
+    this.bubbleCount = Math.max(10, Math.min(100, value));
+    this.initializeBubbles();
+  }
+
+  public getBubbleSize(): number {
+    return this.bubbleSize;
+  }
+
+  public setBubbleSize(value: number): void {
+    this.bubbleSize = Math.max(0.5, Math.min(3.0, value));
+  }
+
+  public getBubbleSpeed(): number {
+    return this.bubbleSpeed;
+  }
+
+  public setBubbleSpeed(value: number): void {
+    this.bubbleSpeed = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getStarCount(): number {
+    return this.starCount;
+  }
+
+  public setStarCount(value: number): void {
+    this.starCount = Math.max(50, Math.min(500, value));
+    this.initializeStars();
+  }
+
+  public getStarSpeed(): number {
+    return this.starSpeed;
+  }
+
+  public setStarSpeed(value: number): void {
+    this.starSpeed = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getRayCount(): number {
+    return this.rayCount;
+  }
+
+  public setRayCount(value: number): void {
+    this.rayCount = Math.max(6, Math.min(72, value));
+  }
+
+  public getWaveCount(): number {
+    return this.waveCount;
+  }
+
+  public setWaveCount(value: number): void {
+    this.waveCount = Math.max(1, Math.min(15, value));
+  }
+
+  public getWaveAmplitude(): number {
+    return this.waveAmplitude;
+  }
+
+  public setWaveAmplitude(value: number): void {
+    this.waveAmplitude = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getRingCount(): number {
+    return this.ringCount;
+  }
+
+  public setRingCount(value: number): void {
+    this.ringCount = Math.max(3, Math.min(30, value));
+  }
+
+  public getLightningCount(): number {
+    return this.lightningCount;
+  }
+
+  public setLightningCount(value: number): void {
+    this.lightningCount = Math.max(1, Math.min(10, value));
+  }
+
+  public getMatrixSpeed(): number {
+    return this.matrixSpeed;
+  }
+
+  public setMatrixSpeed(value: number): void {
+    this.matrixSpeed = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getTunnelSpeed(): number {
+    return this.tunnelSpeed;
+  }
+
+  public setTunnelSpeed(value: number): void {
+    this.tunnelSpeed = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getGalaxyArmCount(): number {
+    return this.galaxyArmCount;
+  }
+
+  public setGalaxyArmCount(value: number): void {
+    this.galaxyArmCount = Math.max(2, Math.min(8, value));
+  }
+
+  public getAuroraIntensity(): number {
+    return this.auroraIntensity;
+  }
+
+  public setAuroraIntensity(value: number): void {
+    this.auroraIntensity = Math.max(0.1, Math.min(3.0, value));
+  }
+
+  public getMandalaLayers(): number {
+    return this.mandalaLayers;
+  }
+
+  public setMandalaLayers(value: number): void {
+    this.mandalaLayers = Math.max(1, Math.min(12, value));
   }
 }

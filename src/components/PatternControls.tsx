@@ -11,6 +11,50 @@ interface PatternControlsProps {
   onClose: () => void;
 }
 
+// Helper component for rendering sliders
+interface SliderControlProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit?: string;
+  decimals?: number;
+  onChange: (value: number) => void;
+}
+
+function SliderControl({
+  label,
+  value,
+  min,
+  max,
+  step,
+  unit = "",
+  decimals = 0,
+  onChange,
+}: SliderControlProps) {
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <label className="text-sm text-[var(--color-subtext)]">{label}</label>
+        <span className="text-xs font-mono text-[var(--color-accent)]">
+          {value.toFixed(decimals)}
+          {unit}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="accent-accent h-2 w-full cursor-pointer appearance-none rounded-full bg-[rgba(255,255,255,0.12)]"
+      />
+    </div>
+  );
+}
+
 export default function PatternControls({
   renderer,
   onClose,
@@ -30,6 +74,28 @@ export default function PatternControls({
   } | null>(null);
   const [availablePatterns, setAvailablePatterns] = useState<string[]>([]);
   const [rawCurrentPattern, setRawCurrentPattern] = useState<string>("");
+
+  // Pattern-specific parameters
+  const [patternParams, setPatternParams] = useState<{
+    particleCount: number;
+    particleSize: number;
+    particleSpeed: number;
+    bubbleCount: number;
+    bubbleSize: number;
+    bubbleSpeed: number;
+    starCount: number;
+    starSpeed: number;
+    rayCount: number;
+    waveCount: number;
+    waveAmplitude: number;
+    ringCount: number;
+    lightningCount: number;
+    matrixSpeed: number;
+    tunnelSpeed: number;
+    galaxyArmCount: number;
+    auroraIntensity: number;
+    mandalaLayers: number;
+  } | null>(null);
 
   // Get available patterns on mount
   useEffect(() => {
@@ -59,6 +125,28 @@ export default function PatternControls({
         juliaC: state.juliaC,
         hueBase: state.hueBase,
       });
+
+      // Update pattern-specific parameters
+      setPatternParams({
+        particleCount: renderer.getParticleCount(),
+        particleSize: renderer.getParticleSize(),
+        particleSpeed: renderer.getParticleSpeed(),
+        bubbleCount: renderer.getBubbleCount(),
+        bubbleSize: renderer.getBubbleSize(),
+        bubbleSpeed: renderer.getBubbleSpeed(),
+        starCount: renderer.getStarCount(),
+        starSpeed: renderer.getStarSpeed(),
+        rayCount: renderer.getRayCount(),
+        waveCount: renderer.getWaveCount(),
+        waveAmplitude: renderer.getWaveAmplitude(),
+        ringCount: renderer.getRingCount(),
+        lightningCount: renderer.getLightningCount(),
+        matrixSpeed: renderer.getMatrixSpeed(),
+        tunnelSpeed: renderer.getTunnelSpeed(),
+        galaxyArmCount: renderer.getGalaxyArmCount(),
+        auroraIntensity: renderer.getAuroraIntensity(),
+        mandalaLayers: renderer.getMandalaLayers(),
+      });
     };
 
     updateState();
@@ -67,7 +155,7 @@ export default function PatternControls({
     return () => clearInterval(interval);
   }, [renderer]);
 
-  if (!renderer || !patternState) {
+  if (!renderer || !patternState || !patternParams) {
     return null;
   }
 
@@ -108,8 +196,7 @@ export default function PatternControls({
               <select
                 value={rawCurrentPattern}
                 onChange={(e) => {
-                  const pattern = e.target.value as any;
-                  renderer.setPattern(pattern);
+                  renderer.setPattern(e.target.value as any);
                 }}
                 className="w-full appearance-none rounded-lg border border-[rgba(244,178,102,0.18)] bg-[rgba(12,18,27,0.95)] px-4 py-2.5 pr-10 text-sm text-[var(--color-text)] transition hover:border-[rgba(244,178,102,0.3)] focus:border-[var(--color-accent)] focus:outline-none"
               >
@@ -135,86 +222,51 @@ export default function PatternControls({
               General
             </h4>
 
-            {/* Pattern Duration */}
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm text-[var(--color-subtext)]">
-                  Pattern Duration
-                </label>
-                <span className="text-xs font-mono text-[var(--color-accent)]">
-                  {patternState.patternDuration.toFixed(0)}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="50"
-                max="1000"
-                step="10"
-                value={patternState.patternDuration}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value, 10);
-                  renderer.setPatternDuration(value);
-                  setPatternState((prev) =>
-                    prev ? { ...prev, patternDuration: value } : null,
-                  );
-                }}
-                className="accent-accent h-2 w-full cursor-pointer appearance-none rounded-full bg-[rgba(255,255,255,0.12)]"
-              />
-            </div>
+            <SliderControl
+              label="Pattern Duration"
+              value={patternState.patternDuration}
+              min={50}
+              max={1000}
+              step={10}
+              decimals={0}
+              onChange={(value) => {
+                renderer.setPatternDuration(value);
+                setPatternState((prev) =>
+                  prev ? { ...prev, patternDuration: value } : null,
+                );
+              }}
+            />
 
-            {/* Transition Speed */}
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm text-[var(--color-subtext)]">
-                  Transition Speed
-                </label>
-                <span className="text-xs font-mono text-[var(--color-accent)]">
-                  {patternState.transitionSpeed.toFixed(3)}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0.001"
-                max="0.1"
-                step="0.001"
-                value={patternState.transitionSpeed}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  renderer.setTransitionSpeed(value);
-                  setPatternState((prev) =>
-                    prev ? { ...prev, transitionSpeed: value } : null,
-                  );
-                }}
-                className="accent-accent h-2 w-full cursor-pointer appearance-none rounded-full bg-[rgba(255,255,255,0.12)]"
-              />
-            </div>
+            <SliderControl
+              label="Transition Speed"
+              value={patternState.transitionSpeed}
+              min={0.001}
+              max={0.1}
+              step={0.001}
+              decimals={3}
+              onChange={(value) => {
+                renderer.setTransitionSpeed(value);
+                setPatternState((prev) =>
+                  prev ? { ...prev, transitionSpeed: value } : null,
+                );
+              }}
+            />
 
-            {/* Hue Base */}
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <label className="text-sm text-[var(--color-subtext)]">
-                  Hue Base
-                </label>
-                <span className="text-xs font-mono text-[var(--color-accent)]">
-                  {Math.round(patternState.hueBase)}°
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="360"
-                step="1"
-                value={patternState.hueBase}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value, 10);
-                  renderer.setHueBase(value);
-                  setPatternState((prev) =>
-                    prev ? { ...prev, hueBase: value } : null,
-                  );
-                }}
-                className="accent-accent h-2 w-full cursor-pointer appearance-none rounded-full bg-[rgba(255,255,255,0.12)]"
-              />
-            </div>
+            <SliderControl
+              label="Hue Base"
+              value={patternState.hueBase}
+              min={0}
+              max={360}
+              step={1}
+              unit="°"
+              decimals={0}
+              onChange={(value) => {
+                renderer.setHueBase(value);
+                setPatternState((prev) =>
+                  prev ? { ...prev, hueBase: value } : null,
+                );
+              }}
+            />
           </div>
 
           {/* Pattern-Specific Controls */}
@@ -368,6 +420,285 @@ export default function PatternControls({
                 className="accent-accent h-2 w-full cursor-pointer appearance-none rounded-full bg-[rgba(255,255,255,0.12)]"
               />
             </div>
+            </div>
+          )}
+
+          {/* Rays Controls */}
+          {rawCurrentPattern === "rays" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Rays Controls
+              </h4>
+              <SliderControl
+                label="Ray Count"
+                value={patternParams.rayCount}
+                min={6}
+                max={72}
+                step={1}
+                decimals={0}
+                onChange={(value) => renderer.setRayCount(value)}
+              />
+            </div>
+          )}
+
+          {/* Waves Controls */}
+          {rawCurrentPattern === "waves" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Waves Controls
+              </h4>
+              <SliderControl
+                label="Wave Count"
+                value={patternParams.waveCount}
+                min={1}
+                max={15}
+                step={1}
+                decimals={0}
+                onChange={(value) => renderer.setWaveCount(value)}
+              />
+              <SliderControl
+                label="Wave Amplitude"
+                value={patternParams.waveAmplitude}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setWaveAmplitude(value)}
+              />
+            </div>
+          )}
+
+          {/* Swarm/Particle Controls */}
+          {(rawCurrentPattern === "swarm" || rawCurrentPattern === "fluid") && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Particle Controls
+              </h4>
+              <SliderControl
+                label="Particle Count"
+                value={patternParams.particleCount}
+                min={50}
+                max={2000}
+                step={50}
+                decimals={0}
+                onChange={(value) => renderer.setParticleCount(value)}
+              />
+              <SliderControl
+                label="Particle Size"
+                value={patternParams.particleSize}
+                min={0.5}
+                max={5.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setParticleSize(value)}
+              />
+              <SliderControl
+                label="Particle Speed"
+                value={patternParams.particleSpeed}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setParticleSpeed(value)}
+              />
+            </div>
+          )}
+
+          {/* Bubbles Controls */}
+          {rawCurrentPattern === "bubbles" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Bubble Controls
+              </h4>
+              <SliderControl
+                label="Bubble Count"
+                value={patternParams.bubbleCount}
+                min={10}
+                max={100}
+                step={5}
+                decimals={0}
+                onChange={(value) => renderer.setBubbleCount(value)}
+              />
+              <SliderControl
+                label="Bubble Size"
+                value={patternParams.bubbleSize}
+                min={0.5}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setBubbleSize(value)}
+              />
+              <SliderControl
+                label="Bubble Speed"
+                value={patternParams.bubbleSpeed}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setBubbleSpeed(value)}
+              />
+            </div>
+          )}
+
+          {/* Starfield Controls */}
+          {rawCurrentPattern === "starfield" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Starfield Controls
+              </h4>
+              <SliderControl
+                label="Star Count"
+                value={patternParams.starCount}
+                min={50}
+                max={500}
+                step={10}
+                decimals={0}
+                onChange={(value) => renderer.setStarCount(value)}
+              />
+              <SliderControl
+                label="Star Speed"
+                value={patternParams.starSpeed}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setStarSpeed(value)}
+              />
+            </div>
+          )}
+
+          {/* Rings Controls */}
+          {rawCurrentPattern === "rings" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Rings Controls
+              </h4>
+              <SliderControl
+                label="Ring Count"
+                value={patternParams.ringCount}
+                min={3}
+                max={30}
+                step={1}
+                decimals={0}
+                onChange={(value) => renderer.setRingCount(value)}
+              />
+            </div>
+          )}
+
+          {/* Tunnel Controls */}
+          {rawCurrentPattern === "tunnel" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Tunnel Controls
+              </h4>
+              <SliderControl
+                label="Tunnel Speed"
+                value={patternParams.tunnelSpeed}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setTunnelSpeed(value)}
+              />
+            </div>
+          )}
+
+          {/* Matrix Controls */}
+          {rawCurrentPattern === "matrix" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Matrix Controls
+              </h4>
+              <SliderControl
+                label="Fall Speed"
+                value={patternParams.matrixSpeed}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setMatrixSpeed(value)}
+              />
+            </div>
+          )}
+
+          {/* Lightning Controls */}
+          {rawCurrentPattern === "lightning" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Lightning Controls
+              </h4>
+              <SliderControl
+                label="Lightning Count"
+                value={patternParams.lightningCount}
+                min={1}
+                max={10}
+                step={1}
+                decimals={0}
+                onChange={(value) => renderer.setLightningCount(value)}
+              />
+            </div>
+          )}
+
+          {/* Galaxy Controls */}
+          {rawCurrentPattern === "galaxy" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Galaxy Controls
+              </h4>
+              <SliderControl
+                label="Arm Count"
+                value={patternParams.galaxyArmCount}
+                min={2}
+                max={8}
+                step={1}
+                decimals={0}
+                onChange={(value) => renderer.setGalaxyArmCount(value)}
+              />
+            </div>
+          )}
+
+          {/* Aurora Controls */}
+          {rawCurrentPattern === "aurora" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Aurora Controls
+              </h4>
+              <SliderControl
+                label="Intensity"
+                value={patternParams.auroraIntensity}
+                min={0.1}
+                max={3.0}
+                step={0.1}
+                decimals={1}
+                unit="x"
+                onChange={(value) => renderer.setAuroraIntensity(value)}
+              />
+            </div>
+          )}
+
+          {/* Mandala Controls */}
+          {rawCurrentPattern === "mandala" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Mandala Controls
+              </h4>
+              <SliderControl
+                label="Layer Count"
+                value={patternParams.mandalaLayers}
+                min={1}
+                max={12}
+                step={1}
+                decimals={0}
+                onChange={(value) => renderer.setMandalaLayers(value)}
+              />
             </div>
           )}
         </div>
