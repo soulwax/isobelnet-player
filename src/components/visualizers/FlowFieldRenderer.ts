@@ -6975,4 +6975,39 @@ export class FlowFieldRenderer {
       hueBase: this.hueBase,
     };
   }
+
+  public getAllPatterns(): Pattern[] {
+    return [...this.allPatterns];
+  }
+
+  public setPattern(pattern: Pattern): void {
+    if (!this.allPatterns.includes(pattern)) {
+      console.warn(`Pattern "${pattern}" not found in available patterns`);
+      return;
+    }
+
+    // Reset transition state
+    this.isTransitioning = false;
+    this.transitionProgress = 0;
+    this.patternTimer = 0;
+
+    // Set the pattern immediately
+    this.currentPattern = pattern;
+
+    // Find the next pattern in sequence
+    const currentIndex = this.patternSequence.indexOf(pattern);
+    if (currentIndex !== -1) {
+      this.patternIndex = currentIndex;
+      const nextIndex = (currentIndex + 1) % this.patternSequence.length;
+      this.nextPattern = this.patternSequence[nextIndex] ?? "rays";
+    } else {
+      // If pattern not in sequence, just set next to be the next in allPatterns
+      const allIndex = this.allPatterns.indexOf(pattern);
+      const nextAllIndex = (allIndex + 1) % this.allPatterns.length;
+      this.nextPattern = this.allPatterns[nextAllIndex] ?? "rays";
+    }
+
+    // Log the pattern change
+    this.logPatternChange(this.currentPattern, "manual-selection");
+  }
 }

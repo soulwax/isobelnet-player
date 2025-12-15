@@ -2,7 +2,7 @@
 
 "use client";
 
-import { Layers } from "lucide-react";
+import { Layers, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { FlowFieldRenderer } from "./visualizers/FlowFieldRenderer";
 
@@ -28,6 +28,16 @@ export default function PatternControls({
     juliaC: { re: number; im: number };
     hueBase: number;
   } | null>(null);
+  const [availablePatterns, setAvailablePatterns] = useState<string[]>([]);
+  const [rawCurrentPattern, setRawCurrentPattern] = useState<string>("");
+
+  // Get available patterns on mount
+  useEffect(() => {
+    if (!renderer) return;
+
+    const patterns = renderer.getAllPatterns();
+    setAvailablePatterns(patterns);
+  }, [renderer]);
 
   // Update pattern state periodically
   useEffect(() => {
@@ -35,6 +45,7 @@ export default function PatternControls({
 
     const updateState = () => {
       const state = renderer.getPatternState();
+      setRawCurrentPattern(state.currentPattern);
       setPatternState({
         currentPattern: renderer.getFormattedPatternName(state.currentPattern),
         nextPattern: renderer.getFormattedPatternName(state.nextPattern),
@@ -88,13 +99,27 @@ export default function PatternControls({
 
         {/* Content */}
         <div className="max-h-[60vh] overflow-y-auto p-4">
-          {/* Current Pattern Info */}
-          <div className="mb-4 rounded-lg bg-[rgba(244,178,102,0.08)] p-3">
-            <div className="mb-2 text-xs font-medium text-[var(--color-subtext)]">
-              Current Pattern
-            </div>
-            <div className="text-lg font-semibold text-[var(--color-accent)]">
-              {patternState.currentPattern}
+          {/* Pattern Selection */}
+          <div className="mb-6">
+            <label className="mb-2 block text-sm font-semibold text-[var(--color-text)]">
+              Select Pattern
+            </label>
+            <div className="relative">
+              <select
+                value={rawCurrentPattern}
+                onChange={(e) => {
+                  const pattern = e.target.value as any;
+                  renderer.setPattern(pattern);
+                }}
+                className="w-full appearance-none rounded-lg border border-[rgba(244,178,102,0.18)] bg-[rgba(12,18,27,0.95)] px-4 py-2.5 pr-10 text-sm text-[var(--color-text)] transition hover:border-[rgba(244,178,102,0.3)] focus:border-[var(--color-accent)] focus:outline-none"
+              >
+                {availablePatterns.map((pattern) => (
+                  <option key={pattern} value={pattern}>
+                    {renderer.getFormattedPatternName(pattern)}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-accent)]" />
             </div>
             {patternState.isTransitioning && (
               <div className="mt-2 text-xs text-[var(--color-subtext)]">
@@ -192,11 +217,12 @@ export default function PatternControls({
             </div>
           </div>
 
-          {/* Fractal Controls */}
-          <div className="mb-6 space-y-4">
-            <h4 className="text-sm font-semibold text-[var(--color-text)]">
-              Fractal Pattern
-            </h4>
+          {/* Pattern-Specific Controls */}
+          {rawCurrentPattern === "fractal" && (
+            <div className="mb-6 space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--color-text)]">
+                Fractal Controls
+              </h4>
 
             {/* Fractal Zoom */}
             <div>
@@ -342,7 +368,8 @@ export default function PatternControls({
                 className="accent-accent h-2 w-full cursor-pointer appearance-none rounded-full bg-[rgba(255,255,255,0.12)]"
               />
             </div>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </>
