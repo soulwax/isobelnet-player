@@ -89,7 +89,7 @@ export function WelcomeHero({ isVisible, onDismiss }: WelcomeHeroProps) {
                     className="flex items-center gap-2"
                   >
                     <h2 className="bg-gradient-to-r from-[var(--color-text)] to-[var(--color-accent)] bg-clip-text text-lg font-bold text-transparent md:text-xl">
-                      Welcome to Starchild Music
+                      Welcome to isobelnet.de
                     </h2>
                     <motion.div
                       animate={{
