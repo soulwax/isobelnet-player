@@ -1,7 +1,7 @@
 // File: src/app/api/stream/route.ts
 
 import { env } from "@/env";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 // Force dynamic rendering for streaming route
 export const dynamic = "force-dynamic";
