@@ -8004,42 +8004,160 @@ export class FlowFieldRenderer {
     ctx.translate(this.centerX, this.centerY);
 
     const maxRadius = Math.min(this.width, this.height) * 0.46;
-    const zones = 6;
+    const zones = 9; // Increased from 6
+    const invZones = 1 / zones;
 
+    // Dimensional rift particles floating between zones (60-90 particles)
+    const riftParticles = 60 + ((midIntensity * 30) | 0);
+    for (let r = 0; r < riftParticles; r++) {
+      const rAngle = (FlowFieldRenderer.TWO_PI * r) / riftParticles + this.time * 0.002;
+      const rZone = r % zones;
+      const rRadius = (maxRadius * invZones) * (rZone + 0.5) + this.fastSin(this.time * 0.005 + r) * 20;
+      const rx = this.fastCos(rAngle) * rRadius;
+      const ry = this.fastSin(rAngle) * rRadius;
+      const rSize = 1.5 + this.fastSin(this.time * 0.007 + r) * 1.2;
+      const rAlpha = 0.3 + this.fastSin(this.time * 0.004 + r) * 0.2;
+
+      // Alternate between two hue ranges
+      const rHue = rZone % 2 === 0
+        ? this.fastMod360(this.hueBase + 280 + r * 3)
+        : this.fastMod360(this.hueBase + 40 + r * 3);
+
+      ctx.fillStyle = this.hsla(rHue, 80, 65, rAlpha);
+      ctx.beginPath();
+      ctx.arc(rx, ry, rSize, 0, FlowFieldRenderer.TWO_PI);
+      ctx.fill();
+    }
+
+    // Enhanced rotating zones with distortion
     for (let zone = 0; zone < zones; zone++) {
-      const innerRadius = (maxRadius / zones) * zone;
-      const outerRadius = (maxRadius / zones) * (zone + 1);
+      const innerRadius = maxRadius * invZones * zone;
+      const outerRadius = maxRadius * invZones * (zone + 1);
       const rotation = this.time * 0.0006 * (zone % 2 === 0 ? 1 : -1);
 
       ctx.save();
       ctx.rotate(rotation);
 
-      const hue1 = (this.hueBase + 280 + zone * 10) % 360;
-      const hue2 = (this.hueBase + 40 + zone * 10) % 360;
-      const alpha = 0.4 + Math.sin(this.time * 0.003 + zone) * 0.2 + midIntensity * 0.2;
+      const hue1 = this.fastMod360(this.hueBase + 280 + zone * 10);
+      const hue2 = this.fastMod360(this.hueBase + 40 + zone * 10);
+      const midHue = this.fastMod360((hue1 + hue2) * 0.5);
+      const alpha = 0.4 + this.fastSin(this.time * 0.003 + zone) * 0.2 + midIntensity * 0.2;
 
       const zoneGradient = ctx.createRadialGradient(0, 0, innerRadius, 0, 0, outerRadius);
-      zoneGradient.addColorStop(0, `hsla(${hue1}, 70%, 50%, ${alpha})`);
-      zoneGradient.addColorStop(0.5, `hsla(${(hue1 + hue2) / 2}, 75%, 55%, ${alpha * 0.8})`);
-      zoneGradient.addColorStop(1, `hsla(${hue2}, 70%, 50%, ${alpha * 0.6})`);
+      zoneGradient.addColorStop(0, this.hsla(hue1, 70, 50, alpha));
+      zoneGradient.addColorStop(0.5, this.hsla(midHue, 75, 55, alpha * 0.8));
+      zoneGradient.addColorStop(1, this.hsla(hue2, 70, 50, alpha * 0.6));
 
       ctx.fillStyle = zoneGradient;
       ctx.beginPath();
-      ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
-      ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
+      ctx.arc(0, 0, outerRadius, 0, FlowFieldRenderer.TWO_PI);
+      ctx.arc(0, 0, innerRadius, 0, FlowFieldRenderer.TWO_PI);
       ctx.fill("evenodd");
+
+      // Zone boundary sparkles (8-12 per zone)
+      const sparkleCount = 8 + ((bassIntensity * 4) | 0);
+      const sparkleAngleStep = FlowFieldRenderer.TWO_PI / sparkleCount;
+      for (let s = 0; s < sparkleCount; s++) {
+        const sparkleAngle = sparkleAngleStep * s + this.time * 0.008;
+        const sparkleRadius = outerRadius + this.fastSin(this.time * 0.01 + s + zone) * 3;
+        const sx = this.fastCos(sparkleAngle) * sparkleRadius;
+        const sy = this.fastSin(sparkleAngle) * sparkleRadius;
+        const sparkleSize = 1.5 + this.fastSin(this.time * 0.012 + s) * 1 + midIntensity;
+        const sparkleAlpha = alpha * (0.6 + this.fastSin(this.time * 0.009 + s) * 0.3);
+
+        ctx.fillStyle = this.hsla(hue2, 85, 70, sparkleAlpha);
+        ctx.beginPath();
+        ctx.arc(sx, sy, sparkleSize, 0, FlowFieldRenderer.TWO_PI);
+        ctx.fill();
+      }
+
+      // Dimensional tears emanating from zone boundaries (4 tears per zone)
+      if (zone % 2 === 0) {
+        const tearCount = 4;
+        const tearAngleStep = FlowFieldRenderer.TWO_PI / tearCount;
+        for (let t = 0; t < tearCount; t++) {
+          const tearAngle = tearAngleStep * t;
+          const tearLength = 25 + this.fastSin(this.time * 0.006 + t + zone) * 10 + bassIntensity * 8;
+          const x1 = this.fastCos(tearAngle) * outerRadius;
+          const y1 = this.fastSin(tearAngle) * outerRadius;
+          const x2 = this.fastCos(tearAngle) * (outerRadius + tearLength);
+          const y2 = this.fastSin(tearAngle) * (outerRadius + tearLength);
+
+          const tearGradient = ctx.createLinearGradient(x1, y1, x2, y2);
+          tearGradient.addColorStop(0, this.hsla(hue2, 80, 60, alpha * 0.6));
+          tearGradient.addColorStop(0.5, this.hsla(midHue, 75, 55, alpha * 0.4));
+          tearGradient.addColorStop(1, this.hsla(hue1, 70, 50, 0));
+
+          ctx.strokeStyle = tearGradient;
+          ctx.lineWidth = 2 + bassIntensity;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+
       ctx.restore();
     }
 
-    const twilightCore = ctx.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.25);
-    twilightCore.addColorStop(0, `hsla(${this.hueBase + 320}, 80%, 60%, ${0.8 + audioIntensity * 0.2})`);
-    twilightCore.addColorStop(0.6, `hsla(${this.hueBase + 50}, 75%, 55%, ${0.5 + midIntensity * 0.3})`);
-    twilightCore.addColorStop(1, `hsla(${this.hueBase + 280}, 70%, 50%, 0)`);
+    // Swirling twilight wisps in center (10-16 wisps)
+    const wispCount = 10 + ((midIntensity * 6) | 0);
+    for (let w = 0; w < wispCount; w++) {
+      const wAngle = (FlowFieldRenderer.TWO_PI * w) / wispCount + this.time * 0.004;
+      const wRadius = maxRadius * (0.12 + this.fastSin(this.time * 0.006 + w) * 0.08);
+      const wx = this.fastCos(wAngle) * wRadius;
+      const wy = this.fastSin(wAngle) * wRadius;
+      const wSize = 5 + this.fastSin(this.time * 0.008 + w) * 2 + midIntensity * 3;
+      const wAlpha = 0.4 + this.fastSin(this.time * 0.005 + w) * 0.2 + audioIntensity * 0.2;
+      const wHue = w % 2 === 0
+        ? this.fastMod360(this.hueBase + 320)
+        : this.fastMod360(this.hueBase + 50);
 
-    ctx.fillStyle = twilightCore;
-    ctx.beginPath();
-    ctx.arc(0, 0, maxRadius * 0.25, 0, Math.PI * 2);
-    ctx.fill();
+      const wispGradient = ctx.createRadialGradient(wx, wy, 0, wx, wy, wSize * 1.5);
+      wispGradient.addColorStop(0, this.hsla(wHue, 85, 65, wAlpha));
+      wispGradient.addColorStop(0.6, this.hsla(this.fastMod360(wHue + 15), 80, 60, wAlpha * 0.6));
+      wispGradient.addColorStop(1, this.hsla(this.fastMod360(wHue + 30), 75, 55, 0));
+
+      ctx.fillStyle = wispGradient;
+      ctx.beginPath();
+      ctx.arc(wx, wy, wSize * 1.5, 0, FlowFieldRenderer.TWO_PI);
+      ctx.fill();
+    }
+
+    // Enhanced multi-layered twilight core (4 layers)
+    for (let layer = 0; layer < 4; layer++) {
+      const coreRadius = maxRadius * (0.25 - layer * 0.04);
+      const corePulse = 1 + this.fastSin(this.time * 0.005 + layer * 0.4) * 0.1 + audioIntensity * 0.08;
+      const finalRadius = coreRadius * corePulse;
+
+      const twilightCore = ctx.createRadialGradient(0, 0, 0, 0, 0, finalRadius);
+
+      // Alternate between two color schemes per layer
+      const coreHue1 = layer % 2 === 0
+        ? this.fastMod360(this.hueBase + 320 - layer * 5)
+        : this.fastMod360(this.hueBase + 50 - layer * 5);
+      const coreHue2 = layer % 2 === 0
+        ? this.fastMod360(this.hueBase + 50 - layer * 5)
+        : this.fastMod360(this.hueBase + 280 - layer * 5);
+
+      twilightCore.addColorStop(
+        0,
+        this.hsla(coreHue1, 80, 60, (0.8 - layer * 0.15) + audioIntensity * 0.2),
+      );
+      twilightCore.addColorStop(
+        0.6,
+        this.hsla(coreHue2, 75, 55, (0.5 - layer * 0.1) + midIntensity * 0.3),
+      );
+      twilightCore.addColorStop(
+        1,
+        this.hsla(this.fastMod360(this.hueBase + 280 - layer * 5), 70, 50, 0),
+      );
+
+      ctx.fillStyle = twilightCore;
+      ctx.beginPath();
+      ctx.arc(0, 0, finalRadius, 0, FlowFieldRenderer.TWO_PI);
+      ctx.fill();
+    }
 
     ctx.restore();
   }
