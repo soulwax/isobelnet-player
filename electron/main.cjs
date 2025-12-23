@@ -2,9 +2,24 @@
 // Load environment variables from .env.local first
 
 const path = require("path");
+const fs = require("fs");
 
-require("dotenv").config({ path: path.resolve(__dirname, "../.env.local") });
-require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+// Load dotenv if available (may not be present in packaged app)
+try {
+  const dotenv = require("dotenv");
+  const envLocalPath = path.resolve(__dirname, "../.env.local");
+  const envPath = path.resolve(__dirname, "../.env");
+  
+  if (fs.existsSync(envLocalPath)) {
+    dotenv.config({ path: envLocalPath });
+  }
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+} catch (err) {
+  // dotenv not available or .env files don't exist - this is OK in production
+  console.log("[Electron] dotenv not available or .env files not found (this is normal in packaged apps)");
+}
 
 const {
   app,
@@ -16,7 +31,6 @@ const {
 } = require("electron");
 const { spawn } = require("child_process");
 const http = require("http");
-const fs = require("fs");
 
 // Production detection: packaged apps or explicit ELECTRON_PROD flag
 const isDev = !app.isPackaged && process.env.ELECTRON_PROD !== "true";
