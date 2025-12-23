@@ -548,21 +548,21 @@ export class FlowFieldRenderer {
   }
 
   private createParticle(): Particle {
-    const angle = Math.random() * Math.PI * 2;
+    const angle = Math.random() * FlowFieldRenderer.TWO_PI;
     const radius = Math.random() * Math.min(this.width, this.height) * 0.5;
-    const maxLife = 150 + (Math.random() * 250) | 0; // Fast floor with | 0
+    const maxLife = 150 + (Math.random() * 250) | 0;
 
     return {
-      x: this.centerX + Math.cos(angle) * radius,
-      y: this.centerY + Math.sin(angle) * radius,
-      vx: (Math.random() - 0.5) * (this.particleSpeed << 1), // Bit shift: * 2
+      x: this.centerX + this.fastCos(angle) * radius,
+      y: this.centerY + this.fastSin(angle) * radius,
+      vx: (Math.random() - 0.5) * (this.particleSpeed << 1),
       vy: (Math.random() - 0.5) * (this.particleSpeed << 1),
       size: (0.8 + Math.random() * 2.5) * this.particleSize,
-      hue: (Math.random() * 360) | 0, // Expanded hue range for more variety
+      hue: (Math.random() * 360) | 0,
       life: maxLife,
       maxLife,
-      angle: Math.random() * Math.PI * 2,
-      angularVelocity: (Math.random() - 0.5) * 0.15, // More angular motion
+      angle: Math.random() * FlowFieldRenderer.TWO_PI,
+      angularVelocity: (Math.random() - 0.5) * 0.15,
       trail: [],
     };
   }
@@ -783,12 +783,17 @@ export class FlowFieldRenderer {
 
         const rgb = this.cachedHslToRgb(hue / 360, saturation / 100, lightness / 100);
 
-        for (let dy = 0; dy < 3 && py + dy < this.height; dy++) {
-          for (let dx = 0; dx < 3 && px + dx < this.width; dx++) {
-            const i = ((py + dy) * this.width + (px + dx)) << 2; // Bit shift: * 4
-            data[i] = rgb[0] ?? 0;
-            data[i + 1] = rgb[1] ?? 0;
-            data[i + 2] = rgb[2] ?? 0;
+        // HYPER-OPTIMIZATION: Fill pixels matching adaptive step size, cache RGB values
+        const r = rgb[0] ?? 0;
+        const g = rgb[1] ?? 0;
+        const b = rgb[2] ?? 0;
+
+        for (let dy = 0; dy < step && py + dy < this.height; dy++) {
+          for (let dx = 0; dx < step && px + dx < this.width; dx++) {
+            const i = ((py + dy) * this.width + (px + dx)) << 2;
+            data[i] = r;
+            data[i + 1] = g;
+            data[i + 2] = b;
             data[i + 3] = 255;
           }
         }
@@ -892,25 +897,30 @@ export class FlowFieldRenderer {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
 
+    // HYPER-OPTIMIZATION: Pre-calculate constants
+    const invRings = 1 / rings;
+    const angleStep = FlowFieldRenderer.TWO_PI / segments;
+    const maxDimension = Math.max(this.width, this.height) * 2;
+
     for (let r = 0; r < rings; r++) {
-      const depth = r / rings;
+      const depth = r * invRings;
       const z =
         depth + this.time * 0.003 * this.tunnelSpeed + bassIntensity * 0.1;
       const zMod = z % 1;
       const scale = 1 / (zMod + 0.1);
       const radius = scale * 50;
 
-      if (radius > Math.max(this.width, this.height) * 2) continue;
+      if (radius > maxDimension) continue;
 
       const alpha = (1 - zMod) * (0.2 + audioIntensity * 0.3);
-      const rotation = z * Math.PI * 2 + midIntensity * Math.PI;
+      const rotation = z * FlowFieldRenderer.TWO_PI + midIntensity * Math.PI;
 
       ctx.beginPath();
 
       for (let s = 0; s <= segments; s++) {
-        const angle = (s / segments) * Math.PI * 2 + rotation;
-        const x = this.centerX + Math.cos(angle) * radius;
-        const y = this.centerY + Math.sin(angle) * radius;
+        const angle = angleStep * s + rotation;
+        const x = this.centerX + this.fastCos(angle) * radius;
+        const y = this.centerY + this.fastSin(angle) * radius;
 
         if (s === 0) {
           ctx.moveTo(x, y);
@@ -1177,15 +1187,15 @@ export class FlowFieldRenderer {
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
 
-        // Expanded outer mystical aura with breathing effect
-        const breathe = 1 + Math.sin(this.time * 0.003 + bubble.age * 0.01) * 0.2;
+        // HYPER-OPTIMIZATION: Expanded outer mystical aura with fast breathing effect
+        const breathe = 1 + this.fastSin(this.time * 0.003 + bubble.age * 0.01) * 0.2;
         const outerGlow = ctx.createRadialGradient(
           bubble.x,
           bubble.y,
           bubble.radius * 0.5,
           bubble.x,
           bubble.y,
-          bubble.radius * 2.5 * breathe, // Breathing aura
+          bubble.radius * 2.5 * breathe,
         );
         // Enhanced color shifting in glow
         const glowHue = (bubble.hue + this.time * 0.05) % 360;
@@ -1301,15 +1311,18 @@ export class FlowFieldRenderer {
 
       ctx.beginPath();
 
-      const twoPi = Math.PI << 1; // Bit shift: * 2
-      // Enhanced wave complexity with multiple harmonics
-      for (let angle = 0; angle <= twoPi; angle += 0.04) {
-        const wave1 = Math.sin(angle * 8 + phase) * amplitude * bassIntensity;
-        const wave2 = Math.cos(angle * 5 - phase * 0.7) * amplitude * 0.3 * trebleIntensity;
-        const wave3 = Math.sin(angle * 12 + phase * 1.5) * amplitude * 0.15; // Harmonic
-        const r = baseRadius + wave1 + wave2 + wave3; // Multi-layered wave motion
-        const x = this.centerX + Math.cos(angle) * r;
-        const y = this.centerY + Math.sin(angle) * r;
+      // HYPER-OPTIMIZATION: Fast wave complexity with trig lookup
+      const steps = 157; // ~6.28 / 0.04
+      const angleStep = FlowFieldRenderer.TWO_PI / steps;
+
+      for (let i = 0; i <= steps; i++) {
+        const angle = angleStep * i;
+        const wave1 = this.fastSin(angle * 8 + phase) * amplitude * bassIntensity;
+        const wave2 = this.fastCos(angle * 5 - phase * 0.7) * amplitude * 0.3 * trebleIntensity;
+        const wave3 = this.fastSin(angle * 12 + phase * 1.5) * amplitude * 0.15;
+        const r = baseRadius + wave1 + wave2 + wave3;
+        const x = this.centerX + this.fastCos(angle) * r;
+        const y = this.centerY + this.fastSin(angle) * r;
 
         if (angle === 0) {
           ctx.moveTo(x, y);
@@ -1560,21 +1573,25 @@ export class FlowFieldRenderer {
     ctx.globalCompositeOperation = "lighter";
     ctx.translate(this.centerX, this.centerY);
 
+    // HYPER-OPTIMIZATION: Pre-calculate mandala parameters
+    const symmetryAngleStep = FlowFieldRenderer.TWO_PI / symmetry;
+    const petals = 4;
+    const petalAngleStep = FlowFieldRenderer.TWO_PI / petals;
+
     for (let layer = 0; layer < layers; layer++) {
       const radius = 50 + layer * 60 + bassIntensity * 40;
-      const petals = 4;
       const rotation =
         this.time * 0.001 * (layer % 2 === 0 ? 1 : -1) + midIntensity * Math.PI;
 
       for (let sym = 0; sym < symmetry; sym++) {
         ctx.save();
-        ctx.rotate((sym / symmetry) * Math.PI * 2);
+        ctx.rotate(symmetryAngleStep * sym);
 
         for (let p = 0; p < petals; p++) {
-          const angle = (p / petals) * Math.PI * 2 + rotation;
+          const angle = petalAngleStep * p + rotation;
           const petalRadius = radius * 0.3;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
+          const x = this.fastCos(angle) * radius;
+          const y = this.fastSin(angle) * radius;
 
           const hue = (this.hueBase + layer * 45 + sym * 30) % 360;
           const gradient = ctx.createRadialGradient(x, y, 0, x, y, petalRadius);
@@ -1645,16 +1662,20 @@ export class FlowFieldRenderer {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
 
+    // HYPER-OPTIMIZATION: Pre-calculate DNA parameters
+    const invSegments = 1 / segments;
+    const wavelengthFactor = FlowFieldRenderer.TWO_PI / wavelength;
+
     for (let h = 0; h < helixCount; h++) {
       const phase = h * Math.PI + this.time * 0.02;
 
       ctx.beginPath();
 
       for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
+        const t = i * invSegments;
         const y = t * this.height;
-        const angle = (y / wavelength) * Math.PI * 2 + phase;
-        const x = this.centerX + Math.sin(angle) * amplitude;
+        const angle = y * wavelengthFactor + phase;
+        const x = this.centerX + this.fastSin(angle) * amplitude;
 
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -1664,7 +1685,7 @@ export class FlowFieldRenderer {
 
         if (h === 0 && i % 5 === 0) {
           const angle2 = angle + Math.PI;
-          const x2 = this.centerX + Math.sin(angle2) * amplitude;
+          const x2 = this.centerX + this.fastSin(angle2) * amplitude;
 
           const hue = (this.hueBase + (i / segments) * 360) % 360;
           ctx.save();
@@ -1730,14 +1751,18 @@ export class FlowFieldRenderer {
     ctx.fillStyle = coreGradient;
     ctx.fillRect(-100, -100, 200, 200);
 
-    for (let arm = 0; arm < arms; arm++) {
-      const armAngle = (arm / arms) * Math.PI * 2;
+    // HYPER-OPTIMIZATION: Pre-calculate galaxy parameters
+    const maxRadius = Math.min(this.width, this.height) * 0.6;
+    const armAngleStep = FlowFieldRenderer.TWO_PI / arms;
 
-      for (let r = 20; r < Math.min(this.width, this.height) * 0.6; r += 5) {
+    for (let arm = 0; arm < arms; arm++) {
+      const armAngle = armAngleStep * arm;
+
+      for (let r = 20; r < maxRadius; r += 5) {
         const spiralTightness = 0.3;
         const angle = armAngle + r * spiralTightness * 0.01 + rotationSpeed;
-        const x = Math.cos(angle) * r;
-        const y = Math.sin(angle) * r;
+        const x = this.fastCos(angle) * r;
+        const y = this.fastSin(angle) * r;
 
         if (Math.random() > 0.3) {
           const starSize = 1 + Math.random() * 3 + audioIntensity * 2;
