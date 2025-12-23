@@ -6055,60 +6055,81 @@ export class FlowFieldRenderer {
 
     ctx.save();
     ctx.translate(this.centerX, this.centerY);
-    ctx.rotate(Math.sin(this.time * 0.002) * 0.1);
+    // HYPER-OPTIMIZATION: Use fast trig for egg rotation
+    ctx.rotate(this.fastSin(this.time * 0.002) * 0.1);
+
+    // HYPER-OPTIMIZATION: Pre-calculate cosmic egg parameters
+    const twoPi = FlowFieldRenderer.TWO_PI;
+    const fieldLayers = 8;
+    const invFieldLayers = 1 / fieldLayers;
+    const timeHue = this.time * 0.3;
+    const timeSpiral = this.time * 0.005;
+    const timeStar = this.time * 0.001;
+    const timeTwinkle = this.time * 0.01;
+    const eggWidthSq = eggWidth * eggWidth;
+    const eggHeightSq = eggHeight * eggHeight;
+    const invEggWidthSq = 1 / eggWidthSq;
+    const invEggHeightSq = 1 / eggHeightSq;
+    const eggHeightRatio = eggHeight / eggWidth;
+    const eggHeight02 = eggHeight * 0.2;
+    const eggHeight06 = eggHeight * 0.6;
 
     // Outer cosmic field
-    const fieldLayers = 8;
     for (let i = 0; i < fieldLayers; i++) {
-      const scale = 1 + (i / fieldLayers) * 0.5;
-      const hue = (this.hueBase + i * 30 + this.time * 0.3) % 360;
-      const alpha =
-        0.1 + ((fieldLayers - i) / fieldLayers) * 0.3 + audioIntensity * 0.1;
+      const scale = 1 + (i * invFieldLayers) * 0.5;
+      const hue = this.fastMod360(this.hueBase + i * 30 + timeHue);
+      const alpha = 0.1 + ((fieldLayers - i) * invFieldLayers) * 0.3 + audioIntensity * 0.1;
 
-      ctx.strokeStyle = `hsla(${hue}, 80%, 65%, ${alpha})`;
+      ctx.strokeStyle = this.hsla(hue, 80, 65, alpha);
       ctx.lineWidth = 2;
 
       ctx.beginPath();
-      ctx.ellipse(0, 0, eggWidth * scale, eggHeight * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, eggWidth * scale, eggHeight * scale, 0, 0, twoPi);
       ctx.stroke();
     }
 
     // Main egg body with gradient
+    const eggHue40 = this.fastMod360(this.hueBase + 40);
+    const eggHue80 = this.fastMod360(this.hueBase + 80);
     const eggGradient = ctx.createRadialGradient(
       0,
-      -eggHeight * 0.2,
+      -eggHeight02,
       0,
       0,
       0,
-      eggHeight * 0.6,
+      eggHeight06,
     );
-    eggGradient.addColorStop(0, `hsla(${this.hueBase}, 70%, 50%, 0.8)`);
-    eggGradient.addColorStop(0.5, `hsla(${this.hueBase + 40}, 75%, 55%, 0.6)`);
-    eggGradient.addColorStop(1, `hsla(${this.hueBase + 80}, 80%, 60%, 0.4)`);
+    eggGradient.addColorStop(0, this.hsla(this.hueBase, 70, 50, 0.8));
+    eggGradient.addColorStop(0.5, this.hsla(eggHue40, 75, 55, 0.6));
+    eggGradient.addColorStop(1, this.hsla(eggHue80, 80, 60, 0.4));
 
     ctx.fillStyle = eggGradient;
-    ctx.strokeStyle = `hsla(${this.hueBase}, 85%, 65%, 0.9)`;
+    ctx.strokeStyle = this.hsla(this.hueBase, 85, 65, 0.9);
     ctx.lineWidth = 4;
 
     ctx.beginPath();
-    ctx.ellipse(0, 0, eggWidth, eggHeight, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, eggWidth, eggHeight, 0, 0, twoPi);
     ctx.fill();
     ctx.stroke();
 
     // Inner universe swirl
     const spiralTurns = 5;
     const maxRadius = eggWidth * 0.8;
+    const spiralAngleMult = twoPi * spiralTurns;
+    const inv360 = 1 / 360;
+    const spiralAlpha = 0.6 + audioIntensity * 0.3;
 
-    ctx.strokeStyle = `hsla(${this.hueBase + 120}, 90%, 70%, ${0.6 + audioIntensity * 0.3})`;
+    ctx.strokeStyle = this.hsla(this.fastMod360(this.hueBase + 120), 90, 70, spiralAlpha);
     ctx.lineWidth = 3;
 
     ctx.beginPath();
     for (let t = 0; t <= 360; t++) {
-      const progress = t / 360;
-      const angle = progress * Math.PI * 2 * spiralTurns + this.time * 0.005;
+      const progress = t * inv360;
+      const angle = progress * spiralAngleMult + timeSpiral;
       const radius = progress * maxRadius;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius * (eggHeight / eggWidth);
+      // HYPER-OPTIMIZATION: Use fast trig for spiral calculation
+      const x = this.fastCos(angle) * radius;
+      const y = this.fastSin(angle) * radius * eggHeightRatio;
 
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -6116,16 +6137,18 @@ export class FlowFieldRenderer {
     ctx.stroke();
 
     // Counter-rotating spiral
-    ctx.strokeStyle = `hsla(${this.hueBase + 240}, 90%, 70%, ${0.5 + audioIntensity * 0.3})`;
+    const counterSpiralAlpha = 0.5 + audioIntensity * 0.3;
+    ctx.strokeStyle = this.hsla(this.fastMod360(this.hueBase + 240), 90, 70, counterSpiralAlpha);
     ctx.lineWidth = 3;
 
     ctx.beginPath();
     for (let t = 0; t <= 360; t++) {
-      const progress = t / 360;
-      const angle = -progress * Math.PI * 2 * spiralTurns - this.time * 0.005;
+      const progress = t * inv360;
+      const angle = -progress * spiralAngleMult - timeSpiral;
       const radius = progress * maxRadius;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius * (eggHeight / eggWidth);
+      // HYPER-OPTIMIZATION: Use fast trig for counter-spiral
+      const x = this.fastCos(angle) * radius;
+      const y = this.fastSin(angle) * radius * eggHeightRatio;
 
       if (t === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
@@ -6134,75 +6157,92 @@ export class FlowFieldRenderer {
 
     // Stars/galaxies within
     const starCount = 50;
+    const invStarCount = 1 / starCount;
+    const starAngleStep = twoPi * invStarCount;
+    const inv10 = 1 / 10;
+    let rngSeed = (this.time * 1103515245 + 12345) & 0x7fffffff;
+    
     for (let i = 0; i < starCount; i++) {
-      const angle =
-        (Math.PI * 2 * i) / starCount +
-        this.time * 0.001 * (i % 2 === 0 ? 1 : -1);
-      const radiusProgress = (i % 10) / 10;
+      const angle = starAngleStep * i + timeStar * (i & 1 ? -1 : 1);
+      const radiusProgress = (i % 10) * inv10;
       const radius = radiusProgress * maxRadius;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius * (eggHeight / eggWidth);
+      // HYPER-OPTIMIZATION: Use fast trig for star position
+      const x = this.fastCos(angle) * radius;
+      const y = this.fastSin(angle) * radius * eggHeightRatio;
 
-      // Only draw stars inside the egg
-      if (
-        (x * x) / (eggWidth * eggWidth) + (y * y) / (eggHeight * eggHeight) <
-        0.64
-      ) {
-        const starSize = 2 + Math.random() * 3 + midIntensity * 3;
-        const starHue = (this.hueBase + i * 7) % 360;
-        const twinkle = Math.sin(this.time * 0.01 + i) * 0.3 + 0.7;
+      // Only draw stars inside the egg (squared distance check)
+      const xSq = x * x;
+      const ySq = y * y;
+      if (xSq * invEggWidthSq + ySq * invEggHeightSq < 0.64) {
+        // HYPER-OPTIMIZATION: Use deterministic pseudo-random
+        rngSeed = (rngSeed * 1664525 + 1013904223) & 0x7fffffff;
+        const starSize = 2 + (rngSeed / 0x7fffffff) * 3 + midIntensity * 3;
+        const starHue = this.fastMod360(this.hueBase + i * 7);
+        // HYPER-OPTIMIZATION: Use fast trig for twinkle
+        const twinkle = this.fastSin(timeTwinkle + i) * 0.3 + 0.7;
 
-        ctx.fillStyle = `hsla(${starHue}, 90%, 70%, ${twinkle})`;
+        ctx.fillStyle = this.hsla(starHue, 90, 70, twinkle);
         ctx.beginPath();
-        ctx.arc(x, y, starSize, 0, Math.PI * 2);
+        ctx.arc(x, y, starSize, 0, twoPi);
         ctx.fill();
       }
     }
 
     // Central light (primordial essence)
     const coreSize = 40 + bassIntensity * 30;
+    const coreSize02 = coreSize * 0.2;
+    const coreHue60 = this.fastMod360(this.hueBase + 60);
+    const coreHue40 = this.fastMod360(this.hueBase + 40);
+    const coreHue20 = this.fastMod360(this.hueBase + 20);
     const coreGradient = ctx.createRadialGradient(
       0,
       0,
-      coreSize * 0.2,
+      coreSize02,
       0,
       0,
       coreSize,
     );
-    coreGradient.addColorStop(0, `hsla(${this.hueBase + 60}, 100%, 90%, 1)`);
-    coreGradient.addColorStop(0.4, `hsla(${this.hueBase + 40}, 95%, 80%, 0.8)`);
-    coreGradient.addColorStop(0.7, `hsla(${this.hueBase + 20}, 90%, 70%, 0.5)`);
-    coreGradient.addColorStop(1, `hsla(${this.hueBase}, 85%, 60%, 0)`);
+    coreGradient.addColorStop(0, this.hsla(coreHue60, 100, 90, 1));
+    coreGradient.addColorStop(0.4, this.hsla(coreHue40, 95, 80, 0.8));
+    coreGradient.addColorStop(0.7, this.hsla(coreHue20, 90, 70, 0.5));
+    coreGradient.addColorStop(1, this.hsla(this.hueBase, 85, 60, 0));
 
     ctx.fillStyle = coreGradient;
     ctx.beginPath();
-    ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
+    ctx.arc(0, 0, coreSize, 0, twoPi);
     ctx.fill();
 
     // Emanating rays
     const rayCount = 12;
+    const invRayCount = 1 / rayCount;
+    const rayAngleStep = twoPi * invRayCount;
+    const timeRay = this.time * 0.003;
+    const rayLength = coreSize + 30 + bassIntensity * 20;
+    const coreSizeHalf = coreSize * 0.5;
+    const rayHue45 = this.fastMod360(this.hueBase + 45);
+    const rayHue60 = this.fastMod360(this.hueBase + 60);
+    
     for (let i = 0; i < rayCount; i++) {
-      const rayAngle = (Math.PI * 2 * i) / rayCount + this.time * 0.003;
-      const rayLength = coreSize + 30 + bassIntensity * 20;
+      const rayAngle = rayAngleStep * i + timeRay;
 
       ctx.save();
       ctx.rotate(rayAngle);
 
       const rayGradient = ctx.createLinearGradient(
-        coreSize * 0.5,
+        coreSizeHalf,
         0,
         rayLength,
         0,
       );
-      rayGradient.addColorStop(0, `hsla(${this.hueBase + 45}, 95%, 75%, 0.8)`);
-      rayGradient.addColorStop(1, `hsla(${this.hueBase + 60}, 90%, 70%, 0)`);
+      rayGradient.addColorStop(0, this.hsla(rayHue45, 95, 75, 0.8));
+      rayGradient.addColorStop(1, this.hsla(rayHue60, 90, 70, 0));
 
       ctx.strokeStyle = rayGradient;
       ctx.lineWidth = 4;
       ctx.lineCap = "round";
 
       ctx.beginPath();
-      ctx.moveTo(coreSize * 0.5, 0);
+      ctx.moveTo(coreSizeHalf, 0);
       ctx.lineTo(rayLength, 0);
       ctx.stroke();
 
@@ -6212,23 +6252,31 @@ export class FlowFieldRenderer {
     // Cracking effect (emergence)
     if (audioIntensity > 0.7) {
       const cracks = 8;
+      const invCracks = 1 / cracks;
+      const crackAngleStep = twoPi * invCracks;
+      const timeCrack = this.time * 0.01;
+      const crackLength = eggHeight * 0.6;
+      const eggHeight02 = eggHeight * 0.2;
+      const crackAlpha = audioIntensity - 0.7;
+      const crackHue = this.fastMod360(this.hueBase + 180);
+      
       for (let i = 0; i < cracks; i++) {
-        const crackAngle =
-          (Math.PI * 2 * i) / cracks + Math.sin(this.time * 0.01) * 0.1;
-        const crackLength = eggHeight * 0.6;
+        // HYPER-OPTIMIZATION: Use fast trig for crack angle
+        const crackAngle = crackAngleStep * i + this.fastSin(timeCrack) * 0.1;
 
         ctx.save();
         ctx.rotate(crackAngle);
 
-        ctx.strokeStyle = `hsla(${this.hueBase + 180}, 80%, 70%, ${audioIntensity - 0.7})`;
+        ctx.strokeStyle = this.hsla(crackHue, 80, 70, crackAlpha);
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 10]);
 
         ctx.beginPath();
-        ctx.moveTo(0, eggHeight * 0.2);
+        ctx.moveTo(0, eggHeight02);
         const segmentCount = 10;
+        const invSegmentCount = 1 / segmentCount;
         for (let s = 0; s <= segmentCount; s++) {
-          const sProgress = s / segmentCount;
+          const sProgress = s * invSegmentCount;
           const y = eggHeight * 0.2 + sProgress * crackLength;
           const x = Math.sin(sProgress * Math.PI * 2 + this.time * 0.02) * 10;
           ctx.lineTo(x, y);
