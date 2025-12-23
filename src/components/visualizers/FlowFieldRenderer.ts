@@ -8335,47 +8335,185 @@ export class FlowFieldRenderer {
     ctx.translate(this.centerX, this.centerY);
 
     const maxRadius = Math.min(this.width, this.height) * 0.46;
-    const dancers = 8;
+    const dancers = 12; // Increased from 8
+    const invDancers = 1 / dancers;
+    const angleStep = FlowFieldRenderer.TWO_PI * invDancers;
 
-    for (let dancer = 0; dancer < dancers; dancer++) {
-      const baseAngle = (Math.PI * 2 * dancer) / dancers;
-      const angle = baseAngle + Math.sin(this.time * 0.003 + dancer) * 0.5;
-      const radius = maxRadius * (0.3 + Math.sin(this.time * 0.004 + dancer * 0.5) * 0.2);
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
+    // Draw interconnecting shadow tendrils between dancers
+    ctx.strokeStyle = this.hsla(
+      this.fastMod360(this.hueBase + 260),
+      65,
+      20,
+      0.15 + bassIntensity * 0.15,
+    );
+    ctx.lineWidth = 1.5 + bassIntensity * 2;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = this.hsla(this.fastMod360(this.hueBase + 260), 70, 25, 0.5);
 
-      const hue = (this.hueBase + 250 + dancer * 8) % 360;
-      const size = 20 + Math.sin(this.time * 0.005 + dancer) * 8 + trebleIntensity * 6;
-      const alpha = 0.4 + Math.sin(this.time * 0.004 + dancer) * 0.2 + trebleIntensity * 0.3;
+    for (let i = 0; i < dancers; i++) {
+      const baseAngle1 = angleStep * i;
+      const angle1 = baseAngle1 + this.fastSin(this.time * 0.003 + i) * 0.5;
+      const radius1 = maxRadius * (0.3 + this.fastSin(this.time * 0.004 + i * 0.5) * 0.2);
+      const x1 = this.fastCos(angle1) * radius1;
+      const y1 = this.fastSin(angle1) * radius1;
 
-      const shadowGradient = ctx.createRadialGradient(x, y, 0, x, y, size);
-      shadowGradient.addColorStop(0, `hsla(${hue}, 70%, 30%, ${alpha})`);
-      shadowGradient.addColorStop(0.5, `hsla(${hue + 10}, 60%, 25%, ${alpha * 0.7})`);
-      shadowGradient.addColorStop(1, `hsla(${hue + 20}, 50%, 20%, 0)`);
+      const nextIdx = (i + 1) % dancers;
+      const baseAngle2 = angleStep * nextIdx;
+      const angle2 = baseAngle2 + this.fastSin(this.time * 0.003 + nextIdx) * 0.5;
+      const radius2 = maxRadius * (0.3 + this.fastSin(this.time * 0.004 + nextIdx * 0.5) * 0.2);
+      const x2 = this.fastCos(angle2) * radius2;
+      const y2 = this.fastSin(angle2) * radius2;
 
-      ctx.fillStyle = shadowGradient;
-      ctx.shadowBlur = 25 + bassIntensity * 15;
-      ctx.shadowColor = `hsla(${hue}, 80%, 25%, 0.7)`;
+      // Curved tendril
+      const midX = (x1 + x2) * 0.5;
+      const midY = (y1 + y2) * 0.5;
+      const curveDist = this.fastSin(this.time * 0.006 + i) * 30;
+      const perpAngle = angle1 + Math.PI * 0.5;
+      const ctrlX = midX + this.fastCos(perpAngle) * curveDist;
+      const ctrlY = midY + this.fastSin(perpAngle) * curveDist;
+
       ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = `hsla(${hue}, 80%, 40%, ${alpha * 0.8})`;
-      ctx.lineWidth = 2 + bassIntensity * 1.5;
-      ctx.beginPath();
-      ctx.arc(x, y, size * 0.6, 0, Math.PI * 2);
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(ctrlX, ctrlY, x2, y2);
       ctx.stroke();
     }
 
-    const danceCenter = ctx.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.24);
-    danceCenter.addColorStop(0, `hsla(${this.hueBase + 260}, 60%, 15%, ${0.8 + audioIntensity * 0.2})`);
-    danceCenter.addColorStop(0.6, `hsla(${this.hueBase + 250}, 70%, 20%, ${0.5 + trebleIntensity * 0.3})`);
-    danceCenter.addColorStop(1, `hsla(${this.hueBase + 240}, 80%, 25%, 0)`);
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = danceCenter;
-    ctx.beginPath();
-    ctx.arc(0, 0, maxRadius * 0.24, 0, Math.PI * 2);
-    ctx.fill();
+    // Enhanced shadow dancers with morphing shapes and trails
+    for (let dancer = 0; dancer < dancers; dancer++) {
+      const baseAngle = angleStep * dancer;
+      const angle = baseAngle + this.fastSin(this.time * 0.003 + dancer) * 0.5;
+      const radius = maxRadius * (0.3 + this.fastSin(this.time * 0.004 + dancer * 0.5) * 0.2);
+      const x = this.fastCos(angle) * radius;
+      const y = this.fastSin(angle) * radius;
+
+      const hue = this.fastMod360(this.hueBase + 250 + dancer * 8);
+      const size = 20 + this.fastSin(this.time * 0.005 + dancer) * 8 + trebleIntensity * 6;
+      const alpha = 0.4 + this.fastSin(this.time * 0.004 + dancer) * 0.2 + trebleIntensity * 0.3;
+
+      // Shadow trail effect (5 trailing shadows)
+      for (let trail = 4; trail >= 0; trail--) {
+        const trailOffset = trail * 0.08;
+        const trailAngle = baseAngle + this.fastSin(this.time * 0.003 + dancer - trailOffset) * 0.5;
+        const trailRadius =
+          maxRadius * (0.3 + this.fastSin(this.time * 0.004 + dancer * 0.5 - trailOffset) * 0.2);
+        const trailX = this.fastCos(trailAngle) * trailRadius;
+        const trailY = this.fastSin(trailAngle) * trailRadius;
+        const trailAlpha = alpha * (1 - trail * 0.18);
+        const trailSize = size * (1 - trail * 0.08);
+
+        if (trail > 0) {
+          const shadowGradient = ctx.createRadialGradient(
+            trailX,
+            trailY,
+            0,
+            trailX,
+            trailY,
+            trailSize,
+          );
+          shadowGradient.addColorStop(
+            0,
+            this.hsla(hue, 70, 30, trailAlpha * 0.4),
+          );
+          shadowGradient.addColorStop(
+            0.5,
+            this.hsla(this.fastMod360(hue + 10), 60, 25, trailAlpha * 0.25),
+          );
+          shadowGradient.addColorStop(1, this.hsla(this.fastMod360(hue + 20), 50, 20, 0));
+
+          ctx.fillStyle = shadowGradient;
+          ctx.beginPath();
+          ctx.arc(trailX, trailY, trailSize, 0, FlowFieldRenderer.TWO_PI);
+          ctx.fill();
+        }
+      }
+
+      const vertices = 10;
+      const invVertices = 1 / vertices;
+      ctx.fillStyle = this.hsla(hue, 70, 30, alpha);
+      ctx.shadowBlur = 25 + bassIntensity * 15;
+      ctx.shadowColor = this.hsla(hue, 80, 25, 0.7);
+
+      ctx.beginPath();
+      for (let v = 0; v <= vertices; v++) {
+        const vAngle = FlowFieldRenderer.TWO_PI * v * invVertices;
+        const isOuter = v % 2 === 0;
+        const morphFactor = 1 + this.fastSin(vAngle * 3 + this.time * 0.008 + dancer) * 0.3;
+        const vRadius = isOuter ? size * morphFactor : size * 0.5 * morphFactor;
+        const vx = x + this.fastCos(vAngle + angle) * vRadius;
+        const vy = y + this.fastSin(vAngle + angle) * vRadius;
+
+        if (v === 0) {
+          ctx.moveTo(vx, vy);
+        } else {
+          ctx.lineTo(vx, vy);
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+
+      // Inner glow ring
+      ctx.strokeStyle = this.hsla(hue, 80, 40, alpha * 0.8);
+      ctx.lineWidth = 2 + bassIntensity * 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.6, 0, FlowFieldRenderer.TWO_PI);
+      ctx.stroke();
+
+      const wispCount = 6 + ((bassIntensity * 2) | 0);
+      const wispAngleStep = FlowFieldRenderer.TWO_PI / wispCount;
+
+      for (let w = 0; w < wispCount; w++) {
+        const wispBaseAngle = wispAngleStep * w + angle;
+        const wispLength = 15 + this.fastSin(this.time * 0.01 + dancer + w) * 8 + trebleIntensity * 10;
+        const wispEndX = x + this.fastCos(wispBaseAngle) * wispLength;
+        const wispEndY = y + this.fastSin(wispBaseAngle) * wispLength;
+
+        const wispGradient = ctx.createLinearGradient(x, y, wispEndX, wispEndY);
+        wispGradient.addColorStop(0, this.hsla(hue, 70, 35, alpha * 0.6));
+        wispGradient.addColorStop(1, this.hsla(this.fastMod360(hue + 15), 60, 30, 0));
+
+        ctx.strokeStyle = wispGradient;
+        ctx.lineWidth = 2 + bassIntensity;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(wispEndX, wispEndY);
+        ctx.stroke();
+      }
+    }
+
+    for (let layer = 0; layer < 3; layer++) {
+      const layerRadius = maxRadius * (0.24 - layer * 0.06);
+      const layerAlpha = (0.8 - layer * 0.2) + audioIntensity * 0.2;
+
+      const danceCenter = ctx.createRadialGradient(0, 0, 0, 0, 0, layerRadius);
+      danceCenter.addColorStop(
+        0,
+        this.hsla(
+          this.fastMod360(this.hueBase + 260 + layer * 5),
+          60,
+          15 + layer * 3,
+          layerAlpha,
+        ),
+      );
+      danceCenter.addColorStop(
+        0.6,
+        this.hsla(
+          this.fastMod360(this.hueBase + 250 + layer * 5),
+          70,
+          20 + layer * 2,
+          (0.5 - layer * 0.1) + trebleIntensity * 0.3,
+        ),
+      );
+      danceCenter.addColorStop(1, this.hsla(this.fastMod360(this.hueBase + 240 + layer * 5), 80, 25, 0));
+
+      ctx.fillStyle = danceCenter;
+      ctx.beginPath();
+      ctx.arc(0, 0, layerRadius, 0, FlowFieldRenderer.TWO_PI);
+      ctx.fill();
+    }
 
     ctx.restore();
   }
@@ -8389,12 +8527,10 @@ export class FlowFieldRenderer {
     ctx.save();
     ctx.translate(this.centerX, this.centerY);
 
-    // HYPER-OPTIMIZATION: Pre-calculate nightmare parameters
     const maxRadius = Math.min(this.width, this.height) * 0.5;
     const nightmares = 14;
     const angleStep = FlowFieldRenderer.TWO_PI / nightmares;
 
-    // ENHANCED: Writhing tentacles/tendrils emanating chaotic energy
     ctx.globalCompositeOperation = "lighter";
     const tentacleCount = 16;
     const tentacleAngleStep = FlowFieldRenderer.TWO_PI / tentacleCount;
@@ -8413,7 +8549,6 @@ export class FlowFieldRenderer {
       let currentAngle = baseAngle + this.time * 0.002 * (i % 2 === 0 ? 1 : -1);
 
       for (let seg = 0; seg < segments; seg++) {
-        // Chaotic, writhing motion
         const chaos1 = this.fastSin(this.time * 0.008 + i + seg * 0.3) * 0.4;
         const chaos2 = this.fastCos(this.time * 0.012 + i * 0.5 + seg * 0.2) * 0.3;
         const audioDistortion = (audioIntensity - 0.5) * 0.5;
@@ -8440,12 +8575,10 @@ export class FlowFieldRenderer {
 
     ctx.globalCompositeOperation = "source-over";
 
-    // ENHANCED: Distorted nightmare orbs with glitch effect
     for (let i = 0; i < nightmares; i++) {
       const angle = angleStep * i + this.time * 0.0009;
       const orbitRadius = maxRadius * (0.25 + (i % 4) * 0.12);
 
-      // Glitch offset for unstable appearance
       const glitchX = (Math.random() - 0.5) * 5 * bassIntensity;
       const glitchY = (Math.random() - 0.5) * 5 * bassIntensity;
 
@@ -8456,7 +8589,6 @@ export class FlowFieldRenderer {
       const size = 18 + this.fastSin(this.time * 0.005 + i) * 7 + midIntensity * 8;
       const pulseAlpha = 0.6 + this.fastSin(this.time * 0.004 + i) * 0.3 + audioIntensity * 0.3;
 
-      // Morphing nightmare shape
       const morphVertices = 8;
       const morphAngleStep = FlowFieldRenderer.TWO_PI / morphVertices;
 
