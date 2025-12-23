@@ -8451,52 +8451,104 @@ export class FlowFieldRenderer {
     ctx.save();
     ctx.translate(this.centerX, this.centerY);
 
-    const maxRadius = Math.min(this.width, this.height) * 0.47;
-    const depthLayers = 12;
+    // HYPER-OPTIMIZATION: Pre-calculate abyss parameters
+    const maxRadius = Math.min(this.width, this.height) * 0.5;
+    const depthLayers = 15;
+    const invDepthLayers = 1 / depthLayers;
 
+    // ENHANCED: Swirling depth layers with vortex effect
     for (let layer = 0; layer < depthLayers; layer++) {
-      const radius = (maxRadius / depthLayers) * (depthLayers - layer);
-      const hue = (this.hueBase + 220 - layer * 2) % 360;
-      const lightness = 10 + layer * 2;
-      const alpha = (0.9 - layer * 0.07) * (0.4 + trebleIntensity * 0.4);
+      const radius = maxRadius * (1 - layer * invDepthLayers);
+      const hue = this.fastMod360(this.hueBase + 220 - layer * 3);
+      const lightness = 8 + layer * 2;
+      const alpha = (0.92 - layer * 0.06) * (0.5 + trebleIntensity * 0.5);
+
+      // Vortex rotation effect
+      const rotation = (this.time * 0.0005 + layer * 0.1) * (layer % 2 === 0 ? 1 : -1);
+      ctx.save();
+      ctx.rotate(rotation);
 
       const layerGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-      layerGradient.addColorStop(0, `hsla(${hue}, 60%, ${lightness + 5}%, ${alpha})`);
-      layerGradient.addColorStop(0.7, `hsla(${hue}, 70%, ${lightness}%, ${alpha * 0.8})`);
-      layerGradient.addColorStop(1, `hsla(${hue - 10}, 80%, ${lightness - 2}%, 0)`);
+      layerGradient.addColorStop(0, this.hsla(hue, 65, lightness + 6, alpha));
+      layerGradient.addColorStop(0.5, this.hsla(hue, 75, lightness + 2, alpha * 0.85));
+      layerGradient.addColorStop(0.8, this.hsla(hue, 80, lightness, alpha * 0.6));
+      layerGradient.addColorStop(1, this.hsla(hue - 10, 85, lightness - 2, 0));
 
       ctx.fillStyle = layerGradient;
       ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.arc(0, 0, radius, 0, FlowFieldRenderer.TWO_PI);
       ctx.fill();
+
+      ctx.restore();
     }
 
-    const abyssalCreatures = 6;
-    for (let i = 0; i < abyssalCreatures; i++) {
-      const angle = (Math.PI * 2 * i) / abyssalCreatures + this.time * 0.0004;
-      const radius = maxRadius * (0.3 + Math.sin(this.time * 0.003 + i) * 0.1);
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
+    // ENHANCED: Bioluminescent creatures swimming in the depths
+    ctx.globalCompositeOperation = "lighter";
+    const creatureCount = 10;
+    const creatureAngleStep = FlowFieldRenderer.TWO_PI / creatureCount;
 
-      const size = 8 + Math.sin(this.time * 0.005 + i) * 3 + trebleIntensity * 3;
-      const alpha = 0.6 + Math.sin(this.time * 0.004 + i) * 0.2 + trebleIntensity * 0.2;
+    for (let i = 0; i < creatureCount; i++) {
+      const angle = creatureAngleStep * i + this.time * 0.0006 * (i % 2 === 0 ? 1 : -1);
+      const depth = 0.25 + this.fastSin(this.time * 0.003 + i * 0.5) * 0.2;
+      const radius = maxRadius * depth;
+      const x = this.fastCos(angle) * radius;
+      const y = this.fastSin(angle) * radius;
 
-      ctx.fillStyle = `hsla(${this.hueBase + 230}, 80%, 25%, ${alpha})`;
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = `hsla(${this.hueBase + 230}, 100%, 30%, 0.7)`;
+      const size = 6 + this.fastSin(this.time * 0.005 + i) * 3 + trebleIntensity * 4;
+      const pulseAlpha = 0.5 + this.fastSin(this.time * 0.006 + i) * 0.3 + audioIntensity * 0.2;
+
+      // Creature glow
+      const creatureGlow = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
+      const creatureHue = this.fastMod360(this.hueBase + 200 + i * 15);
+      creatureGlow.addColorStop(0, this.hsla(creatureHue, 100, 60, pulseAlpha * 0.9));
+      creatureGlow.addColorStop(0.5, this.hsla(creatureHue, 90, 45, pulseAlpha * 0.5));
+      creatureGlow.addColorStop(1, this.hsla(creatureHue, 80, 30, 0));
+
+      ctx.fillStyle = creatureGlow;
       ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.arc(x, y, size * 3, 0, FlowFieldRenderer.TWO_PI);
       ctx.fill();
+
+      // Creature body (brighter core)
+      ctx.fillStyle = this.hsla(creatureHue, 100, 70, pulseAlpha);
+      ctx.shadowBlur = 25 + bassIntensity * 15;
+      ctx.shadowColor = this.hsla(creatureHue, 100, 60, 0.8);
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, FlowFieldRenderer.TWO_PI);
+      ctx.fill();
+
+      // Creature trail
+      for (let trail = 1; trail <= 3; trail++) {
+        const trailAngle = angle - trail * 0.1;
+        const trailRadius = radius * (1 - trail * 0.03);
+        const trailX = this.fastCos(trailAngle) * trailRadius;
+        const trailY = this.fastSin(trailAngle) * trailRadius;
+        const trailSize = size * (1 - trail * 0.25);
+        const trailAlpha = pulseAlpha * (1 - trail * 0.3);
+
+        ctx.fillStyle = this.hsla(creatureHue, 90, 50, trailAlpha * 0.4);
+        ctx.beginPath();
+        ctx.arc(trailX, trailY, trailSize, 0, FlowFieldRenderer.TWO_PI);
+        ctx.fill();
+      }
     }
 
-    const abyssalCore = ctx.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.3);
-    abyssalCore.addColorStop(0, `hsla(${this.hueBase + 240}, 50%, 5%, ${0.95 + audioIntensity * 0.05})`);
-    abyssalCore.addColorStop(0.6, `hsla(${this.hueBase + 230}, 60%, 8%, ${0.7 + bassIntensity * 0.2})`);
-    abyssalCore.addColorStop(1, `hsla(${this.hueBase + 220}, 70%, 12%, 0)`);
+    ctx.globalCompositeOperation = "source-over";
+
+    // ENHANCED: Void core with pulsing darkness
+    const coreRadius = maxRadius * (0.35 + bassIntensity * 0.1);
+    const corePulse = 1 + this.fastSin(this.time * 0.002) * 0.1;
+    const abyssalCore = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius * corePulse);
+    abyssalCore.addColorStop(0, this.hsla(this.hueBase + 240, 55, 3, 0.98 + audioIntensity * 0.05));
+    abyssalCore.addColorStop(0.4, this.hsla(this.hueBase + 235, 65, 6, 0.85 + bassIntensity * 0.15));
+    abyssalCore.addColorStop(0.7, this.hsla(this.hueBase + 230, 70, 10, 0.6 + trebleIntensity * 0.2));
+    abyssalCore.addColorStop(1, this.hsla(this.hueBase + 220, 75, 15, 0));
 
     ctx.fillStyle = abyssalCore;
+    ctx.shadowBlur = 40 + bassIntensity * 30;
+    ctx.shadowColor = this.hsla(this.hueBase + 240, 80, 10, 0.7);
     ctx.beginPath();
-    ctx.arc(0, 0, maxRadius * 0.3, 0, Math.PI * 2);
+    ctx.arc(0, 0, coreRadius * corePulse, 0, FlowFieldRenderer.TWO_PI);
     ctx.fill();
 
     ctx.restore();
@@ -8511,47 +8563,109 @@ export class FlowFieldRenderer {
     ctx.save();
     ctx.translate(this.centerX, this.centerY);
 
-    const maxRadius = Math.min(this.width, this.height) * 0.44;
-    const pulseWaves = 8;
+    // HYPER-OPTIMIZATION: Pre-calculate phantom parameters
+    const maxRadius = Math.min(this.width, this.height) * 0.48;
+    const pulseWaves = 10;
 
-    for (let wave = 0; wave < pulseWaves; wave++) {
-      const delay = wave * 0.15;
-      const radius = maxRadius * (0.2 + wave * 0.1) + Math.sin(this.time * 0.004 - delay) * maxRadius * 0.05;
-      const hue = (this.hueBase + 100 + wave * 12) % 360;
-      const alpha = (0.8 - wave * 0.1) * (0.4 + midIntensity * 0.4);
+    // ENHANCED: Spectral wisps emanating from center
+    ctx.globalCompositeOperation = "lighter";
+    const wispCount = 12;
+    const wispAngleStep = FlowFieldRenderer.TWO_PI / wispCount;
 
-      ctx.strokeStyle = `hsla(${hue}, 85%, 65%, ${alpha})`;
-      ctx.lineWidth = 3 + (wave === 0 ? bassIntensity * 3 : 0);
-      ctx.shadowBlur = 25;
-      ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${alpha * 0.7})`;
+    for (let i = 0; i < wispCount; i++) {
+      const wispAngle = wispAngleStep * i + this.time * 0.002;
+      const wispLength = maxRadius * (0.6 + this.fastSin(this.time * 0.003 + i) * 0.3);
+
+      const gradient = ctx.createLinearGradient(
+        0, 0,
+        this.fastCos(wispAngle) * wispLength,
+        this.fastSin(wispAngle) * wispLength
+      );
+
+      const wispHue = this.fastMod360(this.hueBase + 100 + i * 20);
+      gradient.addColorStop(0, this.hsla(wispHue, 100, 80, 0.7 + audioIntensity * 0.3));
+      gradient.addColorStop(0.5, this.hsla(wispHue, 90, 70, 0.3 + midIntensity * 0.2));
+      gradient.addColorStop(1, this.hsla(wispHue, 80, 60, 0));
+
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 2 + bassIntensity * 3;
+      ctx.lineCap = "round";
 
       ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.moveTo(0, 0);
+      // Curved wisp path
+      const midX = this.fastCos(wispAngle) * wispLength * 0.5;
+      const midY = this.fastSin(wispAngle) * wispLength * 0.5;
+      const curveOffset = this.fastSin(this.time * 0.005 + i) * 30;
+      ctx.quadraticCurveTo(
+        midX + curveOffset,
+        midY + curveOffset,
+        this.fastCos(wispAngle) * wispLength,
+        this.fastSin(wispAngle) * wispLength
+      );
+      ctx.stroke();
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+
+    // Pulse waves with enhanced effects
+    for (let wave = 0; wave < pulseWaves; wave++) {
+      const delay = wave * 0.12;
+      const radius = maxRadius * (0.15 + wave * 0.09) +
+                     this.fastSin(this.time * 0.004 - delay) * maxRadius * 0.06;
+      const hue = this.fastMod360(this.hueBase + 100 + wave * 15);
+      const alpha = (0.85 - wave * 0.085) * (0.5 + midIntensity * 0.5);
+
+      ctx.strokeStyle = this.hsla(hue, 90, 70, alpha);
+      ctx.lineWidth = 3 + (wave === 0 ? bassIntensity * 5 : 0);
+      ctx.shadowBlur = 30 + audioIntensity * 20;
+      ctx.shadowColor = this.hsla(hue, 100, 75, alpha * 0.8);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, FlowFieldRenderer.TWO_PI);
       ctx.stroke();
 
+      // ENHANCED: Spectral nodes on pulse waves
       if (wave % 2 === 0) {
-        const segments = 6;
-        for (let i = 0; i < segments; i++) {
-          const angle = (Math.PI * 2 * i) / segments + this.time * 0.0008;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
+        const segments = 8;
+        const segmentAngleStep = FlowFieldRenderer.TWO_PI / segments;
 
-          ctx.fillStyle = `hsla(${hue}, 95%, 75%, ${alpha * 0.9})`;
-          ctx.beginPath();
-          ctx.arc(x, y, 3 + midIntensity * 2, 0, Math.PI * 2);
-          ctx.fill();
+        for (let i = 0; i < segments; i++) {
+          const angle = segmentAngleStep * i + this.time * 0.001;
+          const x = this.fastCos(angle) * radius;
+          const y = this.fastSin(angle) * radius;
+
+          // Ghostly trail effect
+          for (let trail = 0; trail < 3; trail++) {
+            const trailOffset = trail * 0.05;
+            const trailAngle = angle - trailOffset;
+            const trailRadius = radius * (1 - trail * 0.02);
+            const trailX = this.fastCos(trailAngle) * trailRadius;
+            const trailY = this.fastSin(trailAngle) * trailRadius;
+            const trailAlpha = alpha * (1 - trail * 0.3);
+
+            ctx.fillStyle = this.hsla(hue, 100, 80, trailAlpha * 0.7);
+            ctx.beginPath();
+            ctx.arc(trailX, trailY, (4 - trail) + midIntensity * 2, 0, FlowFieldRenderer.TWO_PI);
+            ctx.fill();
+          }
         }
       }
     }
 
-    const phantomCore = ctx.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.22);
-    phantomCore.addColorStop(0, `hsla(${this.hueBase + 110}, 100%, 85%, ${0.95 + audioIntensity * 0.05})`);
-    phantomCore.addColorStop(0.5, `hsla(${this.hueBase + 100}, 95%, 70%, ${0.7 + midIntensity * 0.2})`);
-    phantomCore.addColorStop(1, `hsla(${this.hueBase + 90}, 90%, 55%, 0)`);
+    // ENHANCED: Multi-layered spectral core
+    const coreRadius = maxRadius * (0.25 + bassIntensity * 0.08);
+    const phantomCore = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
+    phantomCore.addColorStop(0, this.hsla(this.hueBase + 110, 100, 90, 0.98 + audioIntensity * 0.05));
+    phantomCore.addColorStop(0.3, this.hsla(this.hueBase + 105, 95, 75, 0.8 + midIntensity * 0.2));
+    phantomCore.addColorStop(0.7, this.hsla(this.hueBase + 100, 90, 65, 0.6 + bassIntensity * 0.2));
+    phantomCore.addColorStop(1, this.hsla(this.hueBase + 95, 85, 55, 0));
 
     ctx.fillStyle = phantomCore;
+    ctx.shadowBlur = 50 + audioIntensity * 30;
+    ctx.shadowColor = this.hsla(this.hueBase + 110, 100, 80, 0.9);
     ctx.beginPath();
-    ctx.arc(0, 0, maxRadius * 0.22, 0, Math.PI * 2);
+    ctx.arc(0, 0, coreRadius, 0, FlowFieldRenderer.TWO_PI);
     ctx.fill();
 
     ctx.restore();
@@ -8566,60 +8680,96 @@ export class FlowFieldRenderer {
     ctx.save();
     ctx.translate(this.centerX, this.centerY);
 
+    // HYPER-OPTIMIZATION: Pre-calculate flame parameters
     const maxRadius = Math.min(this.width, this.height) * 0.52;
-    const flames = 16; // More than doubled from 7
+    const flames = 20; // Even more flames for intensity
+    const angleStep = FlowFieldRenderer.TWO_PI / flames;
+    const flamePoints = 16;
+    const invFlamePoints = 1 / flamePoints;
 
-    for (let flame = 0; flame < flames; flame++) {
-      const angle = (Math.PI * 2 * flame) / flames + this.time * 0.0015; // Faster rotation
-      const baseRadius = maxRadius * (0.1 + flame * 0.08);
-      const radius = baseRadius + Math.sin(this.time * 0.012 + flame) * maxRadius * 0.15; // More movement
+    // Enhanced flame rendering with multiple layers
+    for (let layer = 0; layer < 2; layer++) {
+      const layerScale = layer === 0 ? 1 : 0.7;
+      const layerRotation = layer * 0.15;
 
-      const hue1 = (this.hueBase + 0 + flame * 12) % 360; // More color variety
-      const hue2 = (this.hueBase + 40 + flame * 12) % 360;
-      const hue3 = (this.hueBase + 80 + flame * 12) % 360;
+      for (let flame = 0; flame < flames; flame++) {
+        const angle = angleStep * flame + this.time * 0.0015 + layerRotation;
+        const baseRadius = maxRadius * (0.1 + flame * 0.08) * layerScale;
+        const radius = baseRadius + this.fastSin(this.time * 0.012 + flame) * maxRadius * 0.18;
 
-      const flameGradient = ctx.createLinearGradient(
-        Math.cos(angle) * baseRadius,
-        Math.sin(angle) * baseRadius,
-        Math.cos(angle) * maxRadius,
-        Math.sin(angle) * maxRadius,
-      );
-      flameGradient.addColorStop(0, `hsla(${hue1}, 100%, 75%, ${0.95 + audioIntensity * 0.15})`); // Brighter
-      flameGradient.addColorStop(0.3, `hsla(${hue2}, 100%, 70%, ${0.9 + trebleIntensity * 0.25})`);
-      flameGradient.addColorStop(0.7, `hsla(${hue3}, 100%, 65%, ${0.75 + bassIntensity * 0.35})`);
-      flameGradient.addColorStop(1, `hsla(${hue1}, 100%, 55%, 0)`);
+        const hue1 = this.fastMod360(this.hueBase + flame * 15);
+        const hue2 = this.fastMod360(this.hueBase + 40 + flame * 15);
+        const hue3 = this.fastMod360(this.hueBase + 80 + flame * 15);
 
-      ctx.fillStyle = flameGradient;
-      ctx.shadowBlur = 65; // Much stronger glow
-      ctx.shadowColor = `hsla(${hue1}, 100%, 70%, 0.98)`;
+        const cosAngle = this.fastCos(angle);
+        const sinAngle = this.fastSin(angle);
 
-      const flamePoints = 14; // More detail from 8
-      ctx.beginPath();
-      for (let i = 0; i <= flamePoints; i++) {
-        const t = i / flamePoints;
-        const currentRadius = baseRadius + (radius - baseRadius) * t;
-        const wave = Math.sin(t * Math.PI * 5 + this.time * 0.02 + flame) * 28; // More aggressive waves
-        const x = Math.cos(angle + wave * 0.015) * currentRadius;
-        const y = Math.sin(angle + wave * 0.015) * currentRadius;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        const flameGradient = ctx.createLinearGradient(
+          cosAngle * baseRadius,
+          sinAngle * baseRadius,
+          cosAngle * maxRadius,
+          sinAngle * maxRadius,
+        );
+        flameGradient.addColorStop(0, this.hsla(hue1, 100, 75, 0.95 + audioIntensity * 0.15));
+        flameGradient.addColorStop(0.3, this.hsla(hue2, 100, 70, 0.9 + trebleIntensity * 0.25));
+        flameGradient.addColorStop(0.7, this.hsla(hue3, 100, 65, 0.75 + bassIntensity * 0.35));
+        flameGradient.addColorStop(1, this.hsla(hue1, 100, 55, 0));
+
+        ctx.fillStyle = flameGradient;
+        ctx.shadowBlur = 70 + bassIntensity * 30;
+        ctx.shadowColor = this.hsla(hue1, 100, 70, 0.98);
+
+        // ENHANCED: Organic flame shapes with multiple harmonics
+        ctx.beginPath();
+        for (let i = 0; i <= flamePoints; i++) {
+          const t = i * invFlamePoints;
+          const currentRadius = baseRadius + (radius - baseRadius) * t;
+          const wave1 = this.fastSin(t * Math.PI * 5 + this.time * 0.02 + flame) * 30;
+          const wave2 = this.fastSin(t * Math.PI * 12 + this.time * 0.04) * 8;
+          const totalWave = (wave1 + wave2) * (1 + audioIntensity * 0.5);
+          const x = this.fastCos(angle + totalWave * 0.015) * currentRadius;
+          const y = this.fastSin(angle + totalWave * 0.015) * currentRadius;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.lineTo(cosAngle * baseRadius, sinAngle * baseRadius);
+        ctx.closePath();
+        ctx.fill();
       }
-      ctx.lineTo(Math.cos(angle) * baseRadius, Math.sin(angle) * baseRadius);
-      ctx.closePath();
+    }
+
+    // ENHANCED: Floating embers/particles
+    ctx.globalCompositeOperation = "lighter";
+    const emberCount = 40 + ((bassIntensity * 60) | 0);
+    for (let i = 0; i < emberCount; i++) {
+      const emberAngle = (this.time * 0.003 + i * 0.5) % FlowFieldRenderer.TWO_PI;
+      const emberDist = (this.time * 2 + i * 10) % (maxRadius * 1.2);
+      const emberX = this.fastCos(emberAngle) * emberDist + this.fastSin(this.time * 0.01 + i) * 20;
+      const emberY = this.fastSin(emberAngle) * emberDist + this.fastCos(this.time * 0.015 + i) * 20;
+      const emberSize = 1 + Math.random() * 3 + trebleIntensity * 2;
+      const emberHue = this.fastMod360(this.hueBase + Math.random() * 60);
+      const emberAlpha = (1 - emberDist / (maxRadius * 1.2)) * (0.6 + audioIntensity * 0.4);
+
+      ctx.fillStyle = this.hsla(emberHue, 100, 80, emberAlpha);
+      ctx.beginPath();
+      ctx.arc(emberX, emberY, emberSize, 0, FlowFieldRenderer.TWO_PI);
       ctx.fill();
     }
 
-    const infernalCore = ctx.createRadialGradient(0, 0, 0, 0, 0, maxRadius * 0.3);
-    infernalCore.addColorStop(0, `hsla(${this.hueBase + 30}, 100%, 98%, ${0.99 + audioIntensity * 0.05})`); // Ultra bright
-    infernalCore.addColorStop(0.2, `hsla(${this.hueBase + 20}, 100%, 90%, ${0.95 + bassIntensity * 0.2})`);
-    infernalCore.addColorStop(0.6, `hsla(${this.hueBase + 10}, 100%, 75%, ${0.85 + trebleIntensity * 0.3})`);
-    infernalCore.addColorStop(1, `hsla(${this.hueBase + 0}, 100%, 60%, 0)`);
+    // ENHANCED: Multi-layered infernal core
+    ctx.globalCompositeOperation = "source-over";
+    const coreRadius = maxRadius * (0.35 + bassIntensity * 0.1);
+    const infernalCore = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
+    infernalCore.addColorStop(0, this.hsla(this.hueBase + 30, 100, 98, 0.99 + audioIntensity * 0.05));
+    infernalCore.addColorStop(0.2, this.hsla(this.hueBase + 20, 100, 90, 0.95 + bassIntensity * 0.2));
+    infernalCore.addColorStop(0.6, this.hsla(this.hueBase + 10, 100, 75, 0.85 + trebleIntensity * 0.3));
+    infernalCore.addColorStop(1, this.hsla(this.hueBase, 100, 60, 0));
 
     ctx.fillStyle = infernalCore;
-    ctx.shadowBlur = 80;
-    ctx.shadowColor = `hsla(${this.hueBase + 20}, 100%, 85%, 0.95)`;
+    ctx.shadowBlur = 90 + audioIntensity * 40;
+    ctx.shadowColor = this.hsla(this.hueBase + 20, 100, 85, 0.95);
     ctx.beginPath();
-    ctx.arc(0, 0, maxRadius * 0.3, 0, Math.PI * 2);
+    ctx.arc(0, 0, coreRadius, 0, FlowFieldRenderer.TWO_PI);
     ctx.fill();
 
     ctx.restore();
