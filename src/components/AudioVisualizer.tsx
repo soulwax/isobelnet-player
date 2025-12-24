@@ -43,11 +43,28 @@ const {
 type VisualizerDimensions = { width: number; height: number };
 type VisualizerPosition = { x: number; y: number };
 
+type VisualizerType = (typeof VISUALIZER_TYPES)[number];
+type VisualizerDimensions = { width: number; height: number };
+type VisualizerPosition = { x: number; y: number };
+
+const MIN_WIDTH = 220;
+const MIN_HEIGHT = 110;
+const VIEWPORT_PADDING = 16;
+const PLAYER_STACK_HEIGHT = 190;
+const MAX_EXPANDED_WIDTH = 960;
+const MAX_EXPANDED_HEIGHT = 520;
+
+const formatVisualizerLabel = (value: VisualizerType) =>
+  value
+    .split("-")
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+
 export function AudioVisualizer({
   audioElement,
   isPlaying,
-  width = 300,
-  height = 80,
+  width: initialWidth = 300,
+  height: initialHeight = 80,
   barCount = 64,
   barGap = 2,
   type = "flowfield",
@@ -61,7 +78,6 @@ export function AudioVisualizer({
   ensureVisibleSignal,
 }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -317,6 +333,35 @@ export function AudioVisualizer({
     };
   }, []);
 
+  const showTypeFeedback = () => {
+    setShowTypeLabel(true);
+    if (typeLabelTimeoutRef.current) {
+      clearTimeout(typeLabelTimeoutRef.current);
+    }
+    typeLabelTimeoutRef.current = setTimeout(() => {
+      setShowTypeLabel(false);
+    }, 1500);
+  };
+
+  const applyVisualizerType = (nextType: VisualizerType) => {
+    setCurrentType(nextType);
+    onTypeChange?.(nextType);
+    showTypeFeedback();
+  };
+
+  // Handle cycling through visualizer types
+  const cycleVisualizerType = (direction: 1 | -1 = 1) => {
+    const currentIndex = VISUALIZER_TYPES.indexOf(currentType);
+    const nextIndex =
+      (currentIndex + direction + VISUALIZER_TYPES.length) % VISUALIZER_TYPES.length;
+    const nextType = VISUALIZER_TYPES[nextIndex]!;
+    applyVisualizerType(nextType);
+  };
+
+  const handleCanvasClick = () => {
+    cycleVisualizerType(1);
+  };
+
   // Initialize visualizer
   useEffect(() => {
     if (audioElement && !visualizer.isInitialized) {
@@ -355,7 +400,7 @@ export function AudioVisualizer({
   };
 
   // Handle resize start
-  const handleResizeStart = (e: React.MouseEvent) => {
+  const handleResizeStart = (e: ReactMouseEvent) => {
     e.preventDefault();
     setIsResizing(true);
     resizeStartRef.current = {
@@ -456,7 +501,7 @@ export function AudioVisualizer({
   };
 
   // Handle drag start
-  const handleDragStart = (e: React.MouseEvent) => {
+  const handleDragStart = (e: ReactMouseEvent) => {
     if (!isDraggable) return;
     e.preventDefault();
     e.stopPropagation();
@@ -544,7 +589,9 @@ export function AudioVisualizer({
         className="flex items-center justify-center rounded-lg border border-gray-700 bg-gray-800/50"
         style={{ width: dimensions.width, height: dimensions.height }}
       >
-        <p className="text-xs text-gray-500">Click to enable visualizer</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-white/60">
+          Click anywhere to enable the visualizer
+        </p>
       </div>
     );
   }
@@ -557,7 +604,7 @@ export function AudioVisualizer({
         top: position.y,
         width: dimensions.width,
         height: dimensions.height,
-        zIndex: 40,
+        zIndex: 60,
         cursor: isDragging ? "grabbing" : "auto",
       }
     : {
@@ -610,6 +657,31 @@ export function AudioVisualizer({
         </div>
       )}
 
+      {/* Visualizer Type Controls */}
+      <div className="pointer-events-auto absolute left-1/2 top-2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-[rgba(6,10,18,0.85)] px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[var(--color-subtext)] shadow-[0_12px_30px_rgba(2,4,10,0.65)]">
+        <button
+          type="button"
+          onClick={() => cycleVisualizerType(-1)}
+          className="rounded-full bg-white/5 p-1 text-white/70 transition hover:bg-white/15 hover:text-white"
+          title="Previous visualizer"
+          aria-label="Previous visualizer"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </button>
+        <span className="text-[0.65rem] text-[var(--color-text)]">
+          {formatVisualizerLabel(currentType)}
+        </span>
+        <button
+          type="button"
+          onClick={() => cycleVisualizerType(1)}
+          className="rounded-full bg-white/5 p-1 text-white/70 transition hover:bg-white/15 hover:text-white"
+          title="Next visualizer"
+          aria-label="Next visualizer"
+        >
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
       {/* Canvas */}
       <canvas
         ref={canvasRef}
@@ -648,6 +720,7 @@ export function AudioVisualizer({
           onClick={toggleExpanded}
           className="rounded-lg bg-[rgba(12,18,27,0.85)] p-2 text-[var(--color-subtext)] transition-all hover:bg-[rgba(12,18,27,0.95)] hover:text-[var(--color-accent)] hover:shadow-[0_0_12px_rgba(244,178,102,0.2)]"
           title={isExpanded ? "Minimize" : "Maximize"}
+          aria-label={isExpanded ? "Minimize visualizer" : "Expand visualizer"}
         >
           {isExpanded ? (
             <Minimize2 className="h-3.5 w-3.5" />
