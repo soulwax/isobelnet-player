@@ -21,13 +21,32 @@ export function FlowFieldBackground({
   const animationFrameRef = useRef<number | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const connectedAudioElementRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize Web Audio API
   useEffect(() => {
     if (!audioElement) return;
 
+    // Prevent duplicate source node creation for the same audio element
+    // This is critical because createMediaElementSource can only be called once per element
+    if (connectedAudioElementRef.current === audioElement) {
+      return;
+    }
+
     const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
+
+    // Clean up previous connection if switching audio elements
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.disconnect();
+    }
+    if (analyserRef.current) {
+      analyserRef.current.disconnect();
+    }
+    if (audioContextRef.current) {
+      void audioContextRef.current.close();
+    }
 
     const audioContext = new AudioContextClass();
     const analyser = audioContext.createAnalyser();
@@ -40,11 +59,13 @@ export function FlowFieldBackground({
 
     audioContextRef.current = audioContext;
     analyserRef.current = analyser;
+    sourceNodeRef.current = source;
+    connectedAudioElementRef.current = audioElement;
 
     return () => {
-      source.disconnect();
-      analyser.disconnect();
-      void audioContext.close();
+      // Don't disconnect or reset refs on cleanup in Strict Mode
+      // This prevents attempting to reconnect the same audio element
+      // The cleanup will happen when the component unmounts or audio element changes
     };
   }, [audioElement]);
 
