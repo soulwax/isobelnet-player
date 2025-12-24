@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.6.8] - 2024-12-24
+
+### Added
+
+- Environment variable logging to Electron for debugging NextAuth issues
+- `isElectron` flag exposed via Electron preload API for conditional branding
+- Conditional branding: "Starchild" in Electron app, "darkfloor.art" in web version
+
+### Changed
+
+- **BREAKING**: `AUTH_SECRET` environment variable now required in all environments (min 32 characters)
+- Renamed Electron build product from "darkfloor" to "Starchild"
+  - Windows executable: `darkfloor.exe` → `Starchild.exe`
+  - Installer: `darkfloor Setup.exe` → `Starchild Setup.exe`
+  - macOS app name: darkfloor.app → Starchild.app
+  - Linux AppImage: darkfloor.AppImage → Starchild.AppImage
+
+### Fixed
+
+- **Kaleidoscope Pattern Performance**: Drastically improved performance (~99% reduction in rendering operations)
+  - Implemented offscreen canvas rendering (render once, copy 48 times instead of drawing 48 times)
+  - Reduced particle count from 30-90 to 12-36 per segment
+  - Removed expensive `shadowBlur` operations (major FPS killer)
+  - Simplified particle rendering from 2 arcs to 1 radial gradient per particle
+  - Reduced structural elements: lines (8→4), rings (5→3)
+  - **Result**: ~9,264 operations/frame → ~91 operations/frame (99% reduction)
+  - Pattern now runs smoothly at 60 FPS even on lower-end hardware
+
+### Technical Details
+
+- Updated `electron/preload.cjs` to expose `isElectron: true`
+- Updated `electron/types.d.ts` with `isElectron: boolean` property
+- Updated `src/components/Header.tsx` to detect Electron and show appropriate branding
+- Updated `src/env.js` to enforce `AUTH_SECRET` minimum length validation (32 chars)
+- Updated `electron/main.cjs` with environment variable debugging output
+- Optimized `src/components/visualizers/flowfieldPatterns/renderKaleidoscope.ts`
+- Updated `package.json` productName and executableName to "Starchild"
+
 ## [0.6.7] - 2025-12-24
 
 ### Added

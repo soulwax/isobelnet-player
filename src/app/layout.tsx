@@ -21,6 +21,7 @@ import { MenuProvider } from "@/contexts/MenuContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { TRPCReactProvider } from "@/trpc/react";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import { title } from "process";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -30,7 +31,14 @@ const geist = Geist({
 const baseUrl = getBaseUrl();
 
 export const metadata: Metadata = {
-  title: "darkfloor.art",
+  // title conditional, if electron, use "Starchild"
+  const title = 
+  if (process.env.ELECTRON_BUILD) {
+    title: "Starchild",
+  } else {
+    title: "darkfloor.art";
+  }
+  ,   
   description:
     "Modern music streaming and discovery platform with smart recommendations",
   applicationName: "darkfloor.art",
