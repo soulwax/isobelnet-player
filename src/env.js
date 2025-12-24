@@ -5,10 +5,7 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
     AUTH_DISCORD_ID: z.string(),
     AUTH_DISCORD_SECRET: z.string(),
     NEXTAUTH_URL: z.string().url().optional(),

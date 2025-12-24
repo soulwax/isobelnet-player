@@ -13,6 +13,7 @@ export default function Header() {
   const { data: session } = useSession();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isElectron, setIsElectron] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Fetch current user's profile info to get their userHash
@@ -22,6 +23,11 @@ export default function Header() {
       enabled: !!session,
     },
   );
+
+  // Detect if running in Electron
+  useEffect(() => {
+    setIsElectron(!!window.electron?.isElectron);
+  }, []);
 
   // Reset image error when session changes
   useEffect(() => {
@@ -65,7 +71,7 @@ export default function Header() {
               priority
             />
             <span className="accent-gradient hidden text-lg font-bold md:block">
-              darkfloor.art
+              {isElectron ? "Starchild" : "darkfloor.art"}
             </span>
           </Link>
 

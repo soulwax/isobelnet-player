@@ -26,6 +26,17 @@ try {
   console.log("[Electron] dotenv not available or .env files not found (this is normal in packaged apps)");
 }
 
+// Log critical environment variables for debugging (mask sensitive values)
+console.log("[Electron] Environment check:");
+console.log("  NODE_ENV:", process.env.NODE_ENV || "not set");
+console.log("  PORT:", process.env.PORT || "not set");
+console.log("  AUTH_SECRET:", process.env.AUTH_SECRET ? "✓ set (" + process.env.AUTH_SECRET.length + " chars)" : "✗ MISSING");
+console.log("  AUTH_DISCORD_ID:", process.env.AUTH_DISCORD_ID ? "✓ set" : "✗ MISSING");
+console.log("  AUTH_DISCORD_SECRET:", process.env.AUTH_DISCORD_SECRET ? "✓ set" : "✗ MISSING");
+console.log("  DATABASE_URL:", process.env.DATABASE_URL ? "✓ set" : "✗ MISSING");
+console.log("  NEXTAUTH_URL:", process.env.NEXTAUTH_URL || "not set (using default)");
+console.log("  ELECTRON_BUILD:", process.env.ELECTRON_BUILD || "not set");
+
 const {
   app,
   BrowserWindow,

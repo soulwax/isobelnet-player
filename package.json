@@ -150,7 +150,7 @@
   },
   "build": {
     "appId": "com.darkfloor.art",
-    "productName": "darkfloor",
+    "productName": "Starchild",
     "directories": {
       "output": "dist"
     },
@@ -171,7 +171,7 @@
       "target": [
         "nsis"
       ],
-      "executableName": "darkfloor",
+      "executableName": "Starchild",
       "icon": "public/icon.ico",
       "sign": false
     },
