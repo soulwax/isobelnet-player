@@ -140,7 +140,9 @@ export class FlowFieldRenderer {
   ];
 
   private currentPattern: Pattern = "kaleidoscope";
-  private nextPattern: Pattern = this.allPatterns[Math.floor(Math.random() * this.allPatterns.length)] ?? "kaleidoscope";
+  private nextPattern: Pattern =
+    this.allPatterns[Math.floor(Math.random() * this.allPatterns.length)] ??
+    "kaleidoscope";
   private patternSequence: Pattern[] = [];
   private patternIndex = 0;
 
@@ -249,7 +251,6 @@ export class FlowFieldRenderer {
   private static readonly TWO_PI = Math.PI * 2;
   private static readonly INV_TWO_PI = 1 / (Math.PI * 2);
   private static readonly SQRT3 = 1.7320508075688772;
-  static allPatterns: any;
 
   private static initSinTable(): Float32Array {
     const table = new Float32Array(this.SIN_TABLE_SIZE);
