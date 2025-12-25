@@ -120,6 +120,7 @@
   },
   "main": "electron/main.cjs",
   "devDependencies": {
+    "@electron/windows-sign": "^2.0.2",
     "@eslint/eslintrc": "^3.3.3",
     "@next/bundle-analyzer": "^16.1.1",
     "@svgr/cli": "^8.1.0",
@@ -170,11 +171,21 @@
     ],
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": "x64"
+        },
+        {
+          "target": "portable",
+          "arch": "x64"
+        }
       ],
-      "executableName": "Starchild",
+      "executableName": "${productName}.exe",
       "icon": "public/icon.ico",
-      "sign": false
+      "sign": "./electron/sign.js",
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
     },
     "mac": {
       "target": [
