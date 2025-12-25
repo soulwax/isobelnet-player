@@ -4,6 +4,7 @@
     "docs/legacy/*.md",
     ".github/docs/*.md",
     "LICENSE.md",
-    ".cursor/commands/*.md"
+    ".cursor/commands/*.md",
+    "ROADMAP.md"
   ]
 }
