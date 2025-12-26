@@ -27,6 +27,7 @@ function getSslConfig() {
     path.join(__dirname, "../../../certs/ca.pem"), // Another build variant
   ];
 
+  // Try to read certificate from file first
   for (const certPath of possibleCertPaths) {
     if (existsSync(certPath)) {
       console.log(`[DB] Cloud database detected. Using SSL certificate: ${certPath}`);
@@ -39,10 +40,19 @@ function getSslConfig() {
     }
   }
 
+  // Fallback: Use DB_SSL_CA environment variable if set
+  if (process.env.DB_SSL_CA) {
+    console.log("[DB] Cloud database detected. Using SSL certificate from DB_SSL_CA environment variable");
+    return {
+      rejectUnauthorized: process.env.NODE_ENV === "production",
+      ca: process.env.DB_SSL_CA,
+    };
+  }
+
   // Certificate not found - use lenient SSL with warning
   console.warn("[DB] ⚠️  WARNING: Cloud database detected but no CA certificate found!");
   console.warn("[DB] ⚠️  Using rejectUnauthorized: false - vulnerable to MITM attacks");
-  console.warn("[DB] ⚠️  Place your CA certificate at: certs/ca.pem");
+  console.warn("[DB] ⚠️  Set DB_SSL_CA environment variable or place your CA certificate at: certs/ca.pem");
   return {
     rejectUnauthorized: false,
   };

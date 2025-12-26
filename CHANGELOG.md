@@ -6,6 +6,157 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.7.0] - 2025-12-26
+
+### Added
+
+#### Windows Code Signing Integration
+
+- **@electron/windows-sign Integration**: Fully integrated Windows Authenticode signing into the Electron build process
+  - Support for local certificate signing (.pfx/.p12 files)
+  - Support for Azure Key Vault signing (cloud-based certificate storage)
+  - Automatic code signing during Windows builds
+  - Graceful fallback for unsigned local development builds
+  - CI/CD enforcement (fails build if signing fails in CI environment)
+  - SHA256 signing algorithm with timestamp server support
+
+- **Azure Key Vault Support**: Enterprise-grade code signing for CI/CD pipelines
+  - Azure AD authentication with service principal
+  - Certificate rotation support
+  - Team collaboration without certificate sharing
+  - Secure cloud-based certificate storage
+  - Comprehensive environment variable configuration
+
+- **Code Signing Documentation**: Created detailed Windows signing guide
+  - Local certificate setup instructions
+  - Azure Key Vault configuration guide
+  - CI/CD integration examples (GitHub Actions)
+  - Troubleshooting guide
+  - Security best practices
+  - Verification procedures
+
+#### Database SSL Certificate Management
+
+- **Automatic CA Certificate Generation**: Database SSL certificates now generated automatically from environment variables
+  - `DB_SSL_CA` environment variable support for PEM-formatted certificates
+  - Automatic generation of `certs/ca.pem` during dev/build/start
+  - Certificate bundled with all Electron builds
+  - Fallback to environment variable if file not found
+  - Works seamlessly in development and production
+
+- **Electron Certificate Bundling**: CA certificates automatically packaged with Electron builds
+  - Certificates copied to standalone directory during build
+  - Available at runtime in packaged .exe applications
+  - No manual certificate management required
+  - SSL connections work out of the box in packaged apps
+
+- **Enhanced SSL Configuration**: Improved database SSL handling
+  - Environment-based SSL validation (`rejectUnauthorized` based on NODE_ENV)
+  - Accepts self-signed certificates in development
+  - Strict validation in production
+  - Clear error messages and warnings
+  - Fallback to lenient SSL if certificate not found
+
+### Changed
+
+#### Build System Enhancements
+
+- **Environment Variable Schema**: Updated environment variable validation
+  - Added `DB_SSL_CA` to server-side schema (optional string)
+  - Proper validation and type safety for all environment variables
+
+- **Certificate Generation Script**: Enhanced SSL certificate generation script
+  - Matches server environment loading order
+  - Loads `.env.development` in development mode
+  - Loads `.env.local` > `.env.production` > `.env` in production
+  - Consistent behavior across all environments
+
+- **Electron Prepare Script**: Improved package preparation for Electron builds
+  - Generates CA certificate from `DB_SSL_CA` before packaging
+  - Ensures `certs/` directory exists
+  - Copies certificates to standalone directory
+  - Validates certificate presence with warnings
+
+### Fixed
+
+#### Discord OAuth Login in Electron
+
+- **Database Connection Timeout**: Fixed Discord OAuth login failures in Electron app
+  - Root cause: Database SSL connection timeout during OAuth callback
+  - Fixed SSL certificate configuration for cloud databases (Aiven)
+  - Proper handling of self-signed certificates in development
+  - Clear error logging for database connection issues
+
+- **Authentication Flow**: Improved NextAuth error handling and logging
+  - Comprehensive logging in signIn callback
+  - Better error messages for debugging
+  - Database adapter error handling
+  - CSRF token validation improvements
+
+#### Web Audio API Errors
+
+- **React Strict Mode Compatibility**: Fixed "InvalidStateError: createMediaElementSource" errors
+  - Prevented duplicate MediaElementSourceNode creation
+  - Tracked connected audio elements with ref
+  - Proper cleanup on component unmount
+  - Works correctly in React 19 Strict Mode
+
+### Technical Improvements
+
+#### Code Signing Infrastructure
+
+- **Modified Files** for Windows Code Signing:
+  - `electron/sign.js`: Complete rewrite using @electron/windows-sign
+  - `package.json`: Updated Windows build configuration
+  - `electron/WINDOWS_SIGNING.md`: New comprehensive documentation
+  - `.env.example`: Added signing configuration examples
+
+#### Database SSL Infrastructure
+
+- **Modified Files** for SSL Certificate Management:
+  - `src/server/db/index.ts`: Enhanced SSL configuration with fallback
+  - `src/env.js`: Added `DB_SSL_CA` schema validation
+  - `scripts/generate-ssl-cert.js`: Updated environment loading order
+  - `electron/prepare-package.js`: Added CA certificate generation
+  - `.env.development`: Added `DB_SSL_CA` certificate content
+  - `.env.local`: Added `DB_SSL_CA` certificate content
+  - `.env.example`: Added `DB_SSL_CA` documentation
+
+#### Bug Fixes
+
+- **Modified Files** for Audio and Auth Fixes:
+  - `src/components/FlowFieldBackground.tsx`: Fixed duplicate audio source nodes
+  - `src/server/auth/config.ts`: Enhanced logging for debugging
+
+### Security
+
+- **Certificate Management**: Secure handling of SSL certificates
+  - Certificates stored as environment variables
+  - Automatic generation prevents manual certificate management
+  - No certificates committed to version control
+  - Proper permissions and access controls
+
+- **Code Signing**: Enhanced trust and security for Windows builds
+  - Signed executables verified by Windows
+  - Reduced SmartScreen warnings
+  - Azure Key Vault for enterprise security
+  - Timestamp servers for long-term validity
+
+### Documentation
+
+- **Windows Code Signing**: Complete guide for code signing setup
+  - File: `electron/WINDOWS_SIGNING.md`
+  - Local certificate instructions
+  - Azure Key Vault setup
+  - CI/CD integration examples
+  - Troubleshooting and verification
+
+- **Environment Variables**: Updated documentation for new variables
+  - `DB_SSL_CA` usage and format
+  - Windows signing configuration
+  - Azure Key Vault configuration
+  - Examples in `.env.example`
+
 ## [0.6.8] - 2024-12-24
 
 ### Added

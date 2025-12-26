@@ -10,12 +10,20 @@ import dotenv from "dotenv";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from .env file
+// Load environment variables in priority order (matching scripts/server.js)
 const projectRoot = path.resolve(__dirname, "..");
-dotenv.config({ path: path.resolve(projectRoot, ".env") });
+const nodeEnv = process.env.NODE_ENV || "development";
+const isDev = nodeEnv === "development";
 
-// Also load from .env.local if it exists (for production builds)
-dotenv.config({ path: path.resolve(projectRoot, ".env.local") });
+if (isDev) {
+  // DEVELOPMENT MODE: Load .env.development
+  dotenv.config({ path: path.resolve(projectRoot, ".env.development") });
+} else {
+  // PRODUCTION MODE: Load .env.local > .env.production > .env
+  dotenv.config({ path: path.resolve(projectRoot, ".env.local") });
+  dotenv.config({ path: path.resolve(projectRoot, ".env.production") });
+  dotenv.config({ path: path.resolve(projectRoot, ".env") });
+}
 
 async function generateSSLCert() {
   const certContent = process.env.DB_SSL_CA;
