@@ -68,10 +68,28 @@ try {
   copyDir(publicSource, publicDest);
   console.log("[Prepare] ✓ Public files copied");
 
-  // Copy certs to standalone/certs (if exists)
-  console.log("[Prepare] Copying certs...");
+  // Generate CA certificate from environment variable if not already present
+  console.log("[Prepare] Generating database CA certificate...");
+  const caCertPath = path.join(rootDir, "certs", "ca.pem");
+
+  if (process.env.DB_SSL_CA) {
+    // Ensure certs directory exists
+    fs.mkdirSync(path.join(rootDir, "certs"), { recursive: true });
+
+    // Write certificate from environment variable
+    fs.writeFileSync(caCertPath, process.env.DB_SSL_CA);
+    console.log("[Prepare] ✓ Generated ca.pem from DB_SSL_CA environment variable");
+  } else if (!fs.existsSync(caCertPath)) {
+    console.warn("[Prepare] ⚠️  Warning: DB_SSL_CA not set and certs/ca.pem doesn't exist");
+    console.warn("[Prepare] ⚠️  Database SSL connections may fail in packaged app");
+  } else {
+    console.log("[Prepare] ✓ Using existing certs/ca.pem");
+  }
+
+  // Copy certs to standalone/certs
+  console.log("[Prepare] Copying certs to standalone directory...");
   copyDir(certsSource, certsDest);
-  console.log("[Prepare] ✓ Certificate files copied");
+  console.log("[Prepare] ✓ Certificate files copied to standalone");
 
   // Copy .env.local to standalone directory for packaged builds
   const envLocalSource = path.join(rootDir, ".env.local");

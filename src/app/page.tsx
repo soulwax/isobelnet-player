@@ -1,6 +1,4 @@
 // File: src/app/page.tsx
-
-import { env } from "@/env";
 import type { SearchResponse, Track } from "@/types";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { type Metadata } from "next";
@@ -154,9 +152,9 @@ export async function generateMetadata({
 }
 
 export default function HomePage({
-  searchParams,
+  _searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  _searchParams: Promise<{ q?: string }>;
 }) {
   return (
     <Suspense fallback={null}>

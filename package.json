@@ -1,6 +1,6 @@
 {
   "name": "darkfloor-art",
-  "version": "0.6.9",
+  "version": "0.7.0",
   "description": "A modern music streaming and discovery platform with intelligent recommendations, advanced audio features, and a beautiful user interface",
   "private": true,
   "type": "module",
@@ -35,7 +35,8 @@
     }
   ],
   "scripts": {
-    "prebuild": "npm run db:generate && npm run db:migrate",
+    "generate:ssl": "node scripts/generate-ssl-cert.js",
+    "prebuild": "npm run generate:ssl && npm run db:generate && npm run db:migrate & npm run db:push",
     "clean": "rm -rf .next node_modules .turbo dist",
     "clean:win": "rmdir /s /q .next && rmdir /s /q node_modules && rmdir /s /q .turbo && rmdir /s /q dist",
     "build:analyzer": "cross-env ANALYZE=true next build",
@@ -45,8 +46,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:dev": "node scripts/db-helper.js dev-sync",
-    "db:prod": "node scripts/db-helper.js prod-migrate",
+    "predev": "npm run generate:ssl",
     "dev": "cross-env NODE_ENV=development node scripts/server.js",
     "dev:next": "next dev --turbo --port 3222",
     "dev:win": "cross-env NODE_ENV=development node scripts/server.js",
@@ -69,7 +69,9 @@
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
+    "sourcemap": "rollup -c --sourcemap",
     "preview": "next build && next start",
+    "prestart": "npm run generate:ssl",
     "start": "cross-env NODE_ENV=production node scripts/server.js",
     "start:next": "next start --port 3222",
     "start:win": "cross-env NODE_ENV=production node scripts/server.js",
@@ -82,10 +84,11 @@
     "electron:prepare": "node scripts/load-env-build.js \"node electron/prepare-package.js\"",
     "electron:clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
     "electron:clean:win": "if exist dist rmdir /s /q dist",
-    "electron:build": "npm run electron:clean && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && electron-builder",
-    "electron:build:win": "npm run electron:clean && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && electron-builder --win",
-    "electron:build:mac": "npm run electron:clean && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && electron-builder --mac",
-    "electron:build:linux": "npm run electron:clean && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && electron-builder --linux"
+    "electron:download-node": "node scripts/download-node.js",
+    "electron:build": "npm run electron:clean && npm run electron:download-node && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && node scripts/load-env-build.js \"electron-builder\"",
+    "electron:build:win": "npm run electron:clean && npm run electron:download-node && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && node scripts/load-env-build.js \"electron-builder --win\"",
+    "electron:build:mac": "npm run electron:clean && npm run electron:download-node && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && node scripts/load-env-build.js \"electron-builder --mac\"",
+    "electron:build:linux": "npm run electron:clean && npm run electron:download-node && node scripts/load-env-build.js \"cross-env ELECTRON_BUILD=true next build\" && npm run electron:prepare && node scripts/load-env-build.js \"electron-builder --linux\""
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -122,8 +125,11 @@
   },
   "main": "electron/main.cjs",
   "devDependencies": {
+    "@electron/windows-sign": "^2.0.2",
     "@eslint/eslintrc": "^3.3.3",
     "@next/bundle-analyzer": "^16.1.1",
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@svgr/cli": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/morgan": "^1.9.10",
@@ -137,6 +143,8 @@
     "drizzle-kit": "^0.31.8",
     "electron": "^39.2.7",
     "electron-builder": "^25.1.8",
+    "electron-context-menu": "^4.1.1",
+    "electron-window-state-manager": "^0.3.2",
     "eslint": "^9.39.2",
     "eslint-config-next": "^15.5.9",
     "eslint-plugin-drizzle": "^0.2.3",
@@ -149,14 +157,12 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.1",
     "wait-on": "^8.0.5",
-    "webpack": "^5.104.1"
+    "webpack": "^5.104.1",
+    "yargs": "^18.0.0"
   },
   "build": {
     "appId": "com.darkfloor.art",
     "productName": "Starchild",
-    "directories": {
-      "output": "dist"
-    },
     "files": [
       "electron/**/*",
       "package.json"
@@ -168,19 +174,46 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "resources/node",
+        "to": "node",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": "x64"
+        },
+        {
+          "target": "portable",
+          "arch": "x64"
+        }
       ],
       "executableName": "Starchild",
       "icon": "public/icon.ico",
-      "sign": false
+      "signToolOptions": {
+        "certificateSubjectName": "Starchild",
+        "signingHashAlgorithms": [
+          "sha256"
+        ],
+        "rfc3161TimeStampServer": "http://timestamp.digicert.com"
+      }
     },
     "mac": {
       "target": [
-        "dmg"
+        {
+          "target": "dmg",
+          "arch": "x64"
+        },
+        {
+          "target": "dmg",
+          "arch": "arm64"
+        }
       ],
       "icon": "public/icon.icns",
       "category": "public.app-category.music"
@@ -191,12 +224,20 @@
         "deb"
       ],
       "icon": "public/icon.png",
-      "category": "Audio"
+      "artifactName": "${productName}.${ext}",
+      "category": "AudioVideo,Audio"
     },
     "nsis": {
+      "artifactName": "${productName}_setup.${ext}",
       "oneClick": false,
+      "license": "LICENSE.md",
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName} Setup.${ext}"
+      "uninstallDisplayName": "${productName}",
+      "deleteAppDataOnUninstall": true
+    },
+    "portable": {
+      "artifactName": "${productName}.${ext}",
+      "requestExecutionLevel": "user"
     }
   },
   "ct3aMetadata": {

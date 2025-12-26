@@ -27,35 +27,57 @@ function getSslConfig() {
     path.join(__dirname, "../../../certs/ca.pem"), // Another build variant
   ];
 
+  // Try to read certificate from file first
   for (const certPath of possibleCertPaths) {
     if (existsSync(certPath)) {
       console.log(`[DB] Cloud database detected. Using SSL certificate: ${certPath}`);
       return {
-        rejectUnauthorized: true,
+        // Use false in development to accept self-signed certificates
+        // In production, this should be true for security
+        rejectUnauthorized: process.env.NODE_ENV === "production",
         ca: readFileSync(certPath).toString(),
       };
     }
   }
 
+  // Fallback: Use DB_SSL_CA environment variable if set
+  if (process.env.DB_SSL_CA) {
+    console.log("[DB] Cloud database detected. Using SSL certificate from DB_SSL_CA environment variable");
+    return {
+      rejectUnauthorized: process.env.NODE_ENV === "production",
+      ca: process.env.DB_SSL_CA,
+    };
+  }
+
   // Certificate not found - use lenient SSL with warning
   console.warn("[DB] ⚠️  WARNING: Cloud database detected but no CA certificate found!");
   console.warn("[DB] ⚠️  Using rejectUnauthorized: false - vulnerable to MITM attacks");
-  console.warn("[DB] ⚠️  Place your CA certificate at: certs/ca.pem");
+  console.warn("[DB] ⚠️  Set DB_SSL_CA environment variable or place your CA certificate at: certs/ca.pem");
   return {
     rejectUnauthorized: false,
   };
 }
 
 const sslConfig = getSslConfig();
+
+// Optimize for Vercel serverless (smaller pool) vs traditional server (larger pool)
+const isVercel = process.env.VERCEL === "1" || process.env.VERCEL_ENV !== undefined;
+
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
   ...(sslConfig && { ssl: sslConfig }),
-  // Connection pool configuration to prevent exhaustion
-  max: 10, // Increased from 5 to handle more concurrent requests
-  idleTimeoutMillis: 60000, // Increased from 30s to 60s to reduce connection churn
+  // Connection pool configuration optimized for environment
+  max: isVercel ? 2 : 10, // Smaller pool for serverless to prevent connection exhaustion
+  min: 0, // Allow pool to scale down to 0 connections when idle
+  idleTimeoutMillis: isVercel ? 10000 : 60000, // Faster cleanup in serverless (10s vs 60s)
   connectionTimeoutMillis: 10000, // Connection timeout
   // Statement timeout to prevent long-running queries from holding connections
   statement_timeout: 30000, // 30 seconds
+  // Enable keep-alive for serverless
+  ...(isVercel && {
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
+  }),
 });
 
 // Add error handler for pool errors

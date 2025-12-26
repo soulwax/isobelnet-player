@@ -205,9 +205,40 @@ const startServer = async () => {
 
   log("Server file exists, starting...");
 
+  // Determine which Node.js executable to use
+  let nodeExecutable = "node";
+
+  if (app.isPackaged) {
+    // In packaged app, try to find Node.js in these locations:
+    // 1. Bundled with app in resources
+    // 2. System PATH (requires Node.js installed)
+    const bundledNodePath = path.join(process.resourcesPath, "node", "node.exe");
+
+    if (fs.existsSync(bundledNodePath)) {
+      nodeExecutable = bundledNodePath;
+      log("Using bundled Node.js:", bundledNodePath);
+    } else {
+      // Check if 'node' is available in system PATH
+      try {
+        require("child_process").execSync("node --version", { stdio: "ignore" });
+        log("Using system Node.js from PATH");
+      } catch (err) {
+        const error = "Node.js not found. Please install Node.js from https://nodejs.org/";
+        log("ERROR:", error);
+        dialog.showErrorBox(
+          "Node.js Required",
+          "This application requires Node.js to be installed.\n\nPlease download and install Node.js from:\nhttps://nodejs.org/\n\nThen restart the application."
+        );
+        throw new Error(error);
+      }
+    }
+  } else {
+    log("Using Node.js from development environment");
+  }
+
   return new Promise((resolve, reject) => {
     // Run server from standalone directory (it contains .next/static and public)
-    serverProcess = spawn("node", [serverPath], {
+    serverProcess = spawn(nodeExecutable, [serverPath], {
       env: {
         ...process.env,
         PORT: serverPort.toString(),

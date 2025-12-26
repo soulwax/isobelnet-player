@@ -5,255 +5,156 @@ All notable changes to darkfloor.art will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
-## [0.6.9] - 2025-12-25
-
-**Release Focus: Database Workflow & Electron Build Improvements**
-
-This release significantly improves the developer experience around database migrations and Electron builds. The main highlights:
-
-- **Simplified Database Workflows**: New helper commands (`npm run db:dev`, `npm run db:prod`) replace error-prone multi-command chains
-- **Idempotent Migrations**: All database migrations now safe to re-run, eliminating "already exists" errors
-- **Unified Electron Environment**: Single `.env.local` file replaces confusing multi-file configuration
-- **Enhanced Debugging**: Comprehensive logging in Electron builds shows exactly what's loaded and what's missing
-- **Complete Documentation**: Three-tier documentation (quick start, integrated, detailed) for both database and Electron workflows
-
-**Key Benefits:**
-- ✅ Fewer build failures and deployment errors
-- ✅ Faster development workflow with clearer commands
-- ✅ Easier troubleshooting with better logging
-- ✅ Reduced onboarding time with comprehensive guides
+## [0.7.0] - 2025-12-26
 
 ### Added
 
-#### Database Workflow Improvements
+#### Windows Code Signing Integration
 
-- **Database Helper Script**: Created `scripts/db-helper.js` for simplified database operations
-  - `npm run db:dev` - Development workflow (generate + push, no migration tracking)
-  - `npm run db:prod` - Production workflow (apply tracked migrations)
-  - Interactive help menu showing available commands and tips
-  - Comprehensive error handling and logging
+- **@electron/windows-sign Integration**: Fully integrated Windows Authenticode signing into the Electron build process
+  - Support for local certificate signing (.pfx/.p12 files)
+  - Support for Azure Key Vault signing (cloud-based certificate storage)
+  - Automatic code signing during Windows builds
+  - Graceful fallback for unsigned local development builds
+  - CI/CD enforcement (fails build if signing fails in CI environment)
+  - SHA256 signing algorithm with timestamp server support
 
-#### Documentation
+- **Azure Key Vault Support**: Enterprise-grade code signing for CI/CD pipelines
+  - Azure AD authentication with service principal
+  - Certificate rotation support
+  - Team collaboration without certificate sharing
+  - Secure cloud-based certificate storage
+  - Comprehensive environment variable configuration
 
-- **DATABASE_QUICK_START.md**: Quick reference guide for database workflows
-  - TL;DR section for immediate solutions
-  - Common commands reference table
-  - Workflow migration guide (old vs new)
-  - Error prevention guidelines
-  - Emergency fix commands
+- **Code Signing Documentation**: Created detailed Windows signing guide
+  - Local certificate setup instructions
+  - Azure Key Vault configuration guide
+  - CI/CD integration examples (GitHub Actions)
+  - Troubleshooting guide
+  - Security best practices
+  - Verification procedures
 
-- **docs/DATABASE_MIGRATIONS.md**: Complete database migration documentation
-  - Best practices and workflow guide
-  - Environment-specific strategies (dev/staging/prod)
-  - Common issues with detailed solutions
-  - Migration file structure examples
-  - Troubleshooting procedures
-  - Emergency recovery procedures
+#### Database SSL Certificate Management
 
-- **README.md Updates**: Enhanced database workflow documentation
-  - Database setup section with migration commands
-  - Complete "Database Workflow" section in Development chapter
-  - Workflow migration summary (old problematic vs new correct)
-  - Added troubleshooting for migration errors
-  - SSL certificate error solutions
+- **Automatic CA Certificate Generation**: Database SSL certificates now generated automatically from environment variables
+  - `DB_SSL_CA` environment variable support for PEM-formatted certificates
+  - Automatic generation of `certs/ca.pem` during dev/build/start
+  - Certificate bundled with all Electron builds
+  - Fallback to environment variable if file not found
+  - Works seamlessly in development and production
 
-- **docs/ELECTRON_ENV_CONFIG.md**: Comprehensive Electron environment configuration guide
-  - Single source of truth explanation (`.env.local` only)
-  - Development vs production mode configuration
-  - Required environment variables reference
-  - File changes documentation with before/after comparisons
-  - Troubleshooting section for common environment issues
-  - Migration guide from multiple env files to single `.env.local`
-  - System environment variables fallback documentation
+- **Electron Certificate Bundling**: CA certificates automatically packaged with Electron builds
+  - Certificates copied to standalone directory during build
+  - Available at runtime in packaged .exe applications
+  - No manual certificate management required
+  - SSL connections work out of the box in packaged apps
 
-#### Electron Build & Debugging Improvements
-
-- **Unified Environment Configuration**: Electron builds now exclusively use `.env.local`
-  - Single source of truth for all environment variables
-  - Eliminates conflicts between multiple environment files
-  - Consistent configuration across development and production builds
-
-- **Enhanced Build Process**: Improved `electron/prepare-package.js`
-  - Automatically copies `.env.local` to standalone directory for packaged builds
-  - Copies SSL certificates (`certs/` directory) to standalone build
-  - Better warning messages for missing files
-  - TypeScript JSDoc annotations for type safety
-
-- **Improved Environment Loading**: Enhanced `scripts/load-env-build.js`
-  - Simplified to load only `.env.local` (removed `.env`, `.env.development`, `.env.production`)
-  - Clear console output showing which env file is loaded
-  - Better error handling and exit codes
-
-- **Better Debugging**: Enhanced `electron/main.cjs`
-  - Detailed environment variable logging at startup (with masked sensitive values)
-  - Shows which `.env.local` location was loaded (project root vs standalone)
-  - Logs critical variables: NODE_ENV, PORT, AUTH_SECRET, DATABASE_URL, etc.
-  - Clear checkmarks (✓/✗) for required vs missing variables
-  - Development/production mode detection logging
-  - DevTools enablement status logging
+- **Enhanced SSL Configuration**: Improved database SSL handling
+  - Environment-based SSL validation (`rejectUnauthorized` based on NODE_ENV)
+  - Accepts self-signed certificates in development
+  - Strict validation in production
+  - Clear error messages and warnings
+  - Fallback to lenient SSL if certificate not found
 
 ### Changed
 
-#### Database Configuration
+#### Build System Enhancements
 
-- **SSL Certificate Handling**: Simplified PostgreSQL SSL configuration in `drizzle.config.ts`
-  - Removed requirement for `ca.pem` certificate files
-  - Set `rejectUnauthorized: false` to accept self-signed certificates
-  - Removed unused `readFileSync` and `path` imports
-  - Eliminates "self-signed certificate in chain" errors
+- **Environment Variable Schema**: Updated environment variable validation
+  - Added `DB_SSL_CA` to server-side schema (optional string)
+  - Proper validation and type safety for all environment variables
 
-#### Migration Files (Made Idempotent)
+- **Certificate Generation Script**: Enhanced SSL certificate generation script
+  - Matches server environment loading order
+  - Loads `.env.development` in development mode
+  - Loads `.env.local` > `.env.production` > `.env` in production
+  - Consistent behavior across all environments
 
-- **0005_shocking_korath.sql**: Added `IF NOT EXISTS` checks for constraints
-  - `favorite_user_track_unique` constraint
-  - `playlist_track_unique` constraint
-  - Safe to run multiple times without errors
-
-- **0006_good_zaran.sql**: Added existence checks for columns and constraints
-  - `userHash`, `profilePublic`, and `bio` columns
-  - `hexmusic-stream_user_userHash_unique` constraint
-  - Prevents "column already exists" errors
-
-- **0010_nostalgic_human_cannonball.sql**: Added column existence checks
-  - `equalizerPanelOpen` and `queuePanelOpen` columns
-  - Prevents duplicate column errors
-
-- **0011_useful_the_enforcers.sql**: Made table and index creation idempotent
-  - `CREATE TABLE IF NOT EXISTS` for recommendation_log table
-  - `CREATE INDEX IF NOT EXISTS` for all indexes
-  - Constraint creation wrapped in existence checks
-
-#### Build Configuration
-
-- **prebuild Script**: Fixed conflicting database commands
-  - Changed from: `db:generate && db:migrate & db:push` (caused errors)
-  - Changed to: `db:generate && db:migrate` (correct)
-  - Eliminates "relation already exists" errors during builds
-
-#### Package Scripts
-
-- Added `db:dev` - Wrapper for `db-helper.js dev-sync`
-- Added `db:prod` - Wrapper for `db-helper.js prod-migrate`
-- Improved script organization for database operations
+- **Electron Prepare Script**: Improved package preparation for Electron builds
+  - Generates CA certificate from `DB_SSL_CA` before packaging
+  - Ensures `certs/` directory exists
+  - Copies certificates to standalone directory
+  - Validates certificate presence with warnings
 
 ### Fixed
 
-#### Database Migration Issues
+#### Discord OAuth Login in Electron
 
-- **"relation already exists" Errors**: Fixed by making migrations idempotent
-  - All CREATE statements now use `IF NOT EXISTS`
-  - All ALTER TABLE ADD COLUMN wrapped in existence checks
-  - Migrations can be safely run multiple times
+- **Database Connection Timeout**: Fixed Discord OAuth login failures in Electron app
+  - Root cause: Database SSL connection timeout during OAuth callback
+  - Fixed SSL certificate configuration for cloud databases (Aiven)
+  - Proper handling of self-signed certificates in development
+  - Clear error logging for database connection issues
 
-- **"column already exists" Errors**: Fixed through column existence validation
-  - Added PostgreSQL information_schema checks before column additions
-  - Prevents errors when re-running migrations on existing databases
+- **Authentication Flow**: Improved NextAuth error handling and logging
+  - Comprehensive logging in signIn callback
+  - Better error messages for debugging
+  - Database adapter error handling
+  - CSRF token validation improvements
 
-- **SSL Certificate Errors**: Resolved PostgreSQL connection issues
-  - Removed dependency on external certificate files
-  - Accepts self-signed certificates automatically
-  - No more "self-signed certificate in chain" errors
+#### Web Audio API Errors
 
-- **Duplicate Migration Files**: Removed conflicting migration
-  - Deleted untracked `0011_populate_user_hash.sql` file
-  - Eliminated migration journal conflicts
-
-- **Migration State Sync Issues**: Resolved database/migration tracking conflicts
-  - Clarified when to use `db:migrate` vs `db:push`
-  - Separated development (untracked) from production (tracked) workflows
-  - Prevented mixing of incompatible migration strategies
+- **React Strict Mode Compatibility**: Fixed "InvalidStateError: createMediaElementSource" errors
+  - Prevented duplicate MediaElementSourceNode creation
+  - Tracked connected audio elements with ref
+  - Proper cleanup on component unmount
+  - Works correctly in React 19 Strict Mode
 
 ### Technical Improvements
 
-#### Database
+#### Code Signing Infrastructure
 
-- **Migration Strategy**: Clear separation of concerns
-  - Development: Use `db:push` for fast iteration (bypasses migration history)
-  - Production: Use `db:migrate` for tracked, auditable changes
-  - Emergency: Use `db:push` to force-sync schema when state is corrupted
+- **Modified Files** for Windows Code Signing:
+  - `electron/sign.js`: Complete rewrite using @electron/windows-sign
+  - `package.json`: Updated Windows build configuration
+  - `electron/WINDOWS_SIGNING.md`: New comprehensive documentation
+  - `.env.example`: Added signing configuration examples
 
-- **Idempotent Migrations**: All migrations now safe to re-run
-  - Prevents production deployment failures
-  - Enables reliable rollback and retry mechanisms
-  - Reduces operational risk during deployments
+#### Database SSL Infrastructure
 
-- **Documentation Coverage**: Comprehensive documentation at three levels
-  - Quick start for immediate solutions
-  - README integration for discoverability  
-  - Detailed guide for complete reference
+- **Modified Files** for SSL Certificate Management:
+  - `src/server/db/index.ts`: Enhanced SSL configuration with fallback
+  - `src/env.js`: Added `DB_SSL_CA` schema validation
+  - `scripts/generate-ssl-cert.js`: Updated environment loading order
+  - `electron/prepare-package.js`: Added CA certificate generation
+  - `.env.development`: Added `DB_SSL_CA` certificate content
+  - `.env.local`: Added `DB_SSL_CA` certificate content
+  - `.env.example`: Added `DB_SSL_CA` documentation
 
-#### Electron
+#### Bug Fixes
 
-- **Build Reliability**: Simplified environment configuration reduces build failures
-  - No more conflicts from multiple `.env` files
-  - Predictable behavior across development and production
-  - Packaged apps include their own environment configuration
+- **Modified Files** for Audio and Auth Fixes:
+  - `src/components/FlowFieldBackground.tsx`: Fixed duplicate audio source nodes
+  - `src/server/auth/config.ts`: Enhanced logging for debugging
 
-- **Debugging Experience**: Enhanced logging makes troubleshooting easier
-  - Environment variables visible at startup (sensitive values masked)
-  - Clear indicators for missing required variables
-  - Mode detection (dev/prod, packaged/unpacked) logged
-  - File locations for loaded configuration shown
+### Security
 
-- **Type Safety**: Added JSDoc annotations throughout Electron scripts
-  - Better IDE autocomplete and error detection
-  - Prevents common JavaScript errors during development
-  - Improved maintainability
+- **Certificate Management**: Secure handling of SSL certificates
+  - Certificates stored as environment variables
+  - Automatic generation prevents manual certificate management
+  - No certificates committed to version control
+  - Proper permissions and access controls
 
-### Developer Experience
+- **Code Signing**: Enhanced trust and security for Windows builds
+  - Signed executables verified by Windows
+  - Reduced SmartScreen warnings
+  - Azure Key Vault for enterprise security
+  - Timestamp servers for long-term validity
 
-#### Database Workflows
+### Documentation
 
-- **Simplified Workflow**: Reduced complexity in daily development
-  - Old: `npm run db:generate && npm run db:migrate && npm run db:push` (error-prone)
-  - New: `npm run db:dev` (single command, correct behavior)
+- **Windows Code Signing**: Complete guide for code signing setup
+  - File: `electron/WINDOWS_SIGNING.md`
+  - Local certificate instructions
+  - Azure Key Vault setup
+  - CI/CD integration examples
+  - Troubleshooting and verification
 
-- **Clear Error Messages**: Helper script provides actionable guidance
-  - Explains what each command does
-  - Shows best practices and tips
-  - Guides users to correct commands for their environment
-
-- **Prevents Common Mistakes**: Documentation and tooling prevent typical errors
-  - Warns against mixing `db:migrate` and `db:push`
-  - Provides environment-specific commands
-  - Clear examples of correct vs incorrect usage
-
-#### Electron Development
-
-- **Simplified Configuration**: Single `.env.local` file for all environments
-  - No need to maintain multiple `.env.*` files
-  - Clear mental model: one file, one source of truth
-  - Reduced cognitive load during development
-
-- **Better Error Diagnosis**: Enhanced logging shows exactly what's loaded
-  - Missing variables immediately visible at startup
-  - No guessing which env file is being used
-  - Clear indicators for dev vs production mode
-
-- **Portable Builds**: Packaged apps include configuration
-  - No need to set system environment variables
-  - Consistent behavior across different machines
-  - Easy to share builds with QA or users
-
-### Benefits Summary
-
-**For End Users:**
-- More reliable database migrations during updates
-- Fewer "application won't start" errors in Electron builds
-- Better support experience (clearer error messages)
-
-**For Developers:**
-- Faster development workflow (single command for database changes)
-- Easier troubleshooting (detailed logging, clear documentation)
-- Fewer build failures (simplified configuration)
-- Better onboarding (comprehensive guides at multiple levels)
-
-**For DevOps:**
-- Safer deployments (idempotent migrations)
-- Easier debugging (extensive logging)
-- Clearer configuration management (single env file)
-- Reduced operational risk
+- **Environment Variables**: Updated documentation for new variables
+  - `DB_SSL_CA` usage and format
+  - Windows signing configuration
+  - Azure Key Vault configuration
+  - Examples in `.env.example`
 
 ## [0.6.8] - 2024-12-24
 
@@ -361,7 +262,6 @@ This release significantly improves the developer experience around database mig
   - Mobile: 30-60fps, <20% CPU usage, <50MB memory
   - Initial bundle size increase: <100KB for WebGL infrastructure
 
-
 ## [0.6.6] - 2025-12-23
 
 ### Added
@@ -393,7 +293,6 @@ This release significantly improves the developer experience around database mig
 - Modified: `src/app/layout.tsx` (updated default metadata)
 - Added: `public/emily-the-strange.png` (fallback image asset)
 
-
 ## [0.6.5] - 2025-12-23
 
 ### Changed
@@ -411,7 +310,6 @@ This release significantly improves the developer experience around database mig
 - **Performance & Visual Fidelity**: Pre-calculated common constants, angle steps, and hue offsets; reduced per-frame allocations; enhanced gradients and glow layers for deeper, more responsive visuals without extra CPU cost.
 - **Pattern Infrastructure**: Tightened use of cached HSLA color strings, fast modulo for hues, and object pooling in the visualizer pipeline to keep frame times stable even under heavy audio-reactive scenes.
 
-
 ## [0.6.4] - 2025-12-21
 
 ### Changed
@@ -419,12 +317,14 @@ This release significantly improves the developer experience around database mig
 #### Complete Rebrand to darkfloor.art
 
 **User-Facing Changes:**
+
 - **Brand Identity**: Completely rebranded from "isobelnet.de" to "darkfloor.art" across all user interfaces
 - **UI Components**: Updated all component text including headers, menus, welcome messages, and share dialogs
 - **Metadata**: Updated page titles, Open Graph data, and Twitter card metadata for SEO and social sharing
 - **Mobile Experience**: Updated mobile header, hamburger menu branding, and player UI text
 
 **Technical Changes:**
+
 - **Package Configuration**: Renamed package from `isobelnet-de` to `darkfloor-art`
 - **PM2 Processes**: Renamed production and development processes to `darkfloor-art-prod` and `darkfloor-art-dev`
 - **Electron App**: Updated desktop application name, app ID (`com.darkfloor.art`), and product name
@@ -434,6 +334,7 @@ This release significantly improves the developer experience around database mig
 - **Base URL**: Updated default fallback URL to `https://darkfloor.art`
 
 **Files Modified (30+ total):**
+
 - UI Components: HamburgerMenu, Header, WelcomeHero, EnhancedTrackCard, SwipeableTrackCard
 - App Pages: layout, page, license, user profile
 - Configuration: package.json, ecosystem.config.cjs, electron/main.cjs, getBaseUrl.ts

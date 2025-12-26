@@ -15,6 +15,7 @@ export const env = createEnv({
     DB_PORT: z.string().regex(/^\d+$/),
     DB_NAME: z.string(),
     DATABASE_URL: z.string().url(),
+    DB_SSL_CA: z.string().optional(), // PostgreSQL SSL CA certificate (PEM format)
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -41,6 +42,7 @@ export const env = createEnv({
     DB_PORT: process.env.DB_PORT,
     DB_NAME: process.env.DB_NAME,
     DATABASE_URL: process.env.DATABASE_URL,
+    DB_SSL_CA: process.env.DB_SSL_CA,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_SONGBIRD_API_URL: process.env.NEXT_PUBLIC_SONGBIRD_API_URL,

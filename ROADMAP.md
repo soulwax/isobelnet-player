@@ -91,18 +91,21 @@ if (USE_WEBGL_RENDERER && supportsWebGL()) {
 ## Phase 0: Foundation & Research (Week 1-2)
 
 ### Research & Prototyping
+
 - [ ] Evaluate WebGL libraries (Three.js, PixiJS, raw WebGL)
 - [ ] Create performance benchmarks (Canvas2D vs WebGL)
 - [ ] Build proof-of-concept for 3-5 patterns
 - [ ] Test on target devices (desktop, mobile, tablets)
 
 ### Technical Decisions
+
 - [ ] Choose WebGL abstraction layer (if any)
 - [ ] Decide on shader architecture (multi-layer vs uber-shader)
 - [ ] Define pattern specification format (JSON + GLSL)
 - [ ] Plan audio data pipeline (uniforms vs textures)
 
 ### Deliverables
+
 - Technical specification document
 - PoC demo with 3-5 converted patterns
 - Performance comparison report
@@ -113,6 +116,7 @@ if (USE_WEBGL_RENDERER && supportsWebGL()) {
 ## Phase 1: Core Infrastructure (Week 3-5)
 
 ### WebGL Renderer Foundation
+
 - [ ] Create `UnifiedWebGLRenderer` class
 - [ ] Implement WebGL context initialization with fallbacks
 - [ ] Build shader compilation and caching system
@@ -120,25 +124,29 @@ if (USE_WEBGL_RENDERER && supportsWebGL()) {
 - [ ] Implement resize and DPI scaling
 
 ### Audio Integration
+
 - [ ] Create audio data texture pipeline
 - [ ] Implement audio uniform system
 - [ ] Build frequency data processing utilities
 - [ ] Add beat detection integration
 
 ### Pattern System Architecture
+
 - [ ] Design pattern registry and loader
 - [ ] Create `ShaderProgram` wrapper class
 - [ ] Implement pattern transition system
 - [ ] Build pattern parameter system
 
 ### Development Tools
+
 - [ ] Set up shader hot module replacement
 - [ ] Create shader compilation error overlay
 - [ ] Build pattern preview/debug tool
 - [ ] Add performance profiling hooks
 
-### Deliverables
-```
+### Deliverables (Code Structure)
+
+```plaintext
 src/
 ├── components/
 │   └── visualizers/
@@ -161,6 +169,7 @@ src/
 ## Phase 2: Pattern Migration (Week 6-10)
 
 ### Batch 1: Core Patterns (Week 6-7)
+
 Priority: Most popular/visible patterns
 
 - [ ] **kaleidoscope** - Current default pattern
@@ -170,6 +179,7 @@ Priority: Most popular/visible patterns
 - [ ] **waves** - Sine wave animations
 
 ### Batch 2: Particle Systems (Week 7-8)
+
 - [ ] **bubbles** - Floating bubble effect
 - [ ] **fireworks** - Explosive particle effects
 - [ ] **starfield** - Moving star particles
@@ -177,6 +187,7 @@ Priority: Most popular/visible patterns
 - [ ] **constellation** - Connected star patterns
 
 ### Batch 3: Sacred Geometry (Week 8-9)
+
 - [ ] **flowerOfLife** - Sacred circles
 - [ ] **metatron** - Metatron's cube
 - [ ] **sriYantra** - Sri Yantra pattern
@@ -184,6 +195,7 @@ Priority: Most popular/visible patterns
 - [ ] **vesicaPiscis** - Overlapping circles
 
 ### Batch 4: Advanced Effects (Week 9-10)
+
 - [ ] **portal** - Vortex/portal effects
 - [ ] **tunnel** - 3D tunnel animation
 - [ ] **torusField** - Torus geometry
@@ -191,11 +203,13 @@ Priority: Most popular/visible patterns
 - [ ] **vortexSpiral** - Spiral vortex
 
 ### Batch 5: Remaining Patterns (Week 11-12)
+
 - [ ] Convert remaining 60+ patterns
 - [ ] Ensure feature parity with Canvas2D versions
 - [ ] Cross-device testing for each pattern
 
 ### Pattern Conversion Template
+
 Each pattern should follow this structure:
 
 ```glsl
@@ -241,6 +255,7 @@ void main() {
 ## Phase 3: Post-Processing Pipeline (Week 11-12)
 
 ### Effect Stack
+
 - [ ] **Blur** - Gaussian and box blur
 - [ ] **Bloom** - Bright area extraction and glow
 - [ ] **Color Grading** - HSV adjustments, color curves
@@ -250,7 +265,8 @@ void main() {
 - [ ] **Distortion** - Lens and barrel distortion
 
 ### Multi-Pass Rendering
-```
+
+```plaintext
 Frame Pipeline:
 1. Render pattern to mainFBO
 2. Extract bright areas to bloomFBO
@@ -261,6 +277,7 @@ Frame Pipeline:
 ```
 
 ### Implementation
+
 ```typescript
 class PostProcessingPipeline {
   effects: PostEffect[];
@@ -277,6 +294,7 @@ class PostProcessingPipeline {
 ## Phase 4: Transition System (Week 13-14)
 
 ### Transition Effects
+
 - [ ] **Crossfade** - Simple alpha blending
 - [ ] **Dissolve** - Noise-based transition
 - [ ] **Wipe** - Directional wipe effects
@@ -285,7 +303,8 @@ class PostProcessingPipeline {
 - [ ] **Wave Distort** - Wave-based morph
 - [ ] **Audio-Synced** - Beat-triggered transitions
 
-### Implementation
+### Implementation (Shader Example)
+
 ```glsl
 // Transition shader
 uniform sampler2D uPatternA;
@@ -309,6 +328,7 @@ void main() {
 ## Phase 5: Integration & Testing (Week 15-16)
 
 ### Component Integration
+
 - [ ] Create `WebGLBackground` component (replaces `FlowFieldBackground`)
 - [ ] Integrate with `PersistentPlayer`
 - [ ] Update `PatternControls` for WebGL parameters
@@ -316,6 +336,7 @@ void main() {
 - [ ] Add feature flag for gradual rollout
 
 ### Testing Matrix
+
 ```
 Devices:
 ├── Desktop: Chrome, Firefox, Safari, Edge
@@ -333,6 +354,7 @@ Scenarios:
 ```
 
 ### Performance Profiling
+
 - [ ] FPS monitoring across all patterns
 - [ ] Memory usage tracking
 - [ ] GPU utilization metrics
@@ -344,6 +366,7 @@ Scenarios:
 ## Phase 6: Polish & Optimization (Week 17-18)
 
 ### Performance Optimization
+
 - [ ] Implement quality presets (low/medium/high/ultra)
 - [ ] Add automatic quality adjustment based on FPS
 - [ ] Optimize shader code (reduce instruction count)
@@ -351,6 +374,7 @@ Scenarios:
 - [ ] Add instance rendering for particles
 
 ### User Experience
+
 - [ ] Smooth fallback to Canvas2D on WebGL failure
 - [ ] Loading states during shader compilation
 - [ ] Error boundaries with helpful messages
@@ -358,6 +382,7 @@ Scenarios:
 - [ ] Pattern favorites and recently used
 
 ### Developer Experience
+
 - [ ] Pattern creation documentation
 - [ ] Shader debugging guide
 - [ ] Performance optimization tips
@@ -368,7 +393,8 @@ Scenarios:
 ## Phase 7: Launch & Monitoring (Week 19-20)
 
 ### Gradual Rollout
-```
+
+```plaintext
 Week 19:
 ├── Enable for 10% of users (via feature flag)
 ├── Monitor error rates and performance
@@ -386,6 +412,7 @@ Week 21:
 ```
 
 ### Monitoring & Metrics
+
 - [ ] Set up error tracking (Sentry/similar)
 - [ ] Add performance metrics to analytics
 - [ ] Monitor FPS distribution across devices
@@ -393,6 +420,7 @@ Week 21:
 - [ ] Measure user engagement changes
 
 ### Documentation
+
 - [ ] User-facing pattern guide
 - [ ] Developer documentation
 - [ ] Migration notes
@@ -405,7 +433,7 @@ Week 21:
 
 ### Proposed Structure
 
-```
+```plaintext
 src/
 ├── components/
 │   ├── WebGLBackground.tsx          # Main component (replaces FlowFieldBackground)
@@ -622,7 +650,7 @@ export class PatternRegistry {
 ### Technical Risks
 
 | Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
+|------|-------------|--------|-----------|
 | Poor mobile performance | Medium | High | Quality presets, automatic downscaling, extensive testing |
 | WebGL context loss | Medium | High | Context restore handlers, state recovery system |
 | Shader compilation errors | Medium | Medium | Comprehensive error handling, fallback shaders |
@@ -633,7 +661,7 @@ export class PatternRegistry {
 ### Development Risks
 
 | Risk | Probability | Impact | Mitigation |
-|------|-------------|--------|------------|
+|------------|-------------|-------------|-------------|-------------|
 | Timeline overrun | Medium | Medium | Phased approach, adjust scope if needed |
 | Team WebGL knowledge gap | High | Medium | Training period, pair programming, documentation |
 | User resistance to change | Low | Low | Feature flag, gather feedback, iterate |
@@ -680,21 +708,21 @@ export class PatternRegistry {
 
 ### Learning Resources
 
-- **WebGL Fundamentals:** https://webglfundamentals.org/
-- **The Book of Shaders:** https://thebookofshaders.com/
-- **ShaderToy:** https://www.shadertoy.com/ (pattern inspiration)
-- **Three.js Examples:** https://threejs.org/examples/
+- **WebGL Fundamentals:** <https://webglfundamentals.org/>
+- **The Book of Shaders:** <https://thebookofshaders.com/>
+- **ShaderToy:** <https://www.shadertoy.com/> (pattern inspiration)
+- **Three.js Examples:** <https://threejs.org/examples/>
 
 ### Technical References
 
-- **WebGL Specification:** https://www.khronos.org/webgl/
-- **GLSL Reference:** https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language
-- **GPU Gems:** https://developer.nvidia.com/gpugems/
+- **WebGL Specification:** <https://www.khronos.org/webgl/>
+- **GLSL Reference:** <https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language>
+- **GPU Gems:** <https://developer.nvidia.com/gpugems/>
 
 ### Tools
 
-- **Shader Playground:** http://shader-playground.timjones.io/
-- **GLSL Sandbox:** http://glslsandbox.com/
+- **Shader Playground:** <http://shader-playground.timjones.io/>
+- **GLSL Sandbox:** <http://glslsandbox.com/>
 - **SpectorJS:** WebGL debugging extension
 
 ---
@@ -704,24 +732,28 @@ export class PatternRegistry {
 ### Phase 0 Setup
 
 1. **Install dependencies:**
+
 ```bash
 npm install --save-dev @types/webgl-ext
 npm install three # optional, if using Three.js
 ```
 
-2. **Create initial structure:**
+1. **Create initial structure:**
+
 ```bash
 mkdir -p src/components/visualizers/webgl
 mkdir -p src/shaders/{common,patterns,postprocessing,transitions,base}
 ```
 
-3. **Set up feature flag:**
+1. **Set up feature flag:**
+
 ```env
 # .env.local
 NEXT_PUBLIC_WEBGL_RENDERER=false  # Start with false, flip when ready
 ```
 
-4. **Create proof of concept:**
+1. **Create proof of concept:**
+
 - Start with `kaleidoscope` pattern
 - Get it working in isolation
 - Measure performance vs Canvas2D
@@ -764,6 +796,7 @@ For each phase:
 ## 🏁 Conclusion
 
 This migration represents a significant architectural improvement that will:
+
 - **Enhance performance** across all devices
 - **Improve maintainability** with modular shader system
 - **Enable advanced effects** previously impossible with Canvas2D
@@ -866,4 +899,3 @@ void main() {
 **Last Updated:** 2025-12-24  
 **Maintained By:** Development Team  
 **Status:** Planning Phase
-
