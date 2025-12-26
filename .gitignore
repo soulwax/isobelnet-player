@@ -75,3 +75,4 @@ public/**/*.js
 .github/docs/*.md
 
 nul
+resources/
