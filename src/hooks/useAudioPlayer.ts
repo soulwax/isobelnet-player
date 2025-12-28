@@ -64,12 +64,10 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     // Load persisted queue state
     const persistedState = loadPersistedQueueState();
     if (persistedState) {
-      // NEW: Merge currentTrack into queue if it's not already there
-      const restoredQueue = persistedState.currentTrack
-        ? [persistedState.currentTrack, ...persistedState.queue]
-        : persistedState.queue;
-
-      setQueue(restoredQueue);
+      // In queue-first approach, queue[0] is always the current track
+      // persistedState.queue already includes currentTrack at position 0
+      // So we use it directly without merging to avoid duplication
+      setQueue(persistedState.queue);
       setHistory(persistedState.history);
       setIsShuffled(persistedState.isShuffled);
       setRepeatMode(persistedState.repeatMode);

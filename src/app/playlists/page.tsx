@@ -103,24 +103,83 @@ export default function PlaylistsPage() {
             >
               <div className="relative aspect-square overflow-hidden rounded-xl bg-[linear-gradient(135deg,rgba(244,178,102,0.28),rgba(88,198,177,0.22))]">
                 {playlist.tracks && playlist.tracks.length > 0 ? (
-                  <div className="grid h-full grid-cols-2 grid-rows-2 gap-0.5">
-                    {playlist.tracks.slice(0, 4).map((playlistTrack, idx) => (
-                      <div
-                        key={idx}
-                        className="relative h-full w-full overflow-hidden rounded-[0.65rem] bg-[rgba(12,18,27,0.9)]"
-                      >
+                  (() => {
+                    // Get all album covers (with their frequency)
+                    const covers = playlist.tracks
+                      .map((t) => t.track?.album?.cover_medium)
+                      .filter((cover): cover is string => !!cover);
+
+                    // Get unique album covers
+                    const uniqueCovers = Array.from(new Set(covers));
+
+                    // If less than 4 tracks, show first song's cover
+                    if (playlist.tracks.length < 4) {
+                      return (
+                        <div className="relative h-full w-full overflow-hidden rounded-xl bg-[rgba(12,18,27,0.9)]">
+                          <Image
+                            src={
+                              playlist.tracks[0]?.track?.album?.cover_medium ??
+                              "/placeholder.png"
+                            }
+                            alt=""
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      );
+                    }
+
+                    // If more than 3 songs with more than 3 unique covers, show 2x2 grid
+                    if (playlist.tracks.length > 3 && uniqueCovers.length > 3) {
+                      return (
+                        <div className="grid h-full grid-cols-2 grid-rows-2 gap-0.5">
+                          {playlist.tracks.slice(0, 4).map((playlistTrack, idx) => (
+                            <div
+                              key={idx}
+                              className="relative h-full w-full overflow-hidden rounded-[0.65rem] bg-[rgba(12,18,27,0.9)]"
+                            >
+                              <Image
+                                src={
+                                  playlistTrack.track?.album?.cover_medium ??
+                                  "/placeholder.png"
+                                }
+                                alt=""
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    // If more than 3 songs but less than 4 unique covers, show dominant cover
+                    // Find the most frequent album cover
+                    const coverFrequency = new Map<string, number>();
+                    covers.forEach((cover) => {
+                      coverFrequency.set(cover, (coverFrequency.get(cover) ?? 0) + 1);
+                    });
+
+                    let dominantCover = covers[0] ?? "/placeholder.png";
+                    let maxFrequency = 0;
+                    coverFrequency.forEach((frequency, cover) => {
+                      if (frequency > maxFrequency) {
+                        maxFrequency = frequency;
+                        dominantCover = cover;
+                      }
+                    });
+
+                    return (
+                      <div className="relative h-full w-full overflow-hidden rounded-xl bg-[rgba(12,18,27,0.9)]">
                         <Image
-                          src={
-                            playlistTrack.track?.album?.cover_medium ??
-                            "/placeholder.png"
-                          }
+                          src={dominantCover}
                           alt=""
                           fill
                           className="object-cover"
                         />
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()
                 ) : (
                   <div className="flex h-full items-center justify-center text-[var(--color-text)]/60">
                     <Music className="h-12 w-12 md:h-16 md:w-16" />
@@ -139,8 +198,8 @@ export default function PlaylistsPage() {
                 )}
                 <div className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
                   <span>
-                    {playlist.tracks?.length ?? 0} track
-                    {(playlist.tracks?.length ?? 0) !== 1 ? "s" : ""}
+                    {playlist.trackCount ?? 0} track
+                    {(playlist.trackCount ?? 0) !== 1 ? "s" : ""}
                   </span>
                   <span
                     className={

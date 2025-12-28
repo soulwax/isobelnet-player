@@ -8234,6 +8234,52 @@ export class FlowFieldRenderer {
     const moonHue330 = this.fastMod360(this.hueBase + 330);
     const moonHue320 = this.fastMod360(this.hueBase + 320);
     const moonHue10 = this.fastMod360(this.hueBase + 10);
+    const moonHue0 = this.fastMod360(this.hueBase + 0);
+
+    // ENHANCEMENT: Crimson aura rings around moon (5-7 rings)
+    const auraRings = 5 + ((bassIntensity * 2) | 0);
+    const auraHue = this.fastMod360(this.hueBase + 345);
+    const auraAlpha = 0.15 + midIntensity * 0.15;
+
+    ctx.save();
+    ctx.strokeStyle = this.hsla(auraHue, 85, 42, auraAlpha);
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = this.hsla(auraHue, 90, 45, auraAlpha * 0.8);
+
+    for (let ar = 0; ar < auraRings; ar++) {
+      const auraRadius = moonRadius * (1.15 + ar * 0.12) + this.fastSin(this.time * 0.004 + ar) * 8;
+      ctx.lineWidth = 2 - ar * 0.2 + audioIntensity * 1.5;
+      ctx.globalAlpha = auraAlpha * (1 - ar / auraRings * 0.6);
+      ctx.beginPath();
+      ctx.arc(0, 0, auraRadius, 0, twoPi);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    // ENHANCEMENT: Blood droplets orbiting moon (25-40 droplets)
+    const dropletCount = 25 + ((midIntensity * 15) | 0);
+    const dropletHue = this.fastMod360(this.hueBase + 355);
+    const dropletAlpha = 0.4 + audioIntensity * 0.3;
+
+    ctx.save();
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = this.hsla(dropletHue, 95, 48, dropletAlpha * 0.7);
+    ctx.fillStyle = this.hsla(dropletHue, 88, 45, dropletAlpha);
+
+    for (let d = 0; d < dropletCount; d++) {
+      const dropletOrbit = moonRadius * (1.4 + (d % 4) * 0.18);
+      const dropletAngle = this.fastMod360(d * 13.7 + this.time * 0.09);
+      const dropletPulse = 1 + this.fastSin(this.time * 0.015 + d * 0.5) * 0.12;
+      const dropletX = this.fastCos(dropletAngle) * dropletOrbit * dropletPulse;
+      const dropletY = this.fastSin(dropletAngle) * dropletOrbit * dropletPulse + this.fastSin(this.time * 0.012 + d) * 15;
+      const dropletSize = 2.5 + (d % 3) * 0.8 + bassIntensity * 1.8;
+
+      ctx.beginPath();
+      ctx.arc(dropletX, dropletY, dropletSize, 0, twoPi);
+      ctx.fill();
+    }
+    ctx.restore();
     const moonGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, moonRadius);
     moonGradient.addColorStop(
       0,
@@ -8286,7 +8332,61 @@ export class FlowFieldRenderer {
     ctx.arc(shadowX, shadowY, shadowRadius15, 0, twoPi);
     ctx.fill();
 
-    const rays = 12;
+    // ENHANCEMENT: Lunar craters on moon surface (10-15 craters)
+    const craterCount = 10 + ((bassIntensity * 5) | 0);
+    const craterHue = this.fastMod360(this.hueBase + 335);
+    const craterAlpha = 0.35 + midIntensity * 0.2;
+
+    ctx.save();
+    ctx.fillStyle = this.hsla(craterHue, 75, 28, craterAlpha);
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.hsla(craterHue, 80, 25, craterAlpha * 0.9);
+
+    for (let cr = 0; cr < craterCount; cr++) {
+      const craterAngle = this.fastMod360(cr * 28.4);
+      const craterDist = moonRadius * (0.3 + (cr % 7) * 0.08);
+      const crX = this.fastCos(craterAngle) * craterDist;
+      const crY = this.fastSin(craterAngle) * craterDist;
+      const craterSize = 8 + (cr % 4) * 3 + bassIntensity * 4;
+
+      ctx.beginPath();
+      ctx.arc(crX, crY, craterSize, 0, twoPi);
+      ctx.fill();
+
+      // Small impact rim
+      ctx.strokeStyle = this.hsla(craterHue, 70, 32, craterAlpha * 0.7);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(crX, crY, craterSize * 1.2, 0, twoPi);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // ENHANCEMENT: Eclipse wisps circling moon (15-22 wisps)
+    const wispCount = 15 + ((audioIntensity * 7) | 0);
+    const wispHue = this.fastMod360(this.hueBase + 352);
+    const wispAlpha = 0.3 + midIntensity * 0.25;
+
+    ctx.save();
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = this.hsla(wispHue, 92, 48, wispAlpha * 0.7);
+    ctx.fillStyle = this.hsla(wispHue, 88, 46, wispAlpha);
+
+    for (let w = 0; w < wispCount; w++) {
+      const wispOrbit = moonRadius * (0.92 + (w % 3) * 0.08);
+      const wispAngle = this.fastMod360(w * 22.5 + this.time * 0.13);
+      const wispPulse = 1 + this.fastSin(this.time * 0.016 + w * 0.8) * 0.18;
+      const wispX = this.fastCos(wispAngle) * wispOrbit * wispPulse;
+      const wispY = this.fastSin(wispAngle) * wispOrbit * wispPulse;
+      const wispSize = 3 + (w % 3) * 0.7 + bassIntensity * 2;
+
+      ctx.beginPath();
+      ctx.arc(wispX, wispY, wispSize, 0, twoPi);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    const rays = 16; // Increased from 12
     const invRays = 1 / rays;
     const rayAngleStep = twoPi * invRays;
     ctx.strokeStyle = this.hsla(moonHue350, 90, 50, 0.4 + midIntensity * 0.3);
@@ -8308,6 +8408,28 @@ export class FlowFieldRenderer {
       ctx.stroke();
     }
 
+    // ENHANCEMENT: Secondary rays between main rays (bass-reactive)
+    if (bassIntensity > 0.25) {
+      const secondaryHue = this.fastMod360(this.hueBase + 348);
+      const secondaryAlpha = 0.25 + bassIntensity * 0.3;
+      ctx.strokeStyle = this.hsla(secondaryHue, 85, 48, secondaryAlpha);
+      ctx.lineWidth = 1.5 + bassIntensity * 1.5;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = this.hsla(secondaryHue, 95, 50, secondaryAlpha * 0.8);
+
+      for (let i = 0; i < rays; i++) {
+        const angle = rayAngleStep * i + rayAngleStep * 0.5 + timeRays;
+        const secondaryLength = maxRadius * (0.6 + bassIntensity * 0.25 + this.fastSin(timeRayLength + i + rays) * 0.15);
+        const cosAngle = this.fastCos(angle);
+        const sinAngle = this.fastSin(angle);
+
+        ctx.beginPath();
+        ctx.moveTo(cosAngle * moonRadius * 1.05, sinAngle * moonRadius * 1.05);
+        ctx.lineTo(cosAngle * secondaryLength, sinAngle * secondaryLength);
+        ctx.stroke();
+      }
+    }
+
     ctx.restore();
   }
 
@@ -8321,7 +8443,7 @@ export class FlowFieldRenderer {
     ctx.translate(this.centerX, this.centerY);
 
     const maxRadius = Math.min(this.width, this.height) * 0.48;
-    const matterParticles = 60;
+    const matterParticles = 80 + ((bassIntensity * 40) | 0); // Increased from 60, now 80-120
     const invMatterParticles = 1 / matterParticles;
     const twoPi = FlowFieldRenderer.TWO_PI;
     const particleAngleStep = twoPi * invMatterParticles;
@@ -8334,6 +8456,28 @@ export class FlowFieldRenderer {
     const darkHue240 = this.fastMod360(this.hueBase + 240);
     const darkHue250 = this.fastMod360(this.hueBase + 250);
     const darkHue230 = this.fastMod360(this.hueBase + 230);
+    const darkHue260 = this.fastMod360(this.hueBase + 260);
+
+    // ENHANCEMENT: Void particles deep in the core (35-55 particles)
+    const voidCount = 35 + ((trebleIntensity * 20) | 0);
+    const voidHue = this.fastMod360(this.hueBase + 245);
+    const voidAlpha = 0.2 + audioIntensity * 0.15;
+    ctx.fillStyle = this.hsla(voidHue, 25, 10, voidAlpha);
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = this.hsla(voidHue, 35, 15, voidAlpha * 0.8);
+
+    for (let v = 0; v < voidCount; v++) {
+      const voidRadius = maxRadius * 0.08 + (v % 12) * maxRadius * 0.012;
+      const voidAngle = this.fastMod360(v * 21.3 + this.time * 0.05);
+      const voidPulse = 1 + this.fastSin(this.time * 0.008 + v * 0.7) * 0.2;
+      const voidX = this.fastCos(voidAngle) * voidRadius * voidPulse;
+      const voidY = this.fastSin(voidAngle) * voidRadius * voidPulse;
+      const voidSize = 2 + (v % 4) * 0.6 + bassIntensity * 1.5;
+
+      ctx.beginPath();
+      ctx.arc(voidX, voidY, voidSize, 0, twoPi);
+      ctx.fill();
+    }
 
     for (let i = 0; i < matterParticles; i++) {
       const angle = particleAngleStep * i + timeAngle;
@@ -8357,24 +8501,80 @@ export class FlowFieldRenderer {
       ctx.fill();
     }
 
-    const coreRadius = maxRadius * 0.3;
-    const darkCore = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
-    darkCore.addColorStop(
-      0,
-      this.hsla(darkHue250, 30, 5, 0.95 + audioIntensity * 0.05),
-    );
-    darkCore.addColorStop(
-      0.5,
-      this.hsla(darkHue240, 40, 8, 0.7 + bassIntensity * 0.2),
-    );
-    darkCore.addColorStop(1, this.hsla(darkHue230, 50, 12, 0));
+    // ENHANCEMENT: Dark energy streams connecting matter (15-25 streams)
+    const streamCount = 15 + ((audioIntensity * 10) | 0);
+    const streamHue = this.fastMod360(this.hueBase + 235);
+    const streamAlpha = 0.15 + trebleIntensity * 0.15;
 
-    ctx.fillStyle = darkCore;
+    ctx.save();
+    ctx.strokeStyle = this.hsla(streamHue, 45, 22, streamAlpha);
+    ctx.lineWidth = 1.5 + bassIntensity * 1;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = this.hsla(streamHue, 55, 28, streamAlpha * 0.8);
+
+    for (let st = 0; st < streamCount; st++) {
+      const streamAngle1 = this.fastMod360(st * 23.7 + this.time * 0.07);
+      const streamAngle2 = this.fastMod360(st * 23.7 + 180 + this.time * 0.07);
+      const streamRadius1 = maxRadius * (0.25 + (st % 4) * 0.12);
+      const streamRadius2 = maxRadius * (0.35 + (st % 3) * 0.14);
+      const stX1 = this.fastCos(streamAngle1) * streamRadius1;
+      const stY1 = this.fastSin(streamAngle1) * streamRadius1;
+      const stX2 = this.fastCos(streamAngle2) * streamRadius2;
+      const stY2 = this.fastSin(streamAngle2) * streamRadius2;
+
+      ctx.beginPath();
+      ctx.moveTo(stX1, stY1);
+      ctx.lineTo(stX2, stY2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // ENHANCEMENT: Multi-layered dark core (4 layers)
+    const coreRadius = maxRadius * 0.3;
+
+    // Layer 1 - Outer darkness
+    const darkCore1 = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
+    darkCore1.addColorStop(0, this.hsla(darkHue250, 30, 5, 0.95 + audioIntensity * 0.05));
+    darkCore1.addColorStop(0.5, this.hsla(darkHue240, 40, 8, 0.7 + bassIntensity * 0.2));
+    darkCore1.addColorStop(1, this.hsla(darkHue230, 50, 12, 0));
+    ctx.fillStyle = darkCore1;
     ctx.beginPath();
     ctx.arc(0, 0, coreRadius, 0, twoPi);
     ctx.fill();
 
-    const gravityWaves = 8;
+    // Layer 2 - Mid void
+    const coreRadius2 = coreRadius * 0.65;
+    const darkCore2 = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius2);
+    darkCore2.addColorStop(0, this.hsla(darkHue260, 25, 3, 0.98));
+    darkCore2.addColorStop(0.6, this.hsla(darkHue250, 32, 6, 0.85));
+    darkCore2.addColorStop(1, this.hsla(darkHue240, 38, 9, 0.5));
+    ctx.fillStyle = darkCore2;
+    ctx.beginPath();
+    ctx.arc(0, 0, coreRadius2, 0, twoPi);
+    ctx.fill();
+
+    // Layer 3 - Event horizon
+    const coreRadius3 = coreRadius * 0.35;
+    const darkCore3 = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius3);
+    darkCore3.addColorStop(0, this.hsla(darkHue260, 20, 2, 1));
+    darkCore3.addColorStop(0.7, this.hsla(darkHue250, 28, 4, 0.95));
+    darkCore3.addColorStop(1, this.hsla(darkHue240, 35, 7, 0.8));
+    ctx.fillStyle = darkCore3;
+    ctx.beginPath();
+    ctx.arc(0, 0, coreRadius3, 0, twoPi);
+    ctx.fill();
+
+    // Layer 4 - Singularity
+    const singularityRadius = coreRadius3 * (0.3 + bassIntensity * 0.2);
+    ctx.fillStyle = this.hsla(darkHue260, 15, 1, 1);
+    ctx.shadowBlur = 20 + audioIntensity * 15;
+    ctx.shadowColor = this.hsla(darkHue250, 25, 3, 0.95);
+    ctx.beginPath();
+    ctx.arc(0, 0, singularityRadius, 0, twoPi);
+    ctx.fill();
+
+    // ENHANCEMENT: Increased gravity waves from 8 to 12 + gravitational lensing arcs
+    const gravityWaves = 12;
     ctx.strokeStyle = this.hsla(
       darkHue240,
       50,
@@ -8386,11 +8586,38 @@ export class FlowFieldRenderer {
 
     for (let i = 0; i < gravityWaves; i++) {
       const radius =
-        maxRadius * (0.4 + i * 0.08) + this.fastSin(timeGravity + i) * 5;
+        maxRadius * (0.35 + i * 0.06) + this.fastSin(timeGravity + i) * 5;
       ctx.beginPath();
       ctx.arc(0, 0, radius, 0, twoPi);
       ctx.stroke();
     }
+
+    ctx.setLineDash([]);
+
+    // ENHANCEMENT: Gravitational lensing arcs (6-10 arcs)
+    const lensingCount = 6 + ((bassIntensity * 4) | 0);
+    const lensingHue = this.fastMod360(this.hueBase + 242);
+    const lensingAlpha = 0.25 + audioIntensity * 0.2;
+
+    ctx.save();
+    ctx.strokeStyle = this.hsla(lensingHue, 55, 30, lensingAlpha);
+    ctx.lineWidth = 2 + trebleIntensity * 1.5;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = this.hsla(lensingHue, 60, 35, lensingAlpha * 0.7);
+
+    for (let lens = 0; lens < lensingCount; lens++) {
+      const lensAngle = this.fastMod360(lens * 60 + this.time * 0.1);
+      const lensRadius = maxRadius * (0.42 + (lens % 3) * 0.08);
+      const arcStart = this.fastMod360(lensAngle - 25);
+      const arcEnd = this.fastMod360(lensAngle + 25);
+      const arcStartRad = (arcStart * Math.PI) / 180;
+      const arcEndRad = (arcEnd * Math.PI) / 180;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, lensRadius, arcStartRad, arcEndRad);
+      ctx.stroke();
+    }
+    ctx.restore();
 
     ctx.setLineDash([]);
     ctx.restore();
@@ -8406,7 +8633,7 @@ export class FlowFieldRenderer {
     ctx.translate(this.centerX, this.centerY);
 
     const maxRadius = Math.min(this.width, this.height) * 0.44;
-    const fragments = 7;
+    const fragments = 9; // Increased from 7
     const invFragments = 1 / fragments;
     const twoPi = FlowFieldRenderer.TWO_PI;
     const fragmentAngleStep = twoPi * invFragments;
@@ -8417,6 +8644,24 @@ export class FlowFieldRenderer {
     const soulHue140 = this.fastMod360(this.hueBase + 140);
     const soulHue130 = this.fastMod360(this.hueBase + 130);
     const soulHue120 = this.fastMod360(this.hueBase + 120);
+    const soulHue150 = this.fastMod360(this.hueBase + 150);
+
+    // ENHANCEMENT: Spirit particles connecting fragments (30-50 particles)
+    const spiritCount = 30 + ((midIntensity * 20) | 0);
+    const spiritHue = this.fastMod360(this.hueBase + 135);
+    const spiritAlpha = 0.25 + audioIntensity * 0.2;
+    ctx.fillStyle = this.hsla(spiritHue, 80, 70, spiritAlpha);
+
+    for (let s = 0; s < spiritCount; s++) {
+      const spiritOrbit = maxRadius * (0.3 + (s % 5) * 0.06);
+      const spiritAngle = this.fastMod360(s * 14.7 + this.time * 0.1);
+      const spiritPulse = 1 + this.fastSin(this.time * 0.012 + s * 0.6) * 0.18;
+      const spiritX = this.fastCos(spiritAngle) * spiritOrbit * spiritPulse;
+      const spiritY = this.fastSin(spiritAngle) * spiritOrbit * spiritPulse;
+      const spiritSize = 1.8 + (s % 3) * 0.7 + midIntensity * 1.3;
+
+      ctx.fillRect(spiritX - spiritSize * 0.5, spiritY - spiritSize * 0.5, spiritSize, spiritSize);
+    }
 
     for (let frag = 0; frag < fragments; frag++) {
       const angle = fragmentAngleStep * frag + timeFragment;
@@ -8430,6 +8675,31 @@ export class FlowFieldRenderer {
       const alpha =
         0.5 + this.fastSin(timeAlpha + frag) * 0.2 + midIntensity * 0.3;
 
+      // ENHANCEMENT: Ethereal trail behind fragment
+      const trailLength = 5;
+      const trailHue = this.fastMod360(hue + 15);
+      const trailAlpha = alpha * 0.3;
+      ctx.save();
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = this.hsla(trailHue, 85, 65, trailAlpha * 0.7);
+      ctx.fillStyle = this.hsla(trailHue, 75, 60, trailAlpha);
+
+      for (let t = 1; t <= trailLength; t++) {
+        const trailAngle = angle - (t * 0.08);
+        const trailRadius = radius * (1 - t * 0.02);
+        const trailX = this.fastCos(trailAngle) * trailRadius;
+        const trailY = this.fastSin(trailAngle) * trailRadius;
+        const trailSize = size * (0.8 - t * 0.12);
+        const trailFade = 1 - (t / trailLength) * 0.7;
+
+        ctx.globalAlpha = trailAlpha * trailFade;
+        ctx.beginPath();
+        ctx.arc(trailX, trailY, trailSize, 0, twoPi);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+
       const hue30 = this.fastMod360(hue + 30);
       const hue60 = this.fastMod360(hue + 60);
       const alpha07 = alpha * 0.7;
@@ -8439,7 +8709,7 @@ export class FlowFieldRenderer {
       fragmentGradient.addColorStop(1, this.hsla(hue60, 70, 55, 0));
 
       ctx.fillStyle = fragmentGradient;
-      ctx.shadowBlur = 30;
+      ctx.shadowBlur = 30 + audioIntensity * 15;
       ctx.shadowColor = this.hsla(hue, 100, 70, 0.7);
       ctx.beginPath();
       ctx.arc(x, y, size, 0, twoPi);
@@ -8450,23 +8720,76 @@ export class FlowFieldRenderer {
       ctx.beginPath();
       ctx.arc(x, y, size * 0.7, 0, twoPi);
       ctx.stroke();
+
+      // ENHANCEMENT: Fragment shards orbiting each main fragment (4-6 shards)
+      const shardCount = 4 + ((bassIntensity * 2) | 0);
+      const shardOrbitRadius = size * 1.3;
+      const shardHue = this.fastMod360(hue + 40);
+      const shardAlpha = alpha * 0.6;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = this.hsla(shardHue, 90, 70, shardAlpha * 0.8);
+      ctx.fillStyle = this.hsla(shardHue, 85, 68, shardAlpha);
+
+      for (let sh = 0; sh < shardCount; sh++) {
+        const shardAngle = this.fastMod360(sh * (360 / shardCount) + this.time * 0.15 + frag * 30);
+        const shardPulse = 1 + this.fastSin(this.time * 0.02 + sh + frag) * 0.15;
+        const shX = this.fastCos(shardAngle) * shardOrbitRadius * shardPulse;
+        const shY = this.fastSin(shardAngle) * shardOrbitRadius * shardPulse;
+        const shardSize = 3 + bassIntensity * 2.5;
+
+        ctx.beginPath();
+        ctx.arc(shX, shY, shardSize, 0, twoPi);
+        ctx.fill();
+      }
+
+      ctx.restore();
     }
 
+    // ENHANCEMENT: Multi-layered soul core (4 layers)
     const coreRadius = maxRadius * 0.2;
-    const soulCore = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
-    soulCore.addColorStop(
-      0,
-      this.hsla(soulHue140, 100, 90, 0.9 + audioIntensity * 0.1),
-    );
-    soulCore.addColorStop(
-      0.6,
-      this.hsla(soulHue130, 95, 75, 0.6 + midIntensity * 0.2),
-    );
-    soulCore.addColorStop(1, this.hsla(soulHue120, 90, 60, 0));
 
-    ctx.fillStyle = soulCore;
+    // Layer 1 - Outer aura
+    const soulCore1 = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius);
+    soulCore1.addColorStop(0, this.hsla(soulHue140, 100, 90, 0.9 + audioIntensity * 0.1));
+    soulCore1.addColorStop(0.6, this.hsla(soulHue130, 95, 75, 0.6 + midIntensity * 0.2));
+    soulCore1.addColorStop(1, this.hsla(soulHue120, 90, 60, 0));
+    ctx.fillStyle = soulCore1;
     ctx.beginPath();
     ctx.arc(0, 0, coreRadius, 0, twoPi);
+    ctx.fill();
+
+    // Layer 2 - Mid glow
+    const coreRadius2 = coreRadius * 0.65;
+    const soulCore2 = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius2);
+    soulCore2.addColorStop(0, this.hsla(soulHue150, 100, 88, 0.95));
+    soulCore2.addColorStop(0.5, this.hsla(soulHue140, 98, 78, 0.8));
+    soulCore2.addColorStop(1, this.hsla(soulHue130, 92, 68, 0.4));
+    ctx.fillStyle = soulCore2;
+    ctx.beginPath();
+    ctx.arc(0, 0, coreRadius2, 0, twoPi);
+    ctx.fill();
+
+    // Layer 3 - Inner essence
+    const coreRadius3 = coreRadius * 0.35;
+    const soulCore3 = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius3);
+    soulCore3.addColorStop(0, this.hsla(soulHue150, 100, 95, 1));
+    soulCore3.addColorStop(0.6, this.hsla(soulHue140, 100, 85, 0.9));
+    soulCore3.addColorStop(1, this.hsla(soulHue130, 95, 75, 0.7));
+    ctx.fillStyle = soulCore3;
+    ctx.beginPath();
+    ctx.arc(0, 0, coreRadius3, 0, twoPi);
+    ctx.fill();
+
+    // Layer 4 - Pulsating heart
+    const heartRadius = coreRadius3 * (0.45 + midIntensity * 0.25 + this.fastSin(this.time * 0.005) * 0.15);
+    ctx.fillStyle = this.hsla(soulHue150, 100, 98, 0.95 + audioIntensity * 0.05);
+    ctx.shadowBlur = 30 + bassIntensity * 20;
+    ctx.shadowColor = this.hsla(soulHue150, 100, 90, 0.9);
+    ctx.beginPath();
+    ctx.arc(0, 0, heartRadius, 0, twoPi);
     ctx.fill();
 
     ctx.restore();
@@ -8483,26 +8806,44 @@ export class FlowFieldRenderer {
 
     // HYPER-OPTIMIZATION: Pre-calculate forbidden ritual parameters
     const maxRadius = Math.min(this.width, this.height) * 0.43;
-    const ritualCircles = 5;
+    const ritualCircles = 7; // Increased from 5
     const twoPi = FlowFieldRenderer.TWO_PI;
     const timeRotation = this.time * 0.0005;
     const ritualHue310 = this.fastMod360(this.hueBase + 310);
     const ritualHue300 = this.fastMod360(this.hueBase + 300);
     const ritualHue290 = this.fastMod360(this.hueBase + 290);
+    const ritualHue320 = this.fastMod360(this.hueBase + 320);
+
+    // ENHANCEMENT: Floating rune particles in ritual space (40-70 particles)
+    const runeCount = 40 + ((bassIntensity * 30) | 0);
+    const runeHue = this.fastMod360(this.hueBase + 305);
+    const runeAlpha = 0.3 + trebleIntensity * 0.25;
+    ctx.fillStyle = this.hsla(runeHue, 85, 55, runeAlpha);
+
+    for (let r = 0; r < runeCount; r++) {
+      const runeRadius = maxRadius * 0.25 + (r % 20) * maxRadius * 0.025;
+      const runeAngle = this.fastMod360(r * 17.3 + this.time * 0.08);
+      const runePulse = 1 + this.fastSin(this.time * 0.01 + r * 0.5) * 0.15;
+      const runeX = this.fastCos(runeAngle) * runeRadius * runePulse;
+      const runeY = this.fastSin(runeAngle) * runeRadius * runePulse;
+      const runeSize = 1.5 + ((r % 3) * 0.8) + bassIntensity * 1.2;
+
+      ctx.fillRect(runeX - runeSize * 0.5, runeY - runeSize * 0.5, runeSize, runeSize);
+    }
 
     for (let circle = 0; circle < ritualCircles; circle++) {
-      const radius = maxRadius * (0.2 + circle * 0.2);
+      const radius = maxRadius * (0.15 + circle * 0.14);
       const rotation = timeRotation * (circle % 2 === 0 ? 1 : -1);
 
       ctx.save();
       ctx.rotate(rotation);
 
-      const hue = this.fastMod360(this.hueBase + 300 + circle * 15);
+      const hue = this.fastMod360(this.hueBase + 300 + circle * 12);
       const strokeAlpha = 0.6 + audioIntensity * 0.2;
       ctx.strokeStyle = this.hsla(hue, 85, 40, strokeAlpha);
       ctx.lineWidth =
         2 + (circle === ritualCircles - 1 ? bassIntensity * 2 : 0);
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 20 + (circle % 2 === 0 ? audioIntensity * 15 : 0);
       ctx.shadowColor = this.hsla(hue, 100, 45, 0.8);
 
       ctx.beginPath();
@@ -8525,7 +8866,7 @@ export class FlowFieldRenderer {
         ctx.fill();
 
         if (i % 2 === 0) {
-          const lineLength = 8;
+          const lineLength = 8 + trebleIntensity * 4;
           ctx.beginPath();
           ctx.moveTo(symbolX, symbolY);
           ctx.lineTo(
@@ -8537,6 +8878,41 @@ export class FlowFieldRenderer {
       }
 
       ctx.restore();
+
+      // ENHANCEMENT: Pulsating pentagrams between circles
+      if (circle > 0 && circle < ritualCircles - 1 && circle % 2 === 1) {
+        const pentagramCount = 5;
+        const pentagramRadius = (radius + maxRadius * (0.15 + (circle - 1) * 0.14)) * 0.5;
+        const pentagramHue = this.fastMod360(this.hueBase + 315 + circle * 8);
+        const pentagramAlpha = 0.25 + audioIntensity * 0.2;
+
+        ctx.save();
+        ctx.strokeStyle = this.hsla(pentagramHue, 90, 55, pentagramAlpha);
+        ctx.lineWidth = 1.5 + bassIntensity * 1;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = this.hsla(pentagramHue, 95, 60, pentagramAlpha * 0.9);
+
+        for (let p = 0; p < pentagramCount; p++) {
+          const pentagramAngle = this.fastMod360(p * 72 + this.time * 0.15);
+          const pX = this.fastCos(pentagramAngle) * pentagramRadius;
+          const pY = this.fastSin(pentagramAngle) * pentagramRadius;
+          const pentagramSize = 8 + bassIntensity * 5;
+
+          // Draw simple pentagram (5-pointed star)
+          ctx.beginPath();
+          for (let star = 0; star < 5; star++) {
+            const starAngle = this.fastMod360(star * 144);
+            const sX = pX + this.fastCos(starAngle) * pentagramSize;
+            const sY = pY + this.fastSin(starAngle) * pentagramSize;
+            if (star === 0) ctx.moveTo(sX, sY);
+            else ctx.lineTo(sX, sY);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
     }
 
     // 8-direction ritual spikes (cardinal + intercardinal)
@@ -8573,24 +8949,96 @@ export class FlowFieldRenderer {
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
+
+      // ENHANCEMENT: Ritual flames at spike tips (bass-reactive)
+      if (bassIntensity > 0.3) {
+        const flameCount = 3 + ((bassIntensity * 4) | 0);
+        const flameHue = this.fastMod360(this.hueBase + 325 + s * 5);
+        const flameAlpha = 0.4 + bassIntensity * 0.3;
+
+        ctx.fillStyle = this.hsla(flameHue, 95, 60, flameAlpha);
+        for (let f = 0; f < flameCount; f++) {
+          const flameOffset = (f / flameCount) * 15 + this.fastSin(this.time * 0.02 + f) * 8;
+          const flameAngle = this.fastMod360(a + flameOffset - 7.5);
+          const flameRadius = outer + 5 + f * 3 + this.fastSin(this.time * 0.015 + f * 1.2) * 4;
+          const flameX = this.fastCos(flameAngle) * flameRadius;
+          const flameY = this.fastSin(flameAngle) * flameRadius;
+          const flameSize = (2.5 - f * 0.4) * (1 + bassIntensity * 0.5);
+
+          ctx.beginPath();
+          ctx.arc(flameX, flameY, flameSize, 0, twoPi);
+          ctx.fill();
+        }
+      }
     }
     ctx.restore();
 
-    const centerRadius = maxRadius * 0.15;
-    const ritualCenter = ctx.createRadialGradient(0, 0, 0, 0, 0, centerRadius);
-    ritualCenter.addColorStop(
-      0,
-      this.hsla(ritualHue310, 100, 60, 0.95 + audioIntensity * 0.05),
-    );
-    ritualCenter.addColorStop(
-      0.5,
-      this.hsla(ritualHue300, 95, 45, 0.8 + bassIntensity * 0.15),
-    );
-    ritualCenter.addColorStop(1, this.hsla(ritualHue290, 90, 35, 0));
+    // ENHANCEMENT: Energy wisps circling the ritual (12-18 wisps)
+    const wispCount = 12 + ((trebleIntensity * 6) | 0);
+    const wispHue = this.fastMod360(this.hueBase + 308);
+    const wispAlpha = 0.35 + audioIntensity * 0.25;
 
-    ctx.fillStyle = ritualCenter;
+    ctx.save();
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = this.hsla(wispHue, 100, 60, wispAlpha * 0.7);
+    ctx.fillStyle = this.hsla(wispHue, 92, 58, wispAlpha);
+
+    for (let w = 0; w < wispCount; w++) {
+      const wispOrbit = maxRadius * (0.5 + (w % 3) * 0.15);
+      const wispAngle = this.fastMod360(w * 28 + this.time * 0.12 + this.fastSin(this.time * 0.008 + w) * 25);
+      const wispPulse = 1 + this.fastSin(this.time * 0.018 + w * 0.7) * 0.2;
+      const wispX = this.fastCos(wispAngle) * wispOrbit * wispPulse;
+      const wispY = this.fastSin(wispAngle) * wispOrbit * wispPulse;
+      const wispSize = 2.5 + (w % 4) * 0.6 + trebleIntensity * 1.5;
+
+      ctx.beginPath();
+      ctx.arc(wispX, wispY, wispSize, 0, twoPi);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // ENHANCEMENT: Multi-layered central core (5 layers)
+    const centerRadius = maxRadius * 0.15;
+
+    // Layer 1 - Outer glow
+    const ritualCenter1 = ctx.createRadialGradient(0, 0, 0, 0, 0, centerRadius);
+    ritualCenter1.addColorStop(0, this.hsla(ritualHue310, 100, 60, 0.95 + audioIntensity * 0.05));
+    ritualCenter1.addColorStop(0.4, this.hsla(ritualHue300, 95, 45, 0.8 + bassIntensity * 0.15));
+    ritualCenter1.addColorStop(1, this.hsla(ritualHue290, 90, 35, 0));
+    ctx.fillStyle = ritualCenter1;
     ctx.beginPath();
     ctx.arc(0, 0, centerRadius, 0, twoPi);
+    ctx.fill();
+
+    // Layer 2 - Mid ring
+    const midRadius = centerRadius * 0.7;
+    const ritualCenter2 = ctx.createRadialGradient(0, 0, 0, 0, 0, midRadius);
+    ritualCenter2.addColorStop(0, this.hsla(ritualHue320, 100, 65, 0.9));
+    ritualCenter2.addColorStop(0.6, this.hsla(ritualHue310, 98, 50, 0.7));
+    ritualCenter2.addColorStop(1, this.hsla(ritualHue300, 95, 40, 0));
+    ctx.fillStyle = ritualCenter2;
+    ctx.beginPath();
+    ctx.arc(0, 0, midRadius, 0, twoPi);
+    ctx.fill();
+
+    // Layer 3 - Inner core
+    const innerRadius = centerRadius * 0.4;
+    const ritualCenter3 = ctx.createRadialGradient(0, 0, 0, 0, 0, innerRadius);
+    ritualCenter3.addColorStop(0, this.hsla(ritualHue310, 100, 70, 1));
+    ritualCenter3.addColorStop(0.5, this.hsla(ritualHue320, 100, 60, 0.95));
+    ritualCenter3.addColorStop(1, this.hsla(ritualHue300, 98, 50, 0.8));
+    ctx.fillStyle = ritualCenter3;
+    ctx.beginPath();
+    ctx.arc(0, 0, innerRadius, 0, twoPi);
+    ctx.fill();
+
+    // Layer 4 - Pulsating bright spot
+    const pulseRadius = innerRadius * (0.5 + bassIntensity * 0.3);
+    ctx.fillStyle = this.hsla(ritualHue320, 100, 85, 0.9 + audioIntensity * 0.1);
+    ctx.shadowBlur = 25 + bassIntensity * 15;
+    ctx.shadowColor = this.hsla(ritualHue310, 100, 70, 0.95);
+    ctx.beginPath();
+    ctx.arc(0, 0, pulseRadius, 0, twoPi);
     ctx.fill();
 
     ctx.restore();

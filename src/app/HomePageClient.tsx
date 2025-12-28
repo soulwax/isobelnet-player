@@ -2,6 +2,7 @@
 
 "use client";
 
+import ChangelogModal from "@/components/ChangelogModal";
 import MobileSearchBar from "@/components/MobileSearchBar";
 import { PullToRefreshWrapper } from "@/components/PullToRefreshWrapper";
 import SwipeableTrackCard from "@/components/SwipeableTrackCard";
@@ -21,7 +22,7 @@ import {
   staggerItem,
 } from "@/utils/spring-animations";
 import { AnimatePresence, motion } from "framer-motion";
-import { Music2, Search, Shuffle, Sparkles } from "lucide-react";
+import { BookOpen, Github, Music2, Search, Shuffle, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -42,6 +43,7 @@ export default function HomePageClient() {
   const [mounted, setMounted] = useState(false);
   const [isArtistSearch, setIsArtistSearch] = useState(false);
   const [apiOffset, setApiOffset] = useState(0); // Track actual API offset for artist searches
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
   const player = useGlobalPlayer();
 
@@ -570,11 +572,43 @@ export default function HomePageClient() {
                     </motion.button>
                   ))}
                 </div>
+
+                {/* GitHub & Changelog Buttons */}
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <motion.a
+                    href="https://github.com/soulwax/songbird-player"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 rounded-xl bg-[rgba(255,255,255,0.05)] px-5 py-3 text-sm font-medium text-[var(--color-text)] ring-1 ring-white/10 transition-all hover:bg-[rgba(255,255,255,0.1)] hover:ring-[var(--color-accent)]/30"
+                  >
+                    <Github className="h-4 w-4" />
+                    <span>View on GitHub</span>
+                  </motion.a>
+
+                  <motion.button
+                    onClick={() => {
+                      hapticLight();
+                      setIsChangelogOpen(true);
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 rounded-xl bg-[rgba(244,178,102,0.1)] px-5 py-3 text-sm font-medium text-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/20 transition-all hover:bg-[rgba(244,178,102,0.2)] hover:ring-[var(--color-accent)]/40"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    <span>Changelog</span>
+                  </motion.button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Changelog Modal */}
+      <ChangelogModal
+        isOpen={isChangelogOpen}
+        onClose={() => setIsChangelogOpen(false)}
+      />
     </div>
   );
 

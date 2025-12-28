@@ -379,17 +379,29 @@ export const musicRouter = createTRPCRouter({
       }>;
     };
 
-    return (playlistsResult as PlaylistWithTracksFromQuery[]).map(
-      (playlist) => ({
-        ...playlist,
-        tracks: playlist.tracks.map((t) => ({
-          id: t.id,
-          track: t.trackData as Track,
-          position: t.position,
-          addedAt: t.addedAt,
-        })),
-      }),
+    // Get total track count for each playlist
+    const playlistsWithCount = await Promise.all(
+      (playlistsResult as PlaylistWithTracksFromQuery[]).map(
+        async (playlist) => {
+          const totalTracks = await ctx.db.query.playlistTracks.findMany({
+            where: eq(playlistTracks.playlistId, playlist.id),
+          });
+
+          return {
+            ...playlist,
+            trackCount: totalTracks.length,
+            tracks: playlist.tracks.map((t) => ({
+              id: t.id,
+              track: t.trackData as Track,
+              position: t.position,
+              addedAt: t.addedAt,
+            })),
+          };
+        },
+      ),
     );
+
+    return playlistsWithCount;
   }),
 
   getPlaylist: protectedProcedure
