@@ -109,8 +109,13 @@ export function releaseAudioConnection(audioElement: HTMLAudioElement): void {
 
   connection.refCount--;
 
-  // Only cleanup if no components are using it
-  if (connection.refCount <= 0) {
+  // CRITICAL: Don't cleanup if the audio element has a source loaded
+  // Even if refCount reaches 0, we need to keep the connection alive
+  // because once an audio element is connected to a MediaElementSourceNode,
+  // it can ONLY play through Web Audio - "normal" playback won't work.
+  // The connection will be reused when components mount again.
+  if (connection.refCount <= 0 && !audioElement.src) {
+    console.log("[audioContextManager] Cleaning up audio connection (no source loaded)");
     try {
       // Disconnect nodes
       if (connection.analyser) {
@@ -130,6 +135,11 @@ export function releaseAudioConnection(audioElement: HTMLAudioElement): void {
     }
 
     connectedAudioElements.delete(audioElement);
+  } else if (connection.refCount <= 0) {
+    console.log("[audioContextManager] Keeping connection alive (audio source is loaded)", {
+      src: audioElement.src.substring(0, 50) + "...",
+      refCount: connection.refCount,
+    });
   }
 }
 

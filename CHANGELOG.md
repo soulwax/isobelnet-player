@@ -5,6 +5,22 @@ All notable changes to darkfloor.art will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.8] - 2025-12-29
+
+### Fixed
+
+#### Critical Audio Playback Failure
+
+- **Audio Context Lifecycle Bug**: Fixed critical issue where audio playback was completely broken (currentTime stayed at 0:00, no sound)
+  - Root cause: When visualizer components unmounted, they released the Web Audio connection via `releaseAudioConnection()`
+  - The connection was deleted from WeakMap and AudioContext was closed, BUT the audio element remained connected to the now-closed MediaElementSourceNode
+  - Once an HTMLAudioElement is connected to Web Audio, it can ONLY play through that graph - "normal" playback won't work
+  - When user pressed play, the code couldn't find the connection (not in WeakMap) and tried "normal playback" which failed
+  - **Solution**: Modified `releaseAudioConnection()` to keep connections alive when audio source is loaded
+  - Connections are now only cleaned up when refCount reaches 0 AND no audio source is present
+  - This prevents the audio element from being left in a broken state when visualizer is toggled
+  - Location: `src/utils/audioContextManager.ts:112-149`
+
 ## [0.7.7] - 2025-12-30
 
 ### Fixed
