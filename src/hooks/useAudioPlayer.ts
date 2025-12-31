@@ -1166,6 +1166,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     (seconds = 10) => {
       if (!audioRef.current) return;
 
+      // Validate seconds parameter
+      const validSeconds = isFinite(seconds) ? seconds : 10;
+
       // Read actual time from audio element, not potentially stale state
       const currentTime = audioRef.current.currentTime;
       const duration = audioRef.current.duration;
@@ -1176,9 +1179,15 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
         return;
       }
 
-      const newTime = Math.min(duration, currentTime + seconds);
+      const newTime = Math.min(duration, currentTime + validSeconds);
 
-      console.log(`[useAudioPlayer] ⏩ Skip forward ${seconds}s: ${currentTime.toFixed(1)}s → ${newTime.toFixed(1)}s`);
+      // Final validation before seeking
+      if (!isFinite(newTime)) {
+        console.error(`[useAudioPlayer] ❌ Skip forward calculated invalid time: ${newTime} (currentTime: ${currentTime}, duration: ${duration}, seconds: ${validSeconds})`);
+        return;
+      }
+
+      console.log(`[useAudioPlayer] ⏩ Skip forward ${validSeconds}s: ${currentTime.toFixed(1)}s → ${newTime.toFixed(1)}s`);
       seek(newTime);
     },
     [seek],
@@ -1187,6 +1196,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
   const skipBackward = useCallback(
     (seconds = 10) => {
       if (!audioRef.current) return;
+
+      // Validate seconds parameter
+      const validSeconds = isFinite(seconds) ? seconds : 10;
 
       // Read actual time from audio element, not potentially stale state
       const currentTime = audioRef.current.currentTime;
@@ -1197,9 +1209,15 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
         return;
       }
 
-      const newTime = Math.max(0, currentTime - seconds);
+      const newTime = Math.max(0, currentTime - validSeconds);
 
-      console.log(`[useAudioPlayer] ⏪ Skip backward ${seconds}s: ${currentTime.toFixed(1)}s → ${newTime.toFixed(1)}s`);
+      // Final validation before seeking
+      if (!isFinite(newTime)) {
+        console.error(`[useAudioPlayer] ❌ Skip backward calculated invalid time: ${newTime} (currentTime: ${currentTime}, seconds: ${validSeconds})`);
+        return;
+      }
+
+      console.log(`[useAudioPlayer] ⏪ Skip backward ${validSeconds}s: ${currentTime.toFixed(1)}s → ${newTime.toFixed(1)}s`);
       seek(newTime);
     },
     [seek],

@@ -5,6 +5,120 @@ All notable changes to darkfloor.art will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2025-12-31
+
+### Added
+
+#### Add to Playlist Modal (Spotify-Style UX)
+
+- **New Modal Component**: Implemented searchable modal for adding tracks to playlists across the entire app
+  - User request: Ability to organize tracks from "mega-playlist" into thematic playlists
+  - Features:
+    - Search functionality (client-side filtering by playlist name and description)
+    - Checkmarks indicating playlists that already contain the track
+    - Empty states for no playlists and no search results
+    - Keyboard navigation (Escape to close, Tab navigation)
+    - Haptic feedback for mobile interactions
+    - Framer Motion animations (slide-in, fade, scale)
+  - Locations:
+    - `src/components/AddToPlaylistModal.tsx` - New modal component (~370 lines)
+
+#### Backend API Enhancement
+
+- **New tRPC Query**: `getPlaylistsWithTrackStatus` for fetching playlists with track inclusion status
+  - Input: `{ trackId: number, excludePlaylistId?: number }`
+  - Returns playlists with `hasTrack` boolean indicating if track exists in playlist
+  - Uses Promise.all for parallel track existence checks (optimized performance)
+  - Locations:
+    - `src/server/api/routers/music.ts:407-451` - New query implementation
+    - `src/types/index.ts:278-289` - PlaylistWithTrackStatus type definition
+
+### Changed
+
+#### Track Card Components
+
+- **EnhancedTrackCard**: Replaced inline playlist dropdown with modal
+  - Removed playlist query and mutation (now handled by modal)
+  - Replaced dropdown menu (lines 272-318) with button + modal
+  - Net change: -30 lines (cleaner component)
+  - Location: `src/components/EnhancedTrackCard.tsx`
+
+- **TrackCard**: Replaced inline playlist dropdown with modal
+  - Same pattern as EnhancedTrackCard
+  - Net change: -23 lines
+  - Location: `src/components/TrackCard.tsx`
+
+- **SwipeableTrackCard**: Integrated modal while preserving "Play Next" functionality
+  - Modified menu to keep "Play Next" button
+  - Replaced playlist dropdown section with "Add to Playlist" button that opens modal
+  - Net change: +5 lines (preserved existing functionality)
+  - Location: `src/components/SwipeableTrackCard.tsx`
+
+#### Desktop Player
+
+- **Player (MaturePlayer)**: Integrated Add to Playlist modal
+  - Removed inline playlist dropdown
+  - Replaced with modal-based UI (matching mobile UX)
+  - Removed playlist query and mutation (lines 112-127)
+  - Replaced dropdown section (lines 264-339) with button + modal
+  - Location: `src/components/Player.tsx`
+
+### Fixed
+
+#### Add to Playlist Modal Z-Index and Authentication
+
+- **Modal Not Visible**: Fixed z-index hierarchy so modal always appears on top
+  - Changed backdrop from z-70 to z-100
+  - Changed modal from z-71 to z-101 (highest in app)
+  - Now appears above mobile player (z-98-99) and all other UI elements
+  - Location: `src/components/AddToPlaylistModal.tsx:137,150`
+
+- **Authentication Handling**: Added proper authentication checks
+  - Modal now detects if user is signed in
+  - Shows "Sign in to create playlists" message for unauthenticated users
+  - Query only runs when both modal is open AND user is authenticated
+  - Prevents unnecessary API calls for logged-out users
+  - Location: `src/components/AddToPlaylistModal.tsx:37-38,44,196-215,247`
+
+#### Skip Forward/Backward Buttons
+
+- **Non-Finite Value Error**: Fixed `TypeError: Failed to set the 'currentTime' property on 'HTMLMediaElement': The provided double value is non-finite`
+  - Root cause: When audio duration is `NaN` or `Infinity`, skip functions calculated non-finite values
+  - Solution: Added validation to check for finite values before setting currentTime
+  - Defense in depth: Validation in `seek()`, `skipForward()`, and `skipBackward()`
+  - Locations:
+    - `src/hooks/useAudioPlayer.ts:777-788` - seek() validates time parameter
+    - `src/hooks/useAudioPlayer.ts:1165-1185` - skipForward() validates duration and currentTime
+    - `src/hooks/useAudioPlayer.ts:1187-1206` - skipBackward() validates currentTime
+
+### Technical Details
+
+**Modal Architecture:**
+
+- Z-index hierarchy: Modal (z-100/z-101) highest in app, above all elements
+- Query optimization: Only fetches playlist data when modal is open AND user is authenticated
+- Client-side search: useMemo for efficient filtering without server calls
+- Responsive design: Mobile-first with max-width constraint (28rem) on desktop
+- Authentication: Shows sign-in prompt for unauthenticated users
+
+**User Experience Improvements:**
+
+- Consistent UI across mobile and desktop platforms
+- Reduced visual clutter by replacing inline dropdowns
+- Better discoverability of playlists (search + visual status indicators)
+- Prevents duplicate additions (checkmarks + disabled state)
+
+**Files Modified:**
+
+- New: `src/components/AddToPlaylistModal.tsx` - Modal component
+- Modified: `src/server/api/routers/music.ts` - Backend query
+- Modified: `src/types/index.ts` - Type definitions
+- Modified: `src/components/EnhancedTrackCard.tsx` - Modal integration
+- Modified: `src/components/TrackCard.tsx` - Modal integration
+- Modified: `src/components/SwipeableTrackCard.tsx` - Modal integration
+- Modified: `src/components/Player.tsx` - Desktop player integration
+- Modified: `src/hooks/useAudioPlayer.ts` - Skip button validation
+
 ## [0.8.0] - 2025-12-29
 
 ### Fixed

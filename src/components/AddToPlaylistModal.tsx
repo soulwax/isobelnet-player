@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Globe, Music, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/trpc/react";
@@ -33,12 +34,14 @@ export function AddToPlaylistModal({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
   const utils = api.useUtils();
+  const { data: session } = useSession();
+  const isAuthenticated = !!session?.user;
 
-  // Fetch playlists with track status (only when modal is open)
+  // Fetch playlists with track status (only when modal is open and user is authenticated)
   const { data: playlists, isLoading } =
     api.music.getPlaylistsWithTrackStatus.useQuery(
       { trackId: track.id, excludePlaylistId },
-      { enabled: isOpen },
+      { enabled: isOpen && isAuthenticated },
     );
 
   // Add to playlist mutation
@@ -134,7 +137,7 @@ export function AddToPlaylistModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={springPresets.gentle}
-            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
             onClick={() => {
               hapticLight();
               onClose();
@@ -147,7 +150,7 @@ export function AddToPlaylistModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={springPresets.gentle}
-            className="fixed inset-x-4 top-1/2 z-[71] max-h-[80vh] -translate-y-1/2 md:left-1/2 md:right-auto md:w-full md:max-w-md md:-translate-x-1/2"
+            className="fixed inset-x-4 top-1/2 z-[101] max-h-[80vh] -translate-y-1/2 md:left-1/2 md:right-auto md:w-full md:max-w-md md:-translate-x-1/2"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="surface-panel flex max-h-[80vh] flex-col overflow-hidden">
@@ -190,7 +193,27 @@ export function AddToPlaylistModal({
 
               {/* Scrollable playlist list */}
               <div className="flex-1 overflow-y-auto px-2 py-2">
-                {isLoading ? (
+                {!isAuthenticated ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <Music className="mb-4 h-16 w-16 text-[var(--color-muted)]" />
+                    <p className="mb-2 text-sm font-medium text-[var(--color-text)]">
+                      Sign in to create playlists
+                    </p>
+                    <p className="mb-4 text-xs text-[var(--color-subtext)]">
+                      Create an account to organize your music
+                    </p>
+                    <Link
+                      href="/api/auth/signin"
+                      onClick={() => {
+                        hapticLight();
+                        onClose();
+                      }}
+                      className="rounded-lg bg-[linear-gradient(135deg,var(--color-accent),var(--color-accent-strong))] px-4 py-2 text-sm font-medium text-white shadow-lg shadow-[rgba(244,178,102,0.3)] transition-all hover:scale-105 active:scale-95"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                ) : isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-[rgba(244,178,102,0.2)] border-t-[var(--color-accent)]" />
                   </div>
@@ -221,7 +244,7 @@ export function AddToPlaylistModal({
               </div>
 
               {/* Footer with create playlist link */}
-              {!isLoading && playlists && playlists.length > 0 && (
+              {isAuthenticated && !isLoading && playlists && playlists.length > 0 && (
                 <div className="border-t border-[rgba(245,241,232,0.08)] px-4 py-3">
                   <Link
                     href="/playlists"
