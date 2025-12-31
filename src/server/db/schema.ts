@@ -240,6 +240,27 @@ export const userPreferences = createTable(
     autoQueueCount: d.integer().default(5).notNull(), // Number of tracks to add
     smartMixEnabled: d.boolean().default(true).notNull(), // Use smart recommendations
     similarityPreference: d.varchar({ length: 20 }).default("balanced"), // 'strict' | 'balanced' | 'diverse'
+    queueState: d
+      .jsonb()
+      .$type<{
+        version: 2;
+        queuedTracks: Array<{
+          track: unknown;
+          queueSource: "user" | "smart";
+          addedAt: string;
+          queueId: string;
+        }>;
+        smartQueueState: {
+          isActive: boolean;
+          lastRefreshedAt: string | null;
+          seedTrackId: number | null;
+        };
+        history: unknown[];
+        currentTime: number;
+        isShuffled: boolean;
+        repeatMode: "none" | "one" | "all";
+      } | null>()
+      .default(sql`NULL`), // Queue state for logged-in users
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

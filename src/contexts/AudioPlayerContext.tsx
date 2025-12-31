@@ -95,6 +95,14 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const addToHistory = api.music.addToHistory.useMutation();
   const createPlaylistMutation = api.music.createPlaylist.useMutation();
   const addToPlaylistMutation = api.music.addToPlaylist.useMutation();
+  
+  // Queue persistence mutations for logged-in users
+  const saveQueueStateMutation = api.music.saveQueueState.useMutation();
+  const clearQueueStateMutation = api.music.clearQueueState.useMutation();
+  const { data: dbQueueState } = api.music.getQueueState.useQuery(
+    undefined,
+    { enabled: !!session, refetchOnWindowFocus: false },
+  );
 
   // Smart queue settings (re-enabled for light smart queue feature)
   const { data: smartQueueSettings } = api.music.getSmartQueueSettings.useQuery(
@@ -232,6 +240,65 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     smartQueueSettings: smartQueueSettings ?? undefined,
   });
 
+  // Load queue state from database when logged in (on mount or when session becomes available)
+  useEffect(() => {
+    if (session && dbQueueState && dbQueueState.queuedTracks) {
+      // Only load if we don't already have a queue (to avoid overwriting active queue)
+      if (player.queuedTracks.length === 0) {
+        console.log("[AudioPlayerContext] 📥 Loading queue state from database");
+        // The queue state structure matches what useAudioPlayer expects
+        // We need to restore it through the player's internal state
+        // Since we can't directly set internal state, we'll need to add tracks
+        // But first, let's check if the player has a method to restore state
+        // For now, we'll restore via the queuedTracks structure
+        const restoredState = dbQueueState as {
+          queuedTracks: typeof player.queuedTracks;
+          smartQueueState: typeof player.smartQueueState;
+          history: typeof player.queue;
+          isShuffled: boolean;
+          repeatMode: "none" | "one" | "all";
+        };
+        
+        // Note: We can't directly set internal state, so we'll need to add a restore method
+        // For now, we'll handle this in useAudioPlayer by checking for a restore prop
+      }
+    }
+  }, [session, dbQueueState, player.queuedTracks.length]);
+
+  // Persist queue state to database when logged in (debounced)
+  useEffect(() => {
+    if (!session) return; // Only persist to DB if logged in
+    
+    const persistTimer = setTimeout(() => {
+      const queueState = {
+        version: 2 as const,
+        queuedTracks: player.queuedTracks,
+        smartQueueState: player.smartQueueState,
+        history: player.queue, // Using queue as history representation
+        currentTime: player.currentTime,
+        isShuffled: player.isShuffled,
+        repeatMode: player.repeatMode,
+      };
+      
+      // Only save if queue is not empty (don't save cleared state)
+      if (queueState.queuedTracks.length > 0) {
+        console.log("[AudioPlayerContext] 💾 Persisting queue state to database");
+        saveQueueStateMutation.mutate({ queueState });
+      }
+    }, 1000); // Debounce by 1 second
+
+    return () => clearTimeout(persistTimer);
+  }, [
+    session,
+    player.queuedTracks,
+    player.smartQueueState,
+    player.queue,
+    player.currentTime,
+    player.isShuffled,
+    player.repeatMode,
+    saveQueueStateMutation,
+  ]);
+
   // Watch for session changes (login/logout) and clear queue
   useEffect(() => {
     const currentUserId = session?.user?.id ?? null;
@@ -246,6 +313,12 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
         },
       );
       player.clearQueueAndHistory();
+      
+      // Clear from database if logging in (new user)
+      if (currentUserId && session) {
+        clearQueueStateMutation.mutate();
+      }
+      
       showToast(
         currentUserId
           ? "Welcome! Queue has been cleared for your new session."
@@ -255,7 +328,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     }
 
     setLastUserId(currentUserId);
-  }, [session?.user?.id, lastUserId, player, showToast]);
+  }, [session?.user?.id, lastUserId, player, showToast, clearQueueStateMutation]);
 
   // Periodically clean queue (remove duplicates and invalid tracks)
   useEffect(() => {

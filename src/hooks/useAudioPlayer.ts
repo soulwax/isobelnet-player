@@ -8,7 +8,7 @@ import { localStorage } from "@/services/storage";
 import type { QueuedTrack, SmartQueueSettings, SmartQueueState, Track } from "@/types";
 import { getStreamUrlById } from "@/utils/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { loadPersistedQueueState } from "./useQueuePersistence";
+import { loadPersistedQueueState, clearPersistedQueueState } from "./useQueuePersistence";
 
 type RepeatMode = "none" | "one" | "all";
 
@@ -38,6 +38,11 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
 
   const [history, setHistory] = useState<Track[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  // Keep ref in sync with state for event handlers
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
@@ -56,6 +61,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
   const maxRetries = 3;
   const failedTracksRef = useRef<Set<number>>(new Set());
   const isInitialMountRef = useRef(true); // Track if this is the first render
+  const isPlayPauseOperationRef = useRef(false); // Prevent rapid play/pause loops
+  const lastStateSyncRef = useRef<{ time: number; wasPlaying: boolean } | null>(null); // Track state sync to prevent loops
+  const isPlayingRef = useRef(isPlaying); // Track current playing state for event handlers
 
   // Derived state: queue is extracted from queuedTracks for backward compatibility
   const queue = useMemo(() => queuedTracks.map(qt => qt.track), [queuedTracks]);
@@ -102,28 +110,39 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     // Load persisted queue state
     const persistedState = loadPersistedQueueState();
     if (persistedState) {
-      // Persistence migration will be handled in useQueuePersistence.ts
-      // For now, check if we have queuedTracks (V2) or queue (V1)
-      const stateAny = persistedState as any;
-      if ('queuedTracks' in persistedState && Array.isArray(stateAny.queuedTracks)) {
-        setQueuedTracks(stateAny.queuedTracks as QueuedTrack[]);
-        if (stateAny.smartQueueState) {
-          setSmartQueueState(stateAny.smartQueueState as SmartQueueState);
+      // Check if queue was intentionally cleared (empty or only has current track)
+      // If queue is empty, don't restore it (it was intentionally cleared)
+      const hasQueuedTracks = 'queuedTracks' in persistedState && Array.isArray((persistedState as any).queuedTracks) && (persistedState as any).queuedTracks.length > 0;
+      const hasLegacyQueue = 'queue' in persistedState && Array.isArray(persistedState.queue) && persistedState.queue.length > 0;
+      
+      // Only restore if there are tracks to restore
+      if (hasQueuedTracks || hasLegacyQueue) {
+        // Persistence migration will be handled in useQueuePersistence.ts
+        // For now, check if we have queuedTracks (V2) or queue (V1)
+        const stateAny = persistedState as any;
+        if ('queuedTracks' in persistedState && Array.isArray(stateAny.queuedTracks)) {
+          setQueuedTracks(stateAny.queuedTracks as QueuedTrack[]);
+          if (stateAny.smartQueueState) {
+            setSmartQueueState(stateAny.smartQueueState as SmartQueueState);
+          }
+        } else if ('queue' in persistedState && persistedState.queue) {
+          // Migrate old V1 format: convert Track[] to QueuedTrack[]
+          const migratedTracks = persistedState.queue.map((track, idx) => ({
+            track,
+            queueSource: 'user' as const,
+            addedAt: new Date(),
+            queueId: `migrated-${track.id}-${idx}`,
+          }));
+          setQueuedTracks(migratedTracks);
         }
-      } else if ('queue' in persistedState && persistedState.queue) {
-        // Migrate old V1 format: convert Track[] to QueuedTrack[]
-        const migratedTracks = persistedState.queue.map((track, idx) => ({
-          track,
-          queueSource: 'user' as const,
-          addedAt: new Date(),
-          queueId: `migrated-${track.id}-${idx}`,
-        }));
-        setQueuedTracks(migratedTracks);
+        setHistory(persistedState.history);
+        setIsShuffled(persistedState.isShuffled);
+        setRepeatMode(persistedState.repeatMode);
+        // Don't auto-restore currentTime to avoid unexpected jumps
+      } else {
+        // Queue was empty (intentionally cleared), don't restore
+        console.log("[useAudioPlayer] Queue was cleared, not restoring from persistence");
       }
-      setHistory(persistedState.history);
-      setIsShuffled(persistedState.isShuffled);
-      setRepeatMode(persistedState.repeatMode);
-      // Don't auto-restore currentTime to avoid unexpected jumps
     }
   }, []);
 
@@ -286,13 +305,13 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
       return;
 
     const togglePlayPause = () => {
-      if (audioRef.current) {
+      if (audioRef.current && !isPlayPauseOperationRef.current) {
         // Use actual audio element state for media session controls too
         const isActuallyPlaying = !audioRef.current.paused;
         if (isActuallyPlaying) {
-          audioRef.current.pause();
+          pause();
         } else {
-          audioRef.current.play().catch((error) => {
+          play().catch((error) => {
             console.error("Playback failed:", error);
           });
         }
@@ -380,7 +399,7 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
         // Ignore cleanup errors
       }
     };
-  }, [currentTrack, queue, history, isPlaying]);
+  }, [currentTrack, queue, history, isPlaying, play, pause]);
 
   // Audio event listeners
   useEffect(() => {
@@ -401,8 +420,20 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
       setCurrentTime(newTime);
     };
     const handleLoadedMetadata = () => setDuration(audio.duration);
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePlay = () => {
+      // Guard: Only update if state is actually different and we're not in a play/pause operation
+      // Use ref to get current state value (avoids stale closure issues)
+      if (!isPlayPauseOperationRef.current && !isPlayingRef.current) {
+        setIsPlaying(true);
+      }
+    };
+    const handlePause = () => {
+      // Guard: Only update if state is actually different and we're not in a play/pause operation
+      // Use ref to get current state value (avoids stale closure issues)
+      if (!isPlayPauseOperationRef.current && isPlayingRef.current) {
+        setIsPlaying(false);
+      }
+    };
     const handleEnded = () => handleTrackEnd();
     const handleLoadStart = () => setIsLoading(true);
     const handleCanPlay = () => setIsLoading(false);
@@ -629,6 +660,14 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
       return;
     }
 
+    // Guard: Prevent rapid play/pause loops
+    if (isPlayPauseOperationRef.current) {
+      console.debug("[useAudioPlayer] Play operation already in progress, skipping");
+      return;
+    }
+
+    isPlayPauseOperationRef.current = true;
+
     try {
       console.log("[useAudioPlayer] Attempting to play audio", {
         src: audioRef.current.src,
@@ -734,6 +773,11 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
         } : "no audio element",
       });
       setIsPlaying(false);
+    } finally {
+      // Reset the guard after a short delay to allow state to settle
+      setTimeout(() => {
+        isPlayPauseOperationRef.current = false;
+      }, 100);
     }
   }, []);
 
@@ -744,6 +788,14 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
       return;
     }
 
+    // Guard: Prevent rapid play/pause loops
+    if (isPlayPauseOperationRef.current) {
+      console.debug("[useAudioPlayer] Pause operation already in progress, skipping");
+      return;
+    }
+
+    isPlayPauseOperationRef.current = true;
+
     try {
       audioRef.current.pause();
       // Note: setIsPlaying(false) will be called by the 'pause' event listener
@@ -752,6 +804,11 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     } catch (error) {
       console.error("[useAudioPlayer] Error pausing audio:", error);
       setIsPlaying(false);
+    } finally {
+      // Reset the guard after a short delay to allow state to settle
+      setTimeout(() => {
+        isPlayPauseOperationRef.current = false;
+      }, 100);
     }
   }, []);
 
@@ -959,8 +1016,15 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
 
   const clearQueue = useCallback(() => {
     // Clear only upcoming tracks (queuedTracks[1..n]), keep current track (queuedTracks[0])
-    setQueuedTracks((prev) => (prev.length > 0 ? [prev[0]!] : []));
-  }, []);
+    const newQueue = queuedTracks.length > 0 ? [queuedTracks[0]!] : [];
+    setQueuedTracks(newQueue);
+    
+    // If queue is now empty (no current track), clear persisted state
+    // Otherwise, persist will happen automatically via the useEffect
+    if (newQueue.length === 0) {
+      clearPersistedQueueState();
+    }
+  }, [queuedTracks]);
 
   const reorderQueue = useCallback((oldIndex: number, newIndex: number) => {
     // Prevent reordering queuedTracks[0] (current track)
@@ -1275,13 +1339,28 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
 
   // Sync React state with actual audio element state (polling fallback)
   // This ensures UI stays in sync even if events are missed
+  // Added guards to prevent feedback loops that cause rapid pause/unpause
   useEffect(() => {
     const syncInterval = setInterval(() => {
-      if (audioRef.current) {
+      if (audioRef.current && !isPlayPauseOperationRef.current) {
         const actuallyPlaying = !audioRef.current.paused;
+        
+        // Only sync if there's a real mismatch and we haven't just synced this state
         if (actuallyPlaying !== isPlaying) {
-          console.log("[useAudioPlayer] 🔄 Syncing state: audio is", actuallyPlaying ? "playing" : "paused", "but state says", isPlaying);
-          setIsPlaying(actuallyPlaying);
+          const now = Date.now();
+          const lastSync = lastStateSyncRef.current;
+          
+          // Prevent rapid syncs: only sync if it's been at least 200ms since last sync
+          // or if the state has been consistently different
+          const shouldSync = !lastSync || 
+            (now - lastSync.time > 200) ||
+            (lastSync.wasPlaying !== actuallyPlaying);
+          
+          if (shouldSync) {
+            console.log("[useAudioPlayer] 🔄 Syncing state: audio is", actuallyPlaying ? "playing" : "paused", "but state says", isPlaying);
+            setIsPlaying(actuallyPlaying);
+            lastStateSyncRef.current = { time: now, wasPlaying: actuallyPlaying };
+          }
         }
       }
     }, 500); // Check every 500ms
@@ -1394,6 +1473,8 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
+    // Clear persisted state immediately to prevent restoration on tab switch
+    clearPersistedQueueState();
   }, []);
 
   // Wrapper for setVolume with validation to prevent crashes

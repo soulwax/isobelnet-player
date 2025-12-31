@@ -812,6 +812,80 @@ export const musicRouter = createTRPCRouter({
     return { success: true };
   }),
 
+  // Save queue state to database (for logged-in users)
+  saveQueueState: protectedProcedure
+    .input(
+      z.object({
+        queueState: z
+          .object({
+            version: z.literal(2),
+            queuedTracks: z.array(
+              z.object({
+                track: z.any(), // Track type is complex, use any
+                queueSource: z.enum(["user", "smart"]),
+                addedAt: z.string(),
+                queueId: z.string(),
+              }),
+            ),
+            smartQueueState: z.object({
+              isActive: z.boolean(),
+              lastRefreshedAt: z.string().nullable(),
+              seedTrackId: z.number().nullable(),
+            }),
+            history: z.array(z.any()),
+            currentTime: z.number(),
+            isShuffled: z.boolean(),
+            repeatMode: z.enum(["none", "one", "all"]),
+          })
+          .nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Ensure preferences exist
+      const existing = await ctx.db.query.userPreferences.findFirst({
+        where: eq(userPreferences.userId, ctx.session.user.id),
+      });
+
+      if (!existing) {
+        await ctx.db.insert(userPreferences).values({
+          userId: ctx.session.user.id,
+          queueState: input.queueState,
+        });
+      } else {
+        await ctx.db
+          .update(userPreferences)
+          .set({ queueState: input.queueState })
+          .where(eq(userPreferences.userId, ctx.session.user.id));
+      }
+
+      return { success: true };
+    }),
+
+  // Get queue state from database (for logged-in users)
+  getQueueState: protectedProcedure.query(async ({ ctx }) => {
+    const prefs = await ctx.db.query.userPreferences.findFirst({
+      where: eq(userPreferences.userId, ctx.session.user.id),
+    });
+
+    return prefs?.queueState ?? null;
+  }),
+
+  // Clear queue state from database (for logged-in users)
+  clearQueueState: protectedProcedure.mutation(async ({ ctx }) => {
+    const existing = await ctx.db.query.userPreferences.findFirst({
+      where: eq(userPreferences.userId, ctx.session.user.id),
+    });
+
+    if (existing) {
+      await ctx.db
+        .update(userPreferences)
+        .set({ queueState: null })
+        .where(eq(userPreferences.userId, ctx.session.user.id));
+    }
+
+    return { success: true };
+  }),
+
   // ============================================
   // PLAYER SESSIONS
   // ============================================
