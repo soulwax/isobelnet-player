@@ -24,6 +24,7 @@ songbird-frontend
 ├───postcss.config.js
 ├───prettier.config.js
 ├───README.md
+├───REPOSITORY_ANALYSIS.md
 ├───ROADMAP.md
 ├───rollup.config.mjs
 ├───setup-database.sh
@@ -57,6 +58,8 @@ songbird-frontend
 │       └───emily-the-strange_vivid.png
 ├───certs/
 │   └───ca.pem
+├───docs/
+│   └───BUGFIX-QUEUE-PERSISTENCE-OVERRIDE.md
 ├───drizzle/
 │   ├───0000_eager_gideon.sql
 │   ├───0001_strange_warlock.sql
@@ -73,6 +76,7 @@ songbird-frontend
 │   ├───0011_useful_the_enforcers.sql
 │   ├───0012_remarkable_ronan.sql
 │   ├───0013_outgoing_sumo.sql
+│   ├───0014_petite_lady_ursula.sql
 │   └───meta/
 │       ├───0000_snapshot.json
 │       ├───0001_snapshot.json
@@ -88,6 +92,7 @@ songbird-frontend
 │       ├───0011_snapshot.json
 │       ├───0012_snapshot.json
 │       ├───0013_snapshot.json
+│       ├───0014_snapshot.json
 │       └───_journal.json
 ├───electron/
 │   ├───AZURE_SIGNING_SETUP.md
@@ -108,15 +113,21 @@ songbird-frontend
 │       ├───combined.log
 │       ├───combined__2025-12-30_00-00-00.log
 │       ├───combined__2025-12-31_00-00-00.log
+│       ├───combined__2026-01-01_00-00-01.log
+│       ├───combined__2026-01-02_00-00-00.log
 │       ├───dev-combined.log
 │       ├───dev-error.log
 │       ├───dev-out.log
 │       ├───error.log
 │       ├───error__2025-12-30_00-00-00.log
 │       ├───error__2025-12-31_00-00-00.log
+│       ├───error__2026-01-01_00-00-01.log
+│       ├───error__2026-01-02_00-00-00.log
 │       ├───out.log
 │       ├───out__2025-12-30_00-00-00.log
-│       └───out__2025-12-31_00-00-00.log
+│       ├───out__2025-12-31_00-00-00.log
+│       ├───out__2026-01-01_00-00-01.log
+│       └───out__2026-01-02_00-00-00.log
 ├───public/
 │   ├───CHANGELOG.md
 │   ├───emily-the-strange.png
@@ -197,6 +208,7 @@ songbird-frontend
 │   ├───MIGRATION_README.md
 │   ├───populate-userhash.ts
 │   ├───README.md
+│   ├───reset-queue-state.js
 │   ├───reset-version.js
 │   ├───server.js
 │   ├───set-profile-public.ts
@@ -215,8 +227,16 @@ songbird-frontend
     │   │   └───page.tsx
     │   ├───_components/
     │   │   └───post.tsx
+    │   ├───album/
+    │   │   └───[id]/
+    │   │       └───page.tsx
     │   ├───api/
     │   │   ├───album/
+    │   │   │   └───[id]/
+    │   │   │       ├───route.ts
+    │   │   │       └───tracks/
+    │   │   │           └───route.ts
+    │   │   ├───artist/
     │   │   │   └───[id]/
     │   │   │       ├───route.ts
     │   │   │       └───tracks/
@@ -236,6 +256,9 @@ songbird-frontend
     │   │   └───trpc/
     │   │       └───[trpc]/
     │   │           └───route.ts
+    │   ├───artist/
+    │   │   └───[id]/
+    │   │       └───page.tsx
     │   ├───library/
     │   │   └───page.tsx
     │   ├───license/
@@ -277,6 +300,7 @@ songbird-frontend
     │   ├───PatternControls.tsx
     │   ├───PersistentPlayer.tsx
     │   ├───Player.tsx
+    │   ├───PlaylistContextMenu.tsx
     │   ├───ProfileHeader.tsx
     │   ├───PullToRefreshWrapper.tsx
     │   ├───Queue.tsx
@@ -289,6 +313,7 @@ songbird-frontend
     │   ├───SwipeableTrackItem.tsx
     │   ├───Toast.tsx
     │   ├───TrackCard.tsx
+    │   ├───TrackContextMenu.tsx
     │   ├───UIWrapper.tsx
     │   ├───WelcomeHero.tsx
     │   └───visualizers/
@@ -312,7 +337,9 @@ songbird-frontend
     ├───contexts/
     │   ├───AudioPlayerContext.tsx
     │   ├───MenuContext.tsx
-    │   └───ToastContext.tsx
+    │   ├───PlaylistContextMenuContext.tsx
+    │   ├───ToastContext.tsx
+    │   └───TrackContextMenuContext.tsx
     ├───hooks/
     │   ├───useAudioPlayer.ts
     │   ├───useAudioReactiveBackground.ts

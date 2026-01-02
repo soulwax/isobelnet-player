@@ -1,6 +1,6 @@
 # 🌟 darkfloor.art
 
-![darkfloor.art Banner](.github/assets/emily-the-strange_vivid.png)
+![darkfloor.art Icon](.github/assets/emily-the-strange-icon.png)
 
 *An attempt at amodern full-stack music search & streaming interface.*
 
@@ -8,40 +8,115 @@
 
 ## ✨ Project Status
 
-**Development Stage**: This is an early-stage music streaming interface built as a proof-of-concept. The project should display a modern full-stack architecture with Next.js, TypeScript, and TailwindCSS, suitable as foundation for music discovery and playback.
+**Development Stage**: A mature, full-featured music streaming and discovery platform with advanced audio features, intelligent recommendations, and comprehensive user management. The application is production-ready with support for both web and desktop (Electron) deployment.
 
 ## 📋 Core Features
 
-### Current Implementation
+### Music Discovery & Search
 
-- **Music Search Interface**: Type-safe search functionality integrated with backend API endpoints
-- **Type-Safe Environment Validation**: Strict environment variable management using `@t3-oss/env-nextjs`
-- **Responsive UI**: Flat design with neon indigo accents, built with TailwindCSS v4
-- **HTML5 Audio Playback**: Lightweight audio player components using native browser APIs (no external player libraries)
-- **NextAuth Integration Ready**: OAuth 2.0 infrastructure configured for Discord authentication
-- **Database Schema Support**: Drizzle ORM configuration for PostgreSQL integration
+- **Type-Safe Search**: Integrated search for tracks, albums, and artists via tRPC API
+- **Real-Time Results**: Debounced search with instant results
+- **Context Menus**: Right-click (or long-press) tracks for quick actions (play, queue, favorite, add to playlist)
+- **Search History**: Track search queries for authenticated users
+- **Deezer API Format**: Compatible with Deezer API response structure
 
-### Capabilities
+### Audio Playback System
 
-The application provides:
+**Core Playback:**
+- **HTML5 Audio API**: Primary playback engine with Web Audio API for advanced processing
+- **Spotify-Style Queue**: Queue structure where `queue[0]` is the current track, `queue[1+]` are upcoming tracks
+- **Playback Controls**:
+  - Play/pause, skip forward/backward (10 seconds)
+  - Variable playback speed (0.5x - 2.0x)
+  - Volume control with mute
+  - Repeat modes: none, one, all
+  - Shuffle mode with original order restoration
 
-- Pre-configured search UI components for music discovery
-- Player component scaffolding for audio preview playback
-- Type-safe React components with full TypeScript coverage
-- Environment management for multiple deployment stages
-- Responsive design system with CSS animations
+**Queue Management:**
+- **Multi-Select**: Keyboard and mouse selection for bulk operations
+- **Drag & Drop**: Reorder tracks in queue
+- **Queue Persistence**: Save and restore queue state (authenticated users)
+- **Smart Queue**: Similarity-based recommendations (light mode available)
+- **Queue History**: Track playback history
+- **Save as Playlist**: Convert queue to playlist
+
+### Audio Enhancement
+
+**9-Band Equalizer:**
+- Frequency bands: 31Hz, 62Hz, 125Hz, 250Hz, 500Hz, 1kHz, 2kHz, 4kHz, 8kHz, 16kHz
+- 8 built-in presets (Rock, Pop, Jazz, Classical, Electronic, Hip-Hop, Vocal, Flat)
+- Custom band adjustment with real-time processing
+- Preset persistence for authenticated users
+- Web Audio API integration for hardware-accelerated processing
+
+**Audio Visualizers:**
+- Multiple visualization types: Spectrum Analyzer, Waveform, Circular, Frequency Bands, Radial Spectrum, Spectral Waves, Particle System, Frequency Rings
+- FlowFieldRenderer with 80+ visualization patterns
+- KaleidoscopeRenderer for mirrored effects
+- LightweightParticleBackground for performance
+- Real-time audio-reactive visuals
+
+### User Management
+
+**Authentication:**
+- **NextAuth.js**: Discord OAuth 2.0 authentication
+- **Session Management**: Database-backed sessions (30-day expiry)
+- **User Profiles**: Public/private profile settings with user hash URLs
+- **Profile Pages**: Shareable user profiles at `/[userhash]`
+
+**User Data:**
+- **Playlists**: Create, edit, delete, and share playlists
+- **Favorites**: Track favorite songs with auto-sync based on play count
+- **Listening History**: Complete playback history with analytics
+- **Equalizer Presets**: Save and manage custom equalizer configurations
+- **User Preferences**: Smart queue settings, UI preferences, and more
+
+### Responsive Design
+
+**Mobile (<768px):**
+- MobileHeader with hamburger menu and search
+- Bottom navigation bar with swipeable panes
+- MiniPlayer (bottom-stuck compact player)
+- MobilePlayer (full-screen modal with gesture controls)
+- Swipe gestures for navigation and seeking
+- Pull-to-refresh functionality
+- Touch-optimized controls with haptic feedback
+
+**Desktop (≥768px):**
+- Traditional header navigation
+- Desktop player at bottom
+- Keyboard shortcuts (Space, Arrow keys, M for mute, etc.)
+- Drag-and-drop interactions
+- Multi-select with Shift+Arrow keys
+
+### Smart Features
+
+- **Smart Queue**: Similarity-based track recommendations using Songbird API
+- **Smart Mix**: Generate personalized mixes from seed tracks
+- **Audio Analysis**: Spotify audio features integration
+- **Similarity Filtering**: Adjustable similarity levels (strict, balanced, diverse)
+- **Recommendation Caching**: Optimized recommendation fetching
 
 ## 🧱 Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
 | **Framework** | Next.js 15 (App Router) | Server-side rendering & routing |
-| **Language** | TypeScript | Type-safe development |
+| **Language** | TypeScript 5.9 | Type-safe development with strict mode |
+| **UI Framework** | React 19 | Component library |
 | **Styling** | TailwindCSS v4 | Utility-first CSS framework |
+| **API Layer** | tRPC 11 | End-to-end type-safe API calls |
+| **State Management** | TanStack Query 5 | Server state & caching |
+| **State (Client)** | React Context | Global player & UI state |
 | **Environment** | @t3-oss/env-nextjs | Type-safe environment configuration |
-| **Authentication** | NextAuth.js | OAuth 2.0 / Session management |
-| **Database** | Drizzle ORM | PostgreSQL schema & queries |
-| **Audio** | HTML5 Audio API | Native playback control |
+| **Authentication** | NextAuth.js 5 | OAuth 2.0 / Session management |
+| **Database ORM** | Drizzle ORM 0.41 | PostgreSQL schema & queries |
+| **Database** | PostgreSQL | Primary data store |
+| **Audio Playback** | HTML5 Audio API | Native playback control |
+| **Audio Processing** | Web Audio API | Equalizer & real-time effects |
+| **Animation** | Framer Motion 12 | UI animations & transitions |
+| **Desktop** | Electron 39 | Cross-platform desktop app |
+| **Process Manager** | PM2 | Production deployment |
 
 ## 🚀 Getting Started
 
@@ -70,13 +145,25 @@ The application provides:
     AUTH_SECRET=generate-with->npx auth secret
     AUTH_DISCORD_ID="your-discord-app-id"
     AUTH_DISCORD_SECRET="your-discord-app-secret"
+    NEXTAUTH_URL="http://localhost:3222"  # Optional, auto-detected
 
-    # Database
+    # Database Configuration
     DATABASE_URL="postgres://user:password@host:port/dbname?sslmode=require"
+    DB_HOST="localhost"
+    DB_PORT="5432"
+    DB_ADMIN_USER="postgres"
+    DB_ADMIN_PASSWORD="your-password"
+    DB_NAME="songbird"
+    DB_SSL_CA=""  # Optional: Path to SSL certificate (PEM format)
 
     # API Configuration
-    API_URL="https://your-music-api.com/"
-    STREAMING_KEY="your-secure-stream-key"
+    NEXT_PUBLIC_API_URL="https://api.darkfloor.art/"  # Darkfloor API for search/streaming
+    STREAMING_KEY="your-secure-stream-key"  # Optional: For authenticated streaming
+    SONGBIRD_API_KEY=""  # Optional: For Songbird API recommendations
+    NEXT_PUBLIC_SONGBIRD_API_URL="https://songbird.darkfloor.art/"  # Optional: Songbird API
+
+    # Environment
+    NODE_ENV="development"
     ```
 
     **Generate NextAuth Secret:**
@@ -85,67 +172,116 @@ The application provides:
     npx auth secret
     ```
 
-3. **Database Setup (Optional)**
+3. **Database Setup**
 
-    For database operations, create `drizzle.env.ts`:
+    The application uses Drizzle ORM with PostgreSQL. Database configuration is handled via `drizzle.env.ts` (auto-generated from environment variables).
 
-    ```typescript
-    // File: drizzle.env.ts
-    import "dotenv/config";
+    **Initialize Database:**
 
-    const required = (key: string) => {
-      const val = process.env[key];
-      if (!val) throw new Error(`Missing required env var: ${key}`);
-      return val;
-    };
+    ```bash
+    # Generate migration files
+    npm run db:generate
 
-    const config = {
-      DB_HOST: required("DB_HOST"),
-      DB_PORT: required("DB_PORT"),
-      DB_ADMIN_USER: required("DB_ADMIN_USER"),
-      DB_ADMIN_PASSWORD: required("DB_ADMIN_PASSWORD"),
-      DB_NAME: required("DB_NAME"),
-    };
+    # Apply migrations
+    npm run db:migrate
 
-    export default config;
+    # Or push schema directly (development)
+    npm run db:push
+
+    # Open Drizzle Studio (database GUI)
+    npm run db:studio
     ```
 
 4. **Run Development Server**
 
-  ```bash
-  npm run dev
-  ```
+    ```bash
+    # Standard development server (port 3222)
+    npm run dev
 
-  Visit `http://localhost:3000` to see the application.
+    # Next.js dev server only
+    npm run dev:next
+
+    # Electron desktop app (development)
+    npm run electron:dev
+    ```
+
+    Visit `http://localhost:3222` to see the application.
 
 ## 📁 Project Structure
 
 ```shell
 src/
-├── app/
-│   ├── layout.tsx          # Root layout with App Router setup
-│   └── page.tsx            # Main application page
-├── components/
-│   ├── Player.tsx          # Audio playback component
-│   └── TrackCard.tsx       # Individual track display
-├── styles/
-│   └── globals.css         # TailwindCSS v4 theme & animations
-├── utils/
-│   └── api.ts              # Type-safe API client functions
-├── types/
-│   └── index.ts            # Shared TypeScript interfaces
-└── env.js                  # Typed environment validation
+├── app/                    # Next.js App Router pages
+│   ├── [userhash]/        # User profile pages
+│   ├── album/             # Album detail pages
+│   ├── artist/            # Artist detail pages
+│   ├── library/           # User library (playlists, favorites)
+│   ├── playlists/         # Playlist management
+│   ├── api/               # API routes (NextAuth, health checks)
+│   ├── layout.tsx         # Root layout with providers
+│   └── page.tsx           # Home page
+│
+├── components/            # React components
+│   ├── Player.tsx         # Basic audio player
+│   ├── EnhancedPlayer.tsx # Advanced player with equalizer
+│   ├── MobilePlayer.tsx   # Mobile-optimized player
+│   ├── MiniPlayer.tsx     # Compact player bar
+│   ├── Queue.tsx          # Queue management
+│   ├── EnhancedQueue.tsx # Advanced queue with multi-select
+│   ├── TrackCard.tsx      # Track display component
+│   ├── AudioVisualizer.tsx # Audio visualization
+│   ├── Equalizer.tsx      # 9-band equalizer
+│   ├── Header.tsx         # Desktop header
+│   ├── MobileHeader.tsx    # Mobile header
+│   ├── MobileNavigation.tsx # Bottom navigation
+│   └── visualizers/       # Visualization components
+│
+├── contexts/              # React Context providers
+│   ├── AudioPlayerContext.tsx  # Global player state
+│   ├── ToastContext.tsx        # Toast notifications
+│   ├── MenuContext.tsx         # Menu state
+│   └── TrackContextMenuContext.tsx # Context menu state
+│
+├── hooks/                 # Custom React hooks
+│   ├── useAudioPlayer.ts  # Core audio player logic
+│   ├── useEqualizer.ts    # Equalizer processing
+│   ├── useMediaQuery.ts   # Responsive breakpoints
+│   └── ...
+│
+├── server/                # Server-side code
+│   ├── api/               # tRPC API layer
+│   │   ├── routers/       # API route handlers
+│   │   │   ├── music.ts   # Music search, playlists, recommendations
+│   │   │   ├── equalizer.ts # Equalizer presets
+│   │   │   ├── preferences.ts # User preferences
+│   │   │   └── post.ts    # Example post router
+│   │   ├── root.ts        # Root router
+│   │   └── trpc.ts        # tRPC configuration
+│   ├── auth/              # NextAuth configuration
+│   ├── db/                # Database layer
+│   │   ├── schema.ts      # Drizzle ORM schema
+│   │   └── index.ts       # Database connection
+│   └── services/          # Business logic
+│
+├── trpc/                  # tRPC client setup
+├── types/                 # TypeScript type definitions
+├── utils/                 # Utility functions
+├── config/                # Configuration files
+├── constants/             # App constants
+├── services/              # Client-side services
+└── styles/                # Global styles
+    └── globals.css        # TailwindCSS + custom styles
 ```
 
 ## 🎨 Design System
 
 | Element | Description |
 |---------|-------------|
-| **Cards & Buttons** | Rounded corners, flat surfaces with neon indigo borders/text |
-| **Background** | Matte deep gray gradient with subtle animated accents |
-| **Typography** | System sans-serif stack for crisp, accessible typography |
-| **Animations** | CSS-based `slide-up`, `fade-in`, and gradient flows |
-| **Color Palette** | Indigo accents on dark backgrounds for modern, minimal aesthetic |
+| **Cards & Buttons** | Rounded corners, flat surfaces with accent borders/text |
+| **Background** | Dark gradient with animated flow field patterns |
+| **Typography** | Geist Sans font stack for crisp, accessible typography |
+| **Animations** | Framer Motion with spring presets, CSS-based transitions |
+| **Color Palette** | Orange and teal accents on dark backgrounds |
 
 ### Design Tokens
 
@@ -153,37 +289,119 @@ Available in `src/styles/globals.css`:
 
 ```css
 :root {
-  --primary: #6366f1;      /* Indigo accent */
-  --background: #0f172a;   /* Deep gray */
-  --surface: #1e293b;      /* Card surface */
-  --text: #f1f5f9;         /* Primary text */
-  --text-muted: #94a3b8;   /* Secondary text */
+  --color-text: #f5f1e8;          /* Off-white */
+  --color-subtext: #a5afbf;       /* Light gray */
+  --color-accent: #f4b266;        /* Orange */
+  --color-secondary-accent: #58c6b1; /* Teal */
+  --color-background: #0b1118;     /* Dark */
 }
 ```
 
-## 🔌 API Integration
+### Responsive Breakpoints
 
-### Required Backend API
+- **Mobile**: <768px
+- **Tablet**: 768-1024px
+- **Desktop**: ≥1024px
 
-To function, this frontend requires a backend music API that provides:
+### Z-Index Hierarchy
 
-1. **Search Endpoint**
+- Content: 1-29
+- MobileHeader, MiniPlayer: 50
+- HamburgerMenu (backdrop + drawer): 60-61
+- Full MobilePlayer modal: 98-99
 
-   ```plaintext
-   GET /music/search?q={query}
-   ```
+## 🔌 API Architecture
 
-   Returns: Array of track objects
+### Backend APIs
 
-2. **Streaming Endpoint** (Optional)
+The application uses two backend APIs for music operations:
 
-   ```plaintext
-   GET /music/stream?key={KEY}&q={query}
-   ```
+#### 1. Darkfloor API (`https://api.darkfloor.art/`)
 
-   Returns: Audio stream or preview URL
+Primary API for music search and streaming.
 
-### Supported API Formats
+**Endpoints:**
+- `GET /music/search?q={query}` - Search for music tracks
+- `GET /music/stream?trackId={id}&kbps={bitrate}` - Stream a music track
+
+**Documentation:**
+- Swagger UI available at [https://api.darkfloor.art/](https://api.darkfloor.art/)
+- OpenAPI specification (JSON/YAML) available for download
+
+#### 2. Songbird API (`https://songbird.darkfloor.art/`)
+
+Advanced API that orchestrates Spotify, Last.fm, and Deezer for comprehensive music discovery, recommendations, playlist experimentation, and streaming.
+
+**Features:**
+- Music discovery across multiple sources
+- Intelligent recommendations
+- Playlist experimentation
+- Streaming capabilities
+
+**Documentation:**
+- Swagger UI available at [https://songbird.darkfloor.art/](https://songbird.darkfloor.art/)
+- OpenAPI specification (JSON/YAML) available for download
+- Environment: Production
+- Host: `https://songbird.darkfloor.art`
+- Port: `3333`
+
+### tRPC Type-Safe API
+
+The application uses **tRPC** for end-to-end type safety from server to client. All API calls are type-safe with automatic TypeScript inference. The tRPC layer acts as a proxy to the backend APIs.
+
+**Main Routers:**
+
+1. **music.ts** - Music operations:
+   - `search` - Search tracks, albums, artists (proxies to Darkfloor/Songbird API)
+   - `getTrackById`, `getAlbumById`, `getArtistById` - Get details
+   - `createPlaylist`, `addToPlaylist`, `removeFromPlaylist` - Playlist management
+   - `getPlaylists`, `getPlaylistById` - Retrieve playlists
+   - `addToFavorites`, `removeFromFavorites`, `getFavorites` - Favorites
+   - `addToHistory`, `getHistory` - Listening history
+   - `getRecommendations` - Track recommendations (uses Songbird API)
+   - `saveQueueState`, `getQueueState` - Queue persistence
+   - `getSmartQueueSettings` - Smart queue configuration
+
+2. **equalizer.ts** - Equalizer presets:
+   - `getPresets`, `savePreset`, `deletePreset`, `updatePreset`
+
+3. **preferences.ts** - User preferences
+
+**Usage Example:**
+
+```typescript
+import { api } from "@/trpc/react";
+
+// In a React component
+const { data: tracks } = api.music.search.useQuery({ query: "artist name" });
+const addToPlaylist = api.music.addToPlaylist.useMutation();
+
+// Call mutation
+addToPlaylist.mutate({ playlistId: "123", trackId: 456 });
+```
+
+### API Integration Flow
+
+**Search Flow:**
+```
+Frontend → tRPC (music.search) → Backend API (Darkfloor/Songbird) → Response
+```
+
+**Streaming Flow:**
+```
+Frontend → getStreamUrlById() → Backend API (/music/stream) → Audio Stream
+```
+
+**Stream URL Generation:**
+
+Stream URLs are generated via `getStreamUrlById()` function:
+```typescript
+const streamUrl = getStreamUrlById(trackId.toString());
+// Returns: `${NEXT_PUBLIC_API_URL}/music/stream?trackId=${trackId}&kbps=320`
+// Or with key: `${NEXT_PUBLIC_API_URL}/music/stream?key=${STREAMING_KEY}&trackId=${trackId}`
+```
+
+**Supported Formats:**
 
 The application expects JSON responses compatible with **Deezer API format**:
 
@@ -191,38 +409,21 @@ The application expects JSON responses compatible with **Deezer API format**:
 {
   "data": [
     {
-      "id": "123456",
+      "id": 123456,
       "title": "Track Name",
       "artist": {
+        "id": 789,
         "name": "Artist Name"
       },
       "album": {
+        "id": 456,
         "title": "Album Name",
         "cover": "https://..."
       },
-      "preview": "https://..."
+      "preview": "https://...",
+      "duration": 240
     }
   ]
-}
-```
-
-### Type-Safe API Functions
-
-Example usage in `src/utils/api.ts`:
-
-```typescript
-import { env } from "@/env";
-import type { SearchResponse, Track } from "@/types";
-
-export async function searchTracks(query: string): Promise<Track[]> {
-  const url = new URL("music/search", env.API_URL);
-  url.searchParams.set("q", query);
-  
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error("Search failed");
-  
-  const json: SearchResponse = await res.json();
-  return json.data;
 }
 ```
 
@@ -232,12 +433,20 @@ export async function searchTracks(query: string): Promise<Track[]> {
 
 This project does **not** include or distribute copyrighted music. It is a frontend interface designed to work with legitimate, licensed music APIs.
 
-**To deploy publicly, you must connect it to a legally compliant music service**, such as:
+**Backend APIs in Use:**
 
-- **Deezer API** - Official music catalog with licensing
-- **Spotify Web API** - Requires OAuth and subscription agreement
-- **Apple Music API** - Licensed music streaming service
-- **Your own licensed content** - Self-hosted audio with proper rights
+The application connects to two production backend APIs:
+
+1. **Darkfloor API** ([https://api.darkfloor.art/](https://api.darkfloor.art/))
+   - Provides music search and streaming endpoints
+   - Handles track search and audio streaming
+
+2. **Songbird API** ([https://songbird.darkfloor.art/](https://songbird.darkfloor.art/))
+   - Orchestrates Spotify, Last.fm, and Deezer APIs
+   - Provides music discovery, recommendations, and playlist features
+   - Handles intelligent recommendations and multi-source data aggregation
+
+Both APIs are production-ready and handle licensing compliance. The frontend communicates with these APIs through the tRPC layer for type-safe integration.
 
 **Do not use this with unauthorized music sources.**
 
@@ -249,21 +458,56 @@ This project is licensed under the **GPL-3.0 License**. See the LICENSE file for
 
 ### Available Scripts
 
+**Development:**
 ```bash
-# Development server with hot reload
-npm run dev
+npm run dev          # Development server (port 3222)
+npm run dev:next     # Next.js dev server only
+npm run electron:dev # Electron + Next.js dev
+```
 
-# Build for production
-npm run build
+**Database:**
+```bash
+npm run db:generate  # Generate migration files
+npm run db:migrate   # Apply migrations
+npm run db:push      # Push schema directly (dev)
+npm run db:studio    # Open Drizzle Studio GUI
+```
 
-# Start production server
-npm start
+**Build & Production:**
+```bash
+npm run build        # Production build
+npm run start        # Start production server
+npm run preview      # Build + start (test production)
+```
 
-# Type checking
-npm run type-check
+**Electron:**
+```bash
+npm run electron:build       # Build for current platform
+npm run electron:build:win   # Build Windows installer
+npm run electron:build:mac   # Build macOS DMG
+npm run electron:build:linux # Build Linux AppImage/DEB
+```
 
-# Linting (if configured)
-npm run lint
+**Code Quality:**
+```bash
+npm run typecheck    # TypeScript type checking
+npm run lint         # ESLint
+npm run lint:fix     # Fix linting errors
+npm run format:check # Prettier check
+npm run format:write # Prettier format
+npm run check        # Lint + typecheck
+```
+
+**PM2 (Production):**
+```bash
+npm run pm2:start    # Start production server
+npm run pm2:dev      # Start development server
+npm run pm2:reload   # Graceful reload
+npm run pm2:restart  # Hard restart
+npm run pm2:stop     # Stop server
+npm run pm2:logs     # View logs
+npm run pm2:status   # Check status
+npm run deploy       # Build + reload
 ```
 
 ## 🚀 Production Deployment & Server Management
@@ -563,6 +807,22 @@ This project uses **TailwindCSS v4** with pure CSS Variables (no `@apply` direct
 2. Verify Discord OAuth app credentials
 3. Check callback URL matches your domain
 
+### Issue: Audio not playing / Web Audio Context errors
+
+**Solution**:
+1. Web Audio API requires user gesture - click/tap to initialize
+2. Check browser console for autoplay policy errors
+3. Ensure user interaction before calling `play()`
+4. Equalizer initializes on first user interaction automatically
+
+### Issue: Queue not persisting
+
+**Solution**:
+1. Check localStorage is enabled in browser
+2. For authenticated users, check database connection
+3. Verify `saveQueueState` mutation is working
+4. Check browser console for errors
+
 ### Issue: Routing conflicts
 
 **Solution**: Ensure `src/pages/` directory is removed if using App Router (`src/app/`).
@@ -610,57 +870,191 @@ This project uses **TailwindCSS v4** with pure CSS Variables (no `@apply` direct
 5. **Review build logs**: Check for specific error messages
 6. **Build manually to see errors**: `npm run build`
 
+## 🎵 How It Works
+
+### Audio Player Architecture
+
+**State Management:**
+- Global `AudioPlayerContext` provides centralized player state across all components
+- `useAudioPlayer` hook contains core playback logic (1,800+ lines)
+- Queue structure: `queue[0]` is current track, `queue[1+]` are upcoming tracks
+
+**Audio Chain:**
+```
+Track → getStreamUrlById() → Darkfloor API (/music/stream) → HTMLAudioElement → Web Audio API → Equalizer → Speakers
+                                      ↓
+                              Visualizer (canvas/WebGL)
+```
+
+**Key Features:**
+- **Queue Persistence**: Queue state saved to localStorage and database (authenticated users)
+- **Playback History**: Tracks added to history on completion
+- **Smart Queue**: Similarity-based recommendations (optional)
+- **Error Handling**: Automatic retry with exponential backoff
+- **User Gesture Requirement**: Web Audio Context requires user interaction (browser policy)
+
+### Authentication Flow
+
+**NextAuth.js Integration:**
+1. User clicks "Sign in with Discord"
+2. Redirects to Discord OAuth
+3. Discord callback returns to `/api/auth/callback/discord`
+4. NextAuth creates/updates user in database
+5. Session stored in database (30-day expiry)
+6. User profile accessible at `/[userhash]`
+
+**Session Management:**
+- Database-backed sessions (not JWT)
+- Automatic session refresh (24-hour update age)
+- Secure cookies in production (HTTP-only, SameSite=Lax)
+- Electron-compatible (non-secure cookies for localhost)
+
+### Queue System
+
+**Spotify-Style Queue:**
+- Current track is always `queue[0]`
+- Upcoming tracks are `queue[1]`, `queue[2]`, etc.
+- History tracks are stored separately
+- Queue can be shuffled (original order preserved for restoration)
+
+**Queue Operations:**
+- `play(track)` - Play track immediately (replaces current)
+- `addToQueue(tracks)` - Add tracks to end of queue
+- `addToPlayNext(tracks)` - Add tracks after current track
+- `playNext()` - Skip to next track
+- `playPrevious()` - Go back to previous track
+- `removeFromQueue(index)` - Remove track at index
+- `reorderQueue(oldIndex, newIndex)` - Move track position
+
+**Queue Persistence:**
+- LocalStorage: Queue state saved automatically (all users)
+- Database: Queue state synced to database (authenticated users)
+- Restore: Queue automatically restored on app load
+
+### Database Schema
+
+**Key Tables:**
+- `users` - User accounts with profile data
+- `sessions` - Active user sessions (NextAuth)
+- `accounts` - OAuth account links
+- `playlists` - User-created playlists
+- `playlist_tracks` - Playlist → Track mapping
+- `favorites` - User favorite tracks
+- `listening_history` - Track play history
+- `listening_analytics` - Detailed playback analytics
+- `equalizer_presets` - Saved equalizer configurations
+- `user_preferences` - Smart queue settings, UI preferences
+- `recommendation_cache` - Cached recommendations
+
+**Table Prefix:** `hexmusic-stream_` (configurable)
+
 ## 📈 Future Roadmap
 
-Potential enhancements for this project:
+Planned enhancements:
 
-- **Playlist Management** - Create and save playlists
-- **User Accounts** - Persist user preferences and favorites
-- **Advanced Search** - Filters by genre, artist, release date
-- **Audio Visualization** - Waveform display during playback
-- **Queue System** - Manage upcoming tracks
-- **Social Features** - Share playlists and recommendations
-- **Responsive Audio Player** - Enhanced mobile UI
-- **Dark/Light Theme Toggle** - User preference saving
-- **Offline Mode** - Cache downloaded tracks
+- **WebGL Migration** - Migrate Canvas2D visualizations to WebGL for better performance
+- **Offline Mode** - Cache downloaded tracks for offline playback
+- **Social Features** - Share playlists, follow users, collaborative playlists
+- **Advanced Analytics** - Listening insights, genre preferences, time-based stats
+- **Theme System** - Dark/light theme toggle with user preference saving
+- **Mobile App** - Native mobile apps (React Native or PWA enhancements)
 
 ## 📝 Configuration Examples
 
-### Minimal Setup (No Database)
+### Minimal Setup (Search Only)
 
-For a basic search-only interface:
+For a basic search-only interface without authentication:
 
 ```yaml
-AUTH_SECRET="your-secret"
-API_URL="https://api.deezer.com/"
-STREAMING_KEY="optional"
+# Required
+AUTH_SECRET="your-secret"  # Still required by NextAuth
+NEXT_PUBLIC_API_URL="https://api.darkfloor.art/"  # Darkfloor API
+STREAMING_KEY="your-stream-key"  # Optional: For authenticated streaming
+
+# Database (minimal - for NextAuth sessions)
+DATABASE_URL="postgres://user:pass@host:5432/db?sslmode=require"
+DB_HOST="localhost"
+DB_PORT="5432"
+DB_ADMIN_USER="postgres"
+DB_ADMIN_PASSWORD="password"
+DB_NAME="songbird"
 ```
 
 ### Full Production Setup
 
 ```yaml
-AUTH_SECRET="your-secret"
+# Authentication
+AUTH_SECRET="your-secret-min-32-chars"
 AUTH_DISCORD_ID="discord-app-id"
 AUTH_DISCORD_SECRET="discord-app-secret"
+NEXTAUTH_URL="https://your-domain.com"
 
+# Database
 DATABASE_URL="postgres://prod_user:prod_pass@prod-host:5432/starchild?sslmode=require"
+DB_HOST="prod-host"
+DB_PORT="5432"
+DB_ADMIN_USER="prod_user"
+DB_ADMIN_PASSWORD="prod_pass"
+DB_NAME="starchild"
+DB_SSL_CA="/path/to/ca.pem"  # Optional: SSL certificate
 
-API_URL="https://your-music-api.com/"
-STREAMING_KEY="your-secure-key"
+# API Configuration
+NEXT_PUBLIC_API_URL="https://api.darkfloor.art/"  # Darkfloor API (search & streaming)
+STREAMING_KEY="your-secure-stream-key"  # Optional: For authenticated streaming
+SONGBIRD_API_KEY="optional-songbird-key"  # Optional: For Songbird API features
+NEXT_PUBLIC_SONGBIRD_API_URL="https://songbird.darkfloor.art/"  # Songbird API (recommendations)
+
+# Environment
+NODE_ENV="production"
+```
+
+### Electron Setup
+
+For Electron builds, add:
+
+```yaml
+ELECTRON_BUILD="true"  # Disables secure cookies, optimizes build
 ```
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please ensure:
 
-1. All code is TypeScript with strict mode enabled
-2. Components are properly typed with interfaces
-3. Styling follows TailwindCSS v4 conventions
-4. Environment variables are added to type validation
+1. **TypeScript**: All code is TypeScript with strict mode enabled
+2. **Type Safety**: Components properly typed with interfaces
+3. **Styling**: Follow TailwindCSS v4 conventions
+4. **Environment**: Add new variables to `src/env.js` validation
+5. **tRPC**: Use tRPC procedures for all API calls (no direct fetch)
+6. **Testing**: Test on both mobile and desktop views
+7. **Code Style**: Run `npm run format:write` before committing
+
+### Development Workflow
+
+1. Create feature branch from `main`
+2. Implement feature with type safety
+3. Test on mobile (<768px) and desktop (≥768px)
+4. Run `npm run check` to verify linting and types
+5. Submit pull request with clear description
 
 ## 📜 Acknowledgments
 
 Built with the **T3 Stack** - a modern, type-safe full-stack framework for Next.js applications.
+
+**Key Technologies:**
+- [Next.js](https://nextjs.org/) - React framework
+- [tRPC](https://trpc.io/) - End-to-end typesafe APIs
+- [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ORM
+- [NextAuth.js](https://next-auth.js.org/) - Authentication
+- [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS
+- [Framer Motion](https://www.framer.com/motion/) - Animation library
+- [Electron](https://www.electronjs.org/) - Desktop framework
+
+## 📚 Additional Documentation
+
+- **REPOSITORY_ANALYSIS.md** - Comprehensive codebase analysis
+- **CHANGELOG.md** - Version history and changes
+- **ROADMAP.md** - WebGL migration plan
+- **CLAUDE.md** - Architecture documentation
 
 ---
 

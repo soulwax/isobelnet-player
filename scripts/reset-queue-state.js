@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// File: scripts/reset-queue-state.js
+
 /**
  * Nuclear reset script for queue state
  * Run with: node scripts/reset-queue-state.js
