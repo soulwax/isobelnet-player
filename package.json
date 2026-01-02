@@ -46,6 +46,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:mark-applied": "npx tsx scripts/mark-migrations-applied.ts",
     "copy:changelog": "cp CHANGELOG.md public/CHANGELOG.md",
     "migrate:neon": "npx tsx scripts/migrate-to-neon.ts",
     "predev": "npm run generate:ssl",
