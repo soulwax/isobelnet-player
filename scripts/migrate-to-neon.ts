@@ -196,8 +196,8 @@ async function copyTable(
   targetPool: Pool,
   tableName: string
 ): Promise<number> {
-  // Get column names and types
-  const columnsResult = await sourcePool.query(`
+  // Get column names and types from source
+  const sourceColumnsResult = await sourcePool.query(`
     SELECT column_name, data_type, udt_name
     FROM information_schema.columns
     WHERE table_schema = 'public'
@@ -205,14 +205,41 @@ async function copyTable(
     ORDER BY ordinal_position;
   `, [tableName]);
 
-  const columns = columnsResult.rows.map((row: any) => row.column_name);
+  // Get column names from target
+  const targetColumnsResult = await targetPool.query(`
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = $1
+    ORDER BY ordinal_position;
+  `, [tableName]);
+
+  const sourceColumns = sourceColumnsResult.rows.map((row: any) => row.column_name);
+  const targetColumns = new Set(targetColumnsResult.rows.map((row: any) => row.column_name));
+  
+  // Only use columns that exist in both source and target
+  const columns = sourceColumns.filter((col) => targetColumns.has(col));
+  const missingColumns = sourceColumns.filter((col) => !targetColumns.has(col));
+  
+  if (missingColumns.length > 0) {
+    warn(`⚠️  Table "${tableName}": Skipping columns that don't exist in target: ${missingColumns.join(", ")}`);
+  }
+
+  if (columns.length === 0) {
+    warn(`⚠️  Table "${tableName}": No common columns found between source and target. Skipping.`);
+    return 0;
+  }
+
   const columnTypes = new Map<string, string>();
-  columnsResult.rows.forEach((row: any) => {
-    columnTypes.set(row.column_name, row.data_type);
+  sourceColumnsResult.rows.forEach((row: any) => {
+    if (columns.includes(row.column_name)) {
+      columnTypes.set(row.column_name, row.data_type);
+    }
   });
   const columnList = columns.map((col) => `"${col}"`).join(", ");
 
   // Check if table has sequences (for auto-increment columns)
+  // Only check for columns that exist in both databases
   const sequenceResult = await sourcePool.query(`
     SELECT column_name, column_default
     FROM information_schema.columns
@@ -221,7 +248,11 @@ async function copyTable(
       AND column_default LIKE 'nextval%';
   `, [tableName]);
 
-  const hasSequences = sequenceResult.rows.length > 0;
+  // Filter sequences to only include columns that exist in target
+  const validSequences = sequenceResult.rows.filter((row: any) => 
+    columns.includes(row.column_name)
+  );
+  const hasSequences = validSequences.length > 0;
 
   // Check if table exists on target
   const tableExists = await targetPool.query(`
@@ -329,7 +360,7 @@ async function copyTable(
 
     // Reset sequences if needed
     if (hasSequences) {
-      for (const seqRow of sequenceResult.rows) {
+      for (const seqRow of validSequences) {
         const maxResult = await targetPool.query(
           `SELECT COALESCE(MAX("${seqRow.column_name}"), 0) as max_val FROM "${tableName}"`
         );
