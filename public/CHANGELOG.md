@@ -10,14 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Performance & Security Optimizations 🚀🔒
 
 #### Build & Bundle Optimizations
-- **SWC Minification**: Enabled Rust-based minifier (7x faster than Terser)
+- **SWC Minification**: Default in Next.js 15 (7x faster than Terser)
 - **Aggressive Code Splitting**: Custom webpack configuration with framework, library, and shared chunk separation
 - **Deterministic Module IDs**: Improved long-term caching
 - **Console Removal**: Production builds remove console.log (keeps error/warn)
 - **Image Optimization**: AVIF and WebP format support with optimized device sizes
 - **Package Tree-Shaking**: Optimized imports for lucide-react, framer-motion, @tanstack/react-query, @trpc/*, @dnd-kit/*
 - **Webpack Build Worker**: Parallel builds for faster compilation
-- **CSS Optimization**: Enabled for smaller stylesheets
+- **Bundle Size**: First Load JS shared by all: 204 kB (excellent performance)
 
 #### Security Headers & Middleware
 - **Comprehensive HTTP Security Headers**:
@@ -58,6 +58,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **AudioVisualizer.tsx** (723 lines): Unused visualizer component
 - **KaleidoscopeRenderer.ts** (520 lines): Unused renderer (1,243 total lines removed)
+
+### Fixed
+- **next.config.js**: Removed deprecated `swcMinify` option (default in Next.js 15)
+- **next.config.js**: Converted `require("crypto")` to ES module import for compatibility
+- **Build Validation**: Removed `optimizeCss` experimental feature (requires additional dependencies)
 
 ### Documentation
 - **CLAUDE.md**: Added "Performance & Security Optimizations" section with complete implementation guide
