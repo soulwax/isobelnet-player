@@ -280,14 +280,17 @@ NEXTAUTH_URL=http://localhost:3222
 DATABASE_URL=postgresql://...   # PostgreSQL connection string
 
 # External Music API
-API_URL=https://api.example.com # Backend music service
-STREAMING_KEY=                  # API authentication key
+API_URL=https://api.example.com # Backend music service (deprecated - use NEXT_PUBLIC_API_URL)
+NEXT_PUBLIC_API_URL=            # Backend music service (required)
+STREAMING_KEY=                  # API authentication key (required)
 ```
 
 **Optional:**
 ```bash
-NEXT_PUBLIC_API_URL=            # Exposed to browser (if needed)
+NEXT_PUBLIC_SONGBIRD_API_URL=   # Songbird API for recommendations (optional)
+SONGBIRD_API_KEY=               # Songbird API authentication (optional)
 ELECTRON_BUILD=true             # Set during Electron builds
+DB_SSL_CA=                      # PostgreSQL SSL CA certificate path (PEM format)
 ```
 
 ## Development Conventions
@@ -442,15 +445,20 @@ The `scripts/` directory contains utility scripts for various tasks:
 - **check-users.ts** - Database utility to check user accounts
 - **populate-userhash.ts** - Populate user hash fields in database
 - **set-profile-public.ts** - Set user profile visibility
+- **mark-migrations-simple.js** - Mark migrations as applied (simple version)
+- **mark-migrations-applied.ts** - Mark migrations as applied in database
+- **migrate-to-neon.ts** - Migration script for Neon database
+- **db-sync.cjs / db-sync.sh** - Database synchronization utilities
+- **reset-queue-state.js** - Reset user queue state
 - **copydb/** - Database migration/copy utilities
 
 ## Deployment (PM2)
 
 **Configuration:** `ecosystem.config.cjs` defines two apps:
-- `darkfloor-art-prod` - Production (uses PORT from .env, default: 3222)
-- `darkfloor-art-dev` - Development (uses PORT from .env, default: 3222)
+- `songbird-frontend-prod` - Production (uses PORT from .env, default: 3222)
+- `songbird-frontend-dev` - Development (uses PORT from .env, default: 3222)
 
-**Important:** Process names are `darkfloor-art-prod` and `darkfloor-art-dev` (not `songbird-player-*`). The package name "songbird-player" is only used in npm/package.json.
+**Important:** Process names are `songbird-frontend-prod` and `songbird-frontend-dev` (not `songbird-player-*` or `darkfloor-art-*`). The package name "songbird-player" is only used in npm/package.json, and the website is "darkfloor.art", but PM2 uses the "songbird-frontend" naming.
 
 **Workflow:**
 1. Make changes
