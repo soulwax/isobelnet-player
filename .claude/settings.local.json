@@ -51,7 +51,9 @@
       "Bash(ps:*)",
       "Bash(kill:*)",
       "Bash(chmod:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run pm2:reload:*)",
+      "Bash(timeout 30 pm2 logs:*)"
     ],
     "deny": [],
     "ask": []

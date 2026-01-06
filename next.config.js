@@ -1,5 +1,4 @@
 import "./src/env.js";
-import crypto from "crypto";
 
 if (typeof process !== "undefined") {
   const originalEmit = process.emit;
@@ -210,56 +209,6 @@ const config = {
     config.optimization = {
       ...config.optimization,
       moduleIds: "deterministic",
-      splitChunks: {
-        chunks: "all",
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          framework: {
-            name: "framework",
-            chunks: "all",
-            test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-            priority: 40,
-            enforce: true,
-          },
-          lib: {
-            test(module) {
-              return (
-                module.size() > 160000 &&
-                /node_modules[/\\]/.test(module.identifier())
-              );
-            },
-            name(module) {
-              const hash = crypto
-                .createHash("sha1")
-                .update(module.identifier())
-                .digest("hex")
-                .substring(0, 8);
-              return `lib-${hash}`;
-            },
-            priority: 30,
-            minChunks: 1,
-            reuseExistingChunk: true,
-          },
-          commons: {
-            name: "commons",
-            minChunks: 2,
-            priority: 20,
-          },
-          shared: {
-            name(module, chunks) {
-              return `shared-${crypto
-                .createHash("sha1")
-                .update(chunks.map((c) => c.name).join("_"))
-                .digest("hex")
-                .substring(0, 8)}`;
-            },
-            priority: 10,
-            minChunks: 2,
-            reuseExistingChunk: true,
-          },
-        },
-      },
     };
 
     return config;
