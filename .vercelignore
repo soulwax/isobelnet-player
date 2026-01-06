@@ -49,6 +49,7 @@ resources
 # Documentation (not needed at runtime)
 *.md
 !README.md
+!CHANGELOG.md
 DEPLOYMENT.md
 LICENSE.md
 scripts/README.md
