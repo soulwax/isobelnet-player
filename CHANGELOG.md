@@ -199,6 +199,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed issue where tracks with incomplete metadata were not being added to listening history
   - Location: `src/contexts/AudioPlayerContext.tsx:108-121`
 
+- **Search Results Play Button**: Fixed unresponsive play button on first tap (mobile)
+  - Play button overlay now always visible on mobile (80% opacity) for immediate interaction
+  - Desktop maintains original hover behavior (0% → 100% opacity on hover)
+  - Resolved issue where first tap only showed the button, requiring a second tap to play
+  - Location: `src/components/SwipeableTrackCard.tsx:259`
+
 - **Webpack Module Resolution**: Fixed authentication 500 error due to aggressive code splitting
   - Removed complex webpack `splitChunks` configuration with dynamic naming
   - Simplified to deterministic module IDs only

@@ -256,7 +256,7 @@ export default function SwipeableTrackCard({
             onClick={handlePlay}
             whileTap={{ scale: 0.9 }}
             transition={springPresets.immediate}
-            className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/60 opacity-0 backdrop-blur-sm transition-opacity active:opacity-100 md:hover:opacity-100"
+            className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/60 opacity-80 backdrop-blur-sm transition-opacity md:opacity-0 md:hover:opacity-100"
           >
             <Play className="h-8 w-8 fill-white text-white drop-shadow-lg" />
           </motion.button>
