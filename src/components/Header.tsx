@@ -126,12 +126,13 @@ export default function Header() {
           {}
           <div className="flex items-center gap-3">
             {}
-            {isVercelDeployment && env.NEXT_PUBLIC_NEXTAUTH_URL_CUSTOM_SERVER ? (
+            {isVercelDeployment &&
+            env.NEXT_PUBLIC_NEXTAUTH_URL_CUSTOM_SERVER ? (
               <Link
                 href={env.NEXT_PUBLIC_NEXTAUTH_URL_CUSTOM_SERVER}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:flex items-center transition-opacity hover:opacity-80"
+                className="hidden items-center transition-opacity hover:opacity-80 md:flex"
                 aria-label="View on custom server"
               >
                 <svg
@@ -170,10 +171,12 @@ export default function Header() {
                 href={env.NEXT_PUBLIC_NEXTAUTH_VERCEL_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:flex items-center gap-1.5 transition-colors text-[var(--color-subtext)] hover:text-[var(--color-text)]"
+                className="hidden items-center gap-1.5 text-[var(--color-subtext)] transition-colors hover:text-[var(--color-text)] md:flex"
                 aria-label="View on Vercel"
               >
-                <span className="text-xs font-medium">&gt;Vercel</span>
+                <span className="text-xs font-medium">
+                  &#8594;Vercel Deployment
+                </span>
                 <svg
                   width="14"
                   height="14"
