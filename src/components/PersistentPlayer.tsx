@@ -239,6 +239,7 @@ export default function PersistentPlayer() {
               onToggleQueue={() => setShowQueue(!showQueue)}
               onToggleEqualizer={() => setShowEqualizer(!showEqualizer)}
               onClose={() => player.setShowMobilePlayer(false)}
+              forceExpanded={true}
             />
           )}
 
