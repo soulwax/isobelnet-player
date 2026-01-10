@@ -262,7 +262,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
 
     if (repeatMode === "one") {
       if (audioRef.current) {
+        const currentRate = audioRef.current.playbackRate;
         audioRef.current.currentTime = 0;
+        audioRef.current.playbackRate = currentRate;
         audioRef.current.play().catch(() => {
 
         });
@@ -498,7 +500,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
 
       try {
         audioRef.current.pause();
+        const currentRate = audioRef.current.playbackRate;
         audioRef.current.currentTime = 0;
+        audioRef.current.playbackRate = currentRate;
       } catch (error) {
         logger.debug("[useAudioPlayer] Error resetting audio:", error);
       }
@@ -520,8 +524,10 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
             currentSrc: audioRef.current.src,
             readyState: audioRef.current.readyState,
           });
+          const currentRate = audioRef.current.playbackRate;
           audioRef.current.src = streamUrl;
           audioRef.current.load();
+          audioRef.current.playbackRate = currentRate;
           logger.debug("[useAudioPlayer] Audio source set and load() called");
           return true;
         } catch (error) {
@@ -785,7 +791,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     const handlePreviousTrack = () => {
 
       if (audioRef.current && audioRef.current.currentTime > 3) {
+        const currentRate = audioRef.current.playbackRate;
         audioRef.current.currentTime = 0;
+        audioRef.current.playbackRate = currentRate;
       } else if (history.length > 0) {
 
         const prevTrack = history[history.length - 1];
@@ -802,26 +810,32 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     const handleSeekBackward = (details: MediaSessionActionDetails) => {
       if (audioRef.current) {
         const seekTime = details.seekOffset ?? 10;
+        const currentRate = audioRef.current.playbackRate;
         audioRef.current.currentTime = Math.max(
           0,
           audioRef.current.currentTime - seekTime,
         );
+        audioRef.current.playbackRate = currentRate;
       }
     };
 
     const handleSeekForward = (details: MediaSessionActionDetails) => {
       if (audioRef.current) {
         const seekTime = details.seekOffset ?? 10;
+        const currentRate = audioRef.current.playbackRate;
         audioRef.current.currentTime = Math.min(
           audioRef.current.duration,
           audioRef.current.currentTime + seekTime,
         );
+        audioRef.current.playbackRate = currentRate;
       }
     };
 
     const handleSeekTo = (details: MediaSessionActionDetails) => {
       if (audioRef.current && details.seekTime !== undefined) {
+        const currentRate = audioRef.current.playbackRate;
         audioRef.current.currentTime = details.seekTime;
+        audioRef.current.playbackRate = currentRate;
       }
     };
 
@@ -884,7 +898,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
       return;
     }
 
+    const currentRate = audioRef.current.playbackRate;
     audioRef.current.currentTime = time;
+    audioRef.current.playbackRate = currentRate;
     setCurrentTime(time);
   }, []);
 
@@ -1534,7 +1550,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
     setIsPlaying(false);
     if (audioRef.current) {
       audioRef.current.pause();
+      const currentRate = audioRef.current.playbackRate;
       audioRef.current.currentTime = 0;
+      audioRef.current.playbackRate = currentRate;
     }
 
     clearPersistedQueueState();
@@ -1605,7 +1623,9 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
               paused: audioRef.current.paused,
               readyState: audioRef.current.readyState,
             });
+            const currentRate = audioRef.current.playbackRate;
             audioRef.current.currentTime = 0;
+            audioRef.current.playbackRate = currentRate;
             audioRef.current.play().catch((error) => {
               logger.error("Playback failed:", error);
               setIsPlaying(false);

@@ -321,13 +321,16 @@ export default function MobilePlayer(props: MobilePlayerProps) {
     _: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
   ) => {
-    if (forceExpanded) return;
     const offset = info.offset.y;
     const velocity = info.velocity.y;
 
     if (offset > 100 || velocity > 500) {
       hapticLight();
-      setIsExpanded(false);
+      if (onClose) {
+        onClose();
+      } else {
+        setIsExpanded(false);
+      }
     }
   };
 
@@ -350,30 +353,28 @@ export default function MobilePlayer(props: MobilePlayerProps) {
         {isExpanded && (
           <>
             {}
-            {!forceExpanded && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="fixed inset-0 z-[98] bg-black/90"
-                onClick={() => {
-                  hapticLight();
-                  if (onClose) {
-                    onClose();
-                  } else {
-                    setIsExpanded(false);
-                  }
-                }}
-              />
-            )}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[98] bg-black/90"
+              onClick={() => {
+                hapticLight();
+                if (onClose) {
+                  onClose();
+                } else {
+                  setIsExpanded(false);
+                }
+              }}
+            />
 
             {}
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              drag={forceExpanded ? false : "y"}
+              drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 0.2 }}
               onDragEnd={handleExpandedDragEnd}
@@ -391,35 +392,38 @@ export default function MobilePlayer(props: MobilePlayerProps) {
               {}
               <div className="relative z-10 flex flex-1 flex-col">
                 {}
-                {!forceExpanded && (
-                  <div className="flex items-center justify-between px-6 pt-4">
-                    <motion.button
-                      onClick={() => {
-                        hapticLight();
-                        if (onClose) {
-                          onClose();
-                        } else {
-                          setIsExpanded(false);
-                        }
-                      }}
-                      whileTap={{ scale: 0.9 }}
-                      className="touch-target rounded-full p-2 text-[var(--color-subtext)]"
-                      aria-label="Collapse player"
-                    >
-                      <ChevronDown className="h-6 w-6" />
-                    </motion.button>
-                    <span className="text-xs font-semibold tracking-widest text-[var(--color-muted)] uppercase">
-                      Now Playing
-                    </span>
-                    <motion.button
-                      onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                      whileTap={{ scale: 0.9 }}
-                      className="touch-target rounded-full p-2 text-[var(--color-subtext)]"
-                    >
-                      <MoreHorizontal className="h-6 w-6" />
-                    </motion.button>
-                  </div>
-                )}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="h-1 w-12 rounded-full bg-[rgba(255,255,255,0.3)]" />
+                </div>
+
+                {}
+                <div className="flex items-center justify-between px-6 pt-2">
+                  <motion.button
+                    onClick={() => {
+                      hapticLight();
+                      if (onClose) {
+                        onClose();
+                      } else {
+                        setIsExpanded(false);
+                      }
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    className="touch-target rounded-full p-2 text-[var(--color-subtext)]"
+                    aria-label="Collapse player"
+                  >
+                    <ChevronDown className="h-6 w-6" />
+                  </motion.button>
+                  <span className="text-xs font-semibold tracking-widest text-[var(--color-muted)] uppercase">
+                    Now Playing
+                  </span>
+                  <motion.button
+                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                    whileTap={{ scale: 0.9 }}
+                    className="touch-target rounded-full p-2 text-[var(--color-subtext)]"
+                  >
+                    <MoreHorizontal className="h-6 w-6" />
+                  </motion.button>
+                </div>
 
                 {}
                 <div className="flex flex-1 items-center justify-center px-8 py-6">

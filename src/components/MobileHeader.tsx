@@ -25,6 +25,7 @@ export default function MobileHeader() {
   const [countdown, setCountdown] = useState(0);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const searchingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: recentSearches } = api.music.getRecentSearches.useQuery(
     { limit: 5 },
@@ -38,6 +39,13 @@ export default function MobileHeader() {
     } else {
       setSearchQuery("");
     }
+
+    // Clear any pending fallback timeouts
+    if (searchingTimeoutRef.current) {
+      clearTimeout(searchingTimeoutRef.current);
+      searchingTimeoutRef.current = null;
+    }
+
     setIsSearching(false);
     setCountdown(0);
   }, [searchParams]);
@@ -89,6 +97,11 @@ export default function MobileHeader() {
       setIsSearching(true);
       setCountdown(0);
       router.push(`/?q=${encodeURIComponent(trimmedQuery)}`);
+
+      // Fallback: Force clear searching state after 3s if effect doesn't fire
+      searchingTimeoutRef.current = setTimeout(() => {
+        setIsSearching(false);
+      }, 3000);
     }, 2000);
 
     // Cleanup on unmount or query change
@@ -99,10 +112,17 @@ export default function MobileHeader() {
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
       }
+      if (searchingTimeoutRef.current) {
+        clearTimeout(searchingTimeoutRef.current);
+      }
     };
   }, [searchQuery, router, searchParams]);
 
   if (!isMobile) return null;
+
+  // Check if current query matches URL (search is complete)
+  const urlQuery = searchParams.get("q") ?? "";
+  const isSearchComplete = urlQuery === searchQuery.trim() && searchQuery.trim().length > 0;
 
   const handleSearch = (query: string) => {
     // Clear debounce timeout and countdown
@@ -112,11 +132,19 @@ export default function MobileHeader() {
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
     }
+    if (searchingTimeoutRef.current) {
+      clearTimeout(searchingTimeoutRef.current);
+    }
     setCountdown(0);
 
     if (query.trim()) {
       setIsSearching(true);
       router.push(`/?q=${encodeURIComponent(query.trim())}`);
+
+      // Fallback: Force clear searching state after 3s if effect doesn't fire
+      searchingTimeoutRef.current = setTimeout(() => {
+        setIsSearching(false);
+      }, 3000);
     } else {
       router.push("/");
     }
@@ -130,7 +158,11 @@ export default function MobileHeader() {
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
     }
+    if (searchingTimeoutRef.current) {
+      clearTimeout(searchingTimeoutRef.current);
+    }
     setCountdown(0);
+    setIsSearching(false);
     setSearchQuery("");
     // Navigation is handled by useEffect when searchQuery becomes empty
   };
@@ -192,7 +224,7 @@ export default function MobileHeader() {
               setSearchQuery(search);
               handleSearch(search);
             }}
-            showAutoSearchIndicator={true}
+            showAutoSearchIndicator={!isSearchComplete}
             autoSearchCountdown={countdown}
           />
         </div>
