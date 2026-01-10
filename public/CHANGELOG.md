@@ -5,6 +5,49 @@ All notable changes to darkfloor.art will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-01-10
+
+### Fixed
+
+- **Mobile Player Visualizer Toggle**: Fixed Activity (lightning) button not controlling background visualizer
+  - Button was incorrectly toggling `hideAlbumCover` state instead of `visualizerEnabled`
+  - Now properly enables/disables the audio-reactive background visualizer
+  - Visual feedback: Amber highlight (`bg-[rgba(244,178,102,0.3)]`) when enabled, dark (`bg-black/40`) when disabled
+  - Persists user preference to localStorage for non-authenticated users
+  - Syncs with user preferences from database for authenticated users
+  - Location: `src/components/MobilePlayer.tsx:499-518`
+
+- **Mobile Player Favorite/Heart Button**: Implemented full favorite functionality for Heart button
+  - Previously only triggered haptic feedback with no actual function
+  - Now adds/removes tracks from user's favorites with proper API integration
+  - Queries favorite status on track change and displays filled red heart for favorited tracks
+  - Animated scale effect on click (600ms) with different haptics (success for add, light for remove)
+  - Shows visual state: Red filled heart when favorited, gray outline when not
+  - Disabled state (50% opacity) when user is not authenticated
+  - Proper tooltips: "Sign in to favorite tracks" (unauthenticated) or "Add/Remove from favorites" (authenticated)
+  - Invalidates cache on mutation success to ensure UI stays in sync
+  - Location: `src/components/MobilePlayer.tsx:119-122, 129, 152-176, 193-205, 937-1006`
+
+### Added
+
+- **Mobile Player API Integration**: Enhanced mobile player with tRPC mutations and queries
+  - Added `api.useUtils()` for cache invalidation
+  - Integrated `api.music.isFavorite` query to check track favorite status
+  - Integrated `api.music.addFavorite` and `api.music.removeFavorite` mutations
+  - Heart animation state management with `isHeartAnimating` flag
+  - Location: `src/components/MobilePlayer.tsx:110, 119-122, 129, 152-176, 193-205`
+
+### Improved
+
+- **Mobile Player Button Consistency**: All mobile player control buttons now fully functional
+  - Visualizer toggle (Activity icon): Controls audio-reactive background
+  - Heart button: Add/remove from favorites with authentication check
+  - Play/Pause, Previous/Next, Skip ±10s: Already functional
+  - Shuffle, Repeat modes: Already functional
+  - Volume/Mute, Playback speed: Already functional
+  - Queue, Equalizer, Add to playlist: Already functional
+  - Complete feature parity with desktop player controls
+
 ## [0.8.9] - 2026-01-09
 
 ### Fixed
