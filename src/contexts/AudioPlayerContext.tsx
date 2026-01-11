@@ -229,6 +229,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     }, 1000);
 
     return () => clearTimeout(persistTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     session,
     player.queuedTracks,
@@ -237,8 +238,6 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     player.currentTime,
     player.isShuffled,
     player.repeatMode,
-    saveQueueStateMutation,
-    clearQueueStateMutation,
   ]);
 
   useEffect(() => {
@@ -267,7 +266,8 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     }
 
     setLastUserId(currentUserId);
-  }, [session?.user?.id, lastUserId, player, showToast, clearQueueStateMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id, lastUserId]);
 
   useEffect(() => {
     const cleanupInterval = setInterval(

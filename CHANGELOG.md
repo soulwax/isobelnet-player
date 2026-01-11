@@ -5,6 +5,56 @@ All notable changes to darkfloor.art will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2026-01-10
+
+### Fixed
+
+- **CRITICAL: Infinite Mutation Loop**: Fixed severe performance issue causing request storms and profile navigation failures
+  - AudioPlayerContext had tRPC mutations (`clearQueueStateMutation`, `saveQueueStateMutation`) in useEffect dependency arrays
+  - This caused infinite re-renders and thousands of aborted `clearQueueState` requests (NS_BINDING_ABORTED)
+  - Profile pages couldn't load because `getCurrentUserHash` query was being aborted repeatedly
+  - Navigation to user profiles (`/[userhash]`) was broken on both desktop and mobile
+  - Removed mutation objects from dependency arrays (mutations are stable references and don't need to be dependencies)
+  - **Impact**: Dramatically improves performance, fixes profile navigation, reduces server load
+  - Location: `src/contexts/AudioPlayerContext.tsx:232-241, 269-270`
+
+### Improved
+
+- **Performance**: Application is now significantly more responsive with proper dependency management
+  - No more request storms on every state change
+  - Profile queries can complete successfully
+  - Navigation works smoothly across all pages
+
+## [0.9.1] - 2026-01-10
+
+### Added
+
+- **Track Sharing by ID**: New feature to share individual songs with instant playback
+  - Share any track via URL parameter: `?track=123456`
+  - Shared track loads automatically and starts playing immediately
+  - Track metadata fetched via new API endpoint: `/api/track/[id]`
+  - Updates share functionality to generate shareable links with track ID
+  - Clipboard fallback for browsers without Web Share API support
+  - Haptic feedback on successful track load
+  - Location: `src/app/HomePageClient.tsx:162-185, 209-232`, `src/app/api/track/[id]/route.ts`, `src/utils/api.ts:106-111`, `src/components/TrackContextMenu.tsx:166-192`
+
+### Fixed
+
+- **Desktop Search Clearing Bug**: Fixed search results clearing immediately when searching on desktop
+  - Previous results now remain visible while new search loads (prevents flash to default state)
+  - Added `lastUrlQueryRef` to track URL state and prevent race conditions
+  - Fixed dependency array in useEffect causing premature state clearing
+  - Search flow now stable on both desktop and mobile
+  - Location: `src/app/HomePageClient.tsx:54-55, 185-230`
+
+### Improved
+
+- **Share Functionality**: Enhanced track sharing with proper URL generation
+  - Generates shareable links with track ID parameter instead of current page URL
+  - Desktop users can copy link to clipboard if Web Share API unavailable
+  - Toast notifications for successful share or clipboard copy
+  - Better user experience for sharing tracks across platforms
+
 ## [0.9.0] - 2026-01-10
 
 ### Fixed

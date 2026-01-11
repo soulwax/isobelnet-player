@@ -167,14 +167,27 @@ export function TrackContextMenu() {
     if (!track) return;
     hapticLight();
 
-    const success = await share({
-      title: `${track.title} - ${track.artist.name}`,
-      text: `Check out "${track.title}" by ${track.artist.name} on darkfloor.art!`,
-      url: window.location.href,
-    });
+    const shareUrl = new URL(window.location.origin);
+    shareUrl.searchParams.set("track", track.id.toString());
 
-    if (success) {
-      showToast("Track shared successfully!", "success");
+    if (isShareSupported) {
+      const success = await share({
+        title: `${track.title} - ${track.artist.name}`,
+        text: `Check out "${track.title}" by ${track.artist.name} on darkfloor.art!`,
+        url: shareUrl.toString(),
+      });
+
+      if (success) {
+        showToast("Track shared successfully!", "success");
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl.toString());
+        showToast("Link copied to clipboard!", "success");
+      } catch (error) {
+        console.error("Failed to copy to clipboard:", error);
+        showToast("Failed to copy link", "error");
+      }
     }
     closeMenu();
   };
