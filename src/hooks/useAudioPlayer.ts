@@ -528,6 +528,16 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}) {
           audioRef.current.src = streamUrl;
           audioRef.current.load();
           audioRef.current.playbackRate = currentRate;
+
+          // Mobile fix: Restore playbackRate after metadata loads
+          const restoreRate = () => {
+            if (audioRef.current && audioRef.current.playbackRate !== currentRate) {
+              audioRef.current.playbackRate = currentRate;
+              logger.debug("[useAudioPlayer] Restored playbackRate after metadata load:", currentRate);
+            }
+          };
+          audioRef.current.addEventListener('loadedmetadata', restoreRate, { once: true });
+
           logger.debug("[useAudioPlayer] Audio source set and load() called");
           return true;
         } catch (error) {

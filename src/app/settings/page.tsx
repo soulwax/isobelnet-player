@@ -356,22 +356,29 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="container mx-auto flex min-h-screen flex-col px-4 py-4 md:px-6 md:py-8">
+    <div className="container mx-auto flex min-h-screen flex-col px-4 py-6 md:px-6 md:py-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={springPresets.gentle}
-        className="mb-4 md:mb-8"
+        className="mb-6 md:mb-8"
       >
-        <h1 className="text-2xl font-bold text-[var(--color-text)] md:text-4xl">
-          Settings
-        </h1>
-        <p className="mt-1 text-xs text-[var(--color-subtext)] md:mt-2 md:text-base">
-          Customize your music experience
-        </p>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[rgba(244,178,102,0.2)] to-[rgba(88,198,177,0.2)] ring-2 ring-[var(--color-accent)]/30">
+            <Settings className="h-6 w-6 text-[var(--color-accent)]" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--color-text)] md:text-4xl">
+              Settings
+            </h1>
+            <p className="mt-0.5 text-sm text-[var(--color-subtext)] md:text-base">
+              Customize your experience
+            </p>
+          </div>
+        </div>
       </motion.div>
 
-      <div className="space-y-3 pb-4 md:space-y-6">
+      <div className="space-y-4 pb-6 md:space-y-6">
         {sections.map((section, sectionIndex) => (
           <motion.div
             key={section.id}
@@ -381,16 +388,18 @@ export default function SettingsPage() {
               ...springPresets.gentle,
               delay: sectionIndex * 0.05,
             }}
-            className="rounded-xl border border-[rgba(244,178,102,0.12)] bg-[rgba(13,19,28,0.6)] p-3 backdrop-blur-sm md:rounded-2xl md:p-4"
+            className="group rounded-2xl border border-[rgba(244,178,102,0.15)] bg-gradient-to-br from-[rgba(13,19,28,0.8)] to-[rgba(13,19,28,0.6)] p-4 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all hover:shadow-[0_8px_32px_rgba(244,178,102,0.1)] md:rounded-2xl md:p-5"
           >
-            <div className="mb-3 flex items-center gap-2 md:mb-4">
-              <div className="text-[var(--color-accent)]">{section.icon}</div>
-              <h2 className="text-base font-semibold text-[var(--color-text)] md:text-lg">
+            <div className="mb-4 flex items-center gap-3 border-b border-[rgba(244,178,102,0.08)] pb-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[rgba(244,178,102,0.15)] to-[rgba(88,198,177,0.15)] text-[var(--color-accent)] ring-1 ring-[var(--color-accent)]/20">
+                {section.icon}
+              </div>
+              <h2 className="text-lg font-bold text-[var(--color-text)] md:text-xl">
                 {section.title}
               </h2>
             </div>
 
-            <div className="space-y-0.5 md:space-y-1">
+            <div className="space-y-1">
               {section.items.map((item, itemIndex) => (
                 <SettingsItemComponent
                   key={item.id}
@@ -434,12 +443,13 @@ function SettingsItemComponent({
           ...springPresets.smooth,
           delay: index * 0.03,
         }}
-        className="touch-target-lg flex items-center justify-between rounded-lg px-3 py-3 transition-colors active:bg-[rgba(244,178,102,0.12)] md:rounded-xl md:px-4 md:hover:bg-[rgba(244,178,102,0.08)]"
+        whileTap={{ scale: 0.98 }}
+        className="touch-target-lg flex items-center justify-between rounded-xl px-4 py-3.5 transition-all active:bg-[rgba(244,178,102,0.15)] md:px-4 md:hover:bg-[rgba(244,178,102,0.08)]"
       >
         <div className="flex-1">
-          <div className="text-sm font-medium text-[var(--color-text)] md:text-base">{item.label}</div>
+          <div className="text-base font-semibold text-[var(--color-text)]">{item.label}</div>
           {item.description && (
-            <div className="mt-0.5 text-xs text-[var(--color-subtext)]">
+            <div className="mt-1 text-xs text-[var(--color-subtext)]">
               {item.description}
             </div>
           )}
@@ -461,19 +471,17 @@ function SettingsItemComponent({
           ...springPresets.smooth,
           delay: index * 0.03,
         }}
-        className="rounded-lg px-3 py-3 transition-colors active:bg-[rgba(244,178,102,0.08)] md:rounded-xl md:px-4 md:hover:bg-[rgba(244,178,102,0.08)]"
+        className="rounded-xl px-4 py-3.5 transition-colors"
       >
-        <div className="mb-2 flex items-center justify-between md:mb-3">
-          <div>
-            <div className="text-sm font-medium text-[var(--color-text)] md:text-base">
-              {item.label}
-            </div>
-            {item.description && (
-              <div className="mt-0.5 text-xs font-semibold text-[var(--color-accent)]">
-                {item.description}
-              </div>
-            )}
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-base font-semibold text-[var(--color-text)]">
+            {item.label}
           </div>
+          {item.description && (
+            <div className="text-base font-bold text-[var(--color-accent)]">
+              {item.description}
+            </div>
+          )}
         </div>
         <Slider
           value={localValue as number}
@@ -535,28 +543,30 @@ function SettingsItemComponent({
           ...springPresets.smooth,
           delay: index * 0.03,
         }}
+        whileTap={{ scale: 0.98 }}
       >
         <Link
           href={item.href ?? "#"}
-          className="touch-target-lg flex items-center justify-between rounded-lg px-3 py-3 transition-colors active:bg-[rgba(244,178,102,0.12)] md:rounded-xl md:px-4 md:hover:bg-[rgba(244,178,102,0.08)]"
+          className="touch-target-lg flex items-center justify-between rounded-xl px-4 py-3.5 transition-all active:bg-[rgba(244,178,102,0.15)] md:px-4 md:hover:bg-[rgba(244,178,102,0.08)]"
         >
           <div className="flex-1">
-            <div className="text-sm font-medium text-[var(--color-text)] md:text-base">
+            <div className="text-base font-semibold text-[var(--color-text)]">
               {item.label}
             </div>
             {item.description && (
-              <div className="mt-0.5 text-xs text-[var(--color-subtext)]">
+              <div className="mt-1 text-xs text-[var(--color-subtext)]">
                 {item.description}
               </div>
             )}
           </div>
-          <ChevronRight className="h-4 w-4 text-[var(--color-muted)] md:h-5 md:w-5" />
+          <ChevronRight className="h-5 w-5 text-[var(--color-accent)] transition-transform group-hover:translate-x-1" />
         </Link>
       </motion.div>
     );
   }
 
   if (item.type === "button") {
+    const isSignOut = item.id === "signOut";
     return (
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -565,15 +575,20 @@ function SettingsItemComponent({
           ...springPresets.smooth,
           delay: index * 0.03,
         }}
+        whileTap={{ scale: 0.98 }}
       >
         <button
           onClick={item.action}
-          className="touch-target-lg flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition-colors active:bg-[rgba(242,139,130,0.16)] md:rounded-xl md:px-4 md:hover:bg-[rgba(242,139,130,0.12)]"
+          className={`touch-target-lg flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all ${
+            isSignOut
+              ? "active:bg-[rgba(242,139,130,0.2)] md:hover:bg-[rgba(242,139,130,0.12)]"
+              : "active:bg-[rgba(244,178,102,0.15)] md:hover:bg-[rgba(244,178,102,0.08)]"
+          }`}
         >
-          <div className="text-sm font-medium text-[var(--color-text)] md:text-base">
+          <div className={`text-base font-semibold ${isSignOut ? "text-red-400" : "text-[var(--color-text)]"}`}>
             {item.label}
           </div>
-          <ChevronRight className="h-4 w-4 text-[var(--color-muted)] md:h-5 md:w-5" />
+          <ChevronRight className={`h-5 w-5 transition-transform ${isSignOut ? "text-red-400/60" : "text-[var(--color-accent)]"}`} />
         </button>
       </motion.div>
     );
@@ -592,20 +607,25 @@ function ToggleSwitch({
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`touch-target relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+      className={`touch-target relative inline-flex h-8 w-14 items-center rounded-full shadow-inner transition-all ${
         checked
-          ? "bg-[var(--color-accent)]"
-          : "bg-[rgba(255,255,255,0.2)]"
+          ? "bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-secondary-accent)] shadow-[var(--color-accent)]/20"
+          : "bg-[rgba(255,255,255,0.15)] shadow-black/20"
       }`}
       role="switch"
       aria-checked={checked}
     >
       <motion.div
         animate={{
-          x: checked ? 28 : 4,
+          x: checked ? 32 : 4,
+          scale: checked ? 1.1 : 1,
         }}
         transition={springPresets.snappy}
-        className="h-5 w-5 rounded-full bg-white shadow-lg"
+        className={`h-6 w-6 rounded-full shadow-lg ring-2 transition-all ${
+          checked
+            ? "bg-white ring-[var(--color-accent)]/30"
+            : "bg-white/90 ring-white/10"
+        }`}
       />
     </button>
   );
@@ -635,29 +655,42 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="touch-target-lg h-2 w-full appearance-none rounded-full bg-[rgba(255,255,255,0.2)] outline-none"
+        className="touch-target-lg h-2 w-full appearance-none rounded-full outline-none"
         style={{
-          background: `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${percentage}%, rgba(255,255,255,0.2) ${percentage}%, rgba(255,255,255,0.2) 100%)`,
+          background: `linear-gradient(to right,
+            var(--color-accent) 0%,
+            var(--color-accent) ${percentage}%,
+            rgba(255,255,255,0.15) ${percentage}%,
+            rgba(255,255,255,0.15) 100%)`,
         }}
       />
       <style jsx>{`
         input[type="range"]::-webkit-slider-thumb {
           appearance: none;
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
-          background: var(--color-accent);
+          background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-secondary-accent) 100%);
           cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 8px rgba(244, 178, 102, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.1);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:active {
+          transform: scale(1.2);
+          box-shadow: 0 2px 12px rgba(244, 178, 102, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.15);
         }
         input[type="range"]::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
-          background: var(--color-accent);
+          background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-secondary-accent) 100%);
           cursor: pointer;
           border: none;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 8px rgba(244, 178, 102, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+        input[type="range"]::-moz-range-thumb:active {
+          transform: scale(1.2);
+          box-shadow: 0 2px 12px rgba(244, 178, 102, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.15);
         }
       `}</style>
     </div>
@@ -683,32 +716,34 @@ function SelectButton({
 
   return (
     <div className="relative">
-      <button
+      <motion.button
         onClick={() => {
           hapticLight();
           setIsOpen(!isOpen);
         }}
-        className="flex w-full items-center justify-between rounded-xl px-4 py-3 transition-colors hover:bg-[rgba(244,178,102,0.08)]"
+        whileTap={{ scale: 0.98 }}
+        className="flex w-full items-center justify-between rounded-xl px-4 py-3.5 transition-all active:bg-[rgba(244,178,102,0.15)] md:hover:bg-[rgba(244,178,102,0.08)]"
       >
         <div className="flex-1 text-left">
-          <div className="font-medium text-[var(--color-text)]">{label}</div>
+          <div className="text-base font-semibold text-[var(--color-text)]">{label}</div>
           {description && (
-            <div className="mt-0.5 text-xs text-[var(--color-subtext)]">
+            <div className="mt-1 text-xs text-[var(--color-subtext)]">
               {description}
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-[var(--color-accent)]">
+          <span className="text-sm font-semibold text-[var(--color-accent)]">
             {currentOption?.label ?? value}
           </span>
-          <ChevronRight
-            className={`h-5 w-5 text-[var(--color-muted)] transition-transform ${
-              isOpen ? "rotate-90" : ""
-            }`}
-          />
+          <motion.div
+            animate={{ rotate: isOpen ? 90 : 0 }}
+            transition={springPresets.snappy}
+          >
+            <ChevronRight className="h-5 w-5 text-[var(--color-accent)]" />
+          </motion.div>
         </div>
-      </button>
+      </motion.button>
 
       {isOpen && (
         <>
@@ -717,26 +752,31 @@ function SelectButton({
             onClick={() => setIsOpen(false)}
           />
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute left-0 right-0 top-full z-20 mt-2 rounded-xl border border-[rgba(244,178,102,0.16)] bg-[rgba(13,19,28,0.98)] p-2 shadow-xl backdrop-blur-xl"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={springPresets.snappy}
+            className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-[rgba(244,178,102,0.2)] bg-[rgba(13,19,28,0.98)] p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl"
           >
-            {options.map((option) => (
-              <button
+            {options.map((option, idx) => (
+              <motion.button
                 key={option.value}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ ...springPresets.snappy, delay: idx * 0.03 }}
                 onClick={() => {
+                  hapticLight();
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`touch-target w-full rounded-lg px-4 py-2.5 text-left text-sm transition-colors ${
+                className={`touch-target w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition-all ${
                   value === option.value
-                    ? "bg-[rgba(244,178,102,0.2)] text-[var(--color-accent)]"
-                    : "text-[var(--color-text)] hover:bg-[rgba(244,178,102,0.08)]"
+                    ? "bg-gradient-to-r from-[rgba(244,178,102,0.25)] to-[rgba(88,198,177,0.2)] text-[var(--color-accent)] shadow-inner"
+                    : "text-[var(--color-text)] active:bg-[rgba(244,178,102,0.12)] md:hover:bg-[rgba(244,178,102,0.08)]"
                 }`}
               >
                 {option.label}
-              </button>
+              </motion.button>
             ))}
           </motion.div>
         </>
